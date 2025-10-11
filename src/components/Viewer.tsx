@@ -1,0 +1,86 @@
+"use client";
+
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence } from "motion/react";
+import * as motion from "motion/react-client";
+
+import {
+    SlideBackgroundComposer,
+    SlideComposer,
+} from "@/components/SlideComposer";
+import { ContentResizer } from "@/components/ContentResizer";
+import { useSocket } from "@/context/SocketContext";
+
+function BlackScreen() {
+    return <div className="h-[1080px] w-[1920px] bg-black" />;
+}
+
+function ClearScreen() {
+    return <></>;
+}
+
+interface ViewerProps {
+    currentIndex: number;
+}
+export const Viewer = memo(function Viewer({ currentIndex = 0 }: ViewerProps) {
+    const SlideCompose = useCallback(() => {
+        return <SlideComposer currentProjection={0} currentIndex={currentIndex} />;
+    }, [currentIndex]);
+
+    const CurrentComponent = useMemo(
+        () =>
+            currentIndex === -1
+                ? BlackScreen
+                : currentIndex === -2
+                  ? ClearScreen
+                  : SlideCompose,
+        [SlideCompose, currentIndex],
+    );
+
+    return (
+        <>
+            <AnimatePresence>
+                <SlideBackgroundComposer currentProjection={0} currentIndex={currentIndex} />
+            </AnimatePresence>
+
+            <AnimatePresence>
+                <motion.div
+                    key={currentIndex}
+                    className="absolute h-full w-full"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1 }}
+                >
+                    <ContentResizer className="h-full w-full">
+                        <CurrentComponent />
+                    </ContentResizer>
+                </motion.div>
+            </AnimatePresence>
+        </>
+    );
+});
+
+export function OnScreenViewer() {
+    const socket = useSocket();
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const updateIndex = (_: number, viewIndex: number) =>
+            setCurrentIndex(viewIndex);
+        const viewerManipulated = (index: number) => setCurrentIndex(index);
+
+        socket.emit("jumpToLastSlide", updateIndex);
+        socket.on("updateIndex", updateIndex);
+        socket.on("viewerManipulated", viewerManipulated);
+
+        return () => {
+            socket.off("updateIndex", updateIndex);
+            socket.off("viewerManipulated", viewerManipulated);
+        };
+    }, [socket]);
+
+    return <Viewer currentIndex={currentIndex} />;
+}
