@@ -119,27 +119,27 @@ export function OnScreenSlideController({
             setCurrentIndex(index);
         };
 
-        socket.emit("jumpToLastSlide", (projectionIndex: number, index: number) => {
+        socket.emit("screen:jumpToLastSlide", (projectionIndex: number, index: number) => {
             updateIndex(projectionIndex, index);
             setIsLoaded(true);
         });
-        socket.on("updateIndex", updateIndex);
+        socket.on("screen:updateIndex", updateIndex);
 
         return () => {
-            socket.off("updateIndex", updateIndex);
+            socket.off("screen:updateIndex", updateIndex);
         };
     }, [socket]);
 
     // Update the server with the current index
     useEffect(() => {
         if (!isLoaded) return;
-        socket?.emit("requestUpdateIndex", currentProjection, currentIndex);
+        socket?.emit("caster:requestUpdateIndex", currentProjection, currentIndex);
     }, [currentIndex, socket, isLoaded, currentProjection]);
 
     // Send special screen commands
     const specialScreen = useCallback(
         (type: string) => (pressed: boolean) => {
-            socket?.emit("specialScreen", type, pressed);
+            socket?.emit("caster:specialScreen", type, pressed);
         },
         [socket],
     );
@@ -212,7 +212,7 @@ export function PreviewSlideController() {
     const socket = useSocket();
 
     const projectToScreen = useCallback(() => {
-        socket?.emit("requestUpdateIndex", currentProjection, currentIndex);
+        socket?.emit("caster:requestUpdateIndex", currentProjection, currentIndex);
     }, [socket, currentProjection, currentIndex]);
 
     const [register, unregister] = useGlobalKeyboard();

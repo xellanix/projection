@@ -54,7 +54,7 @@ app.prepare().then(() => {
         console.log("✅ Client connected:", socket.id);
 
         socket.on(
-            "requestUpdateIndex",
+            "caster:requestUpdateIndex",
             (projectionIndex: number, index: number) => {
                 if (
                     projectionIndex === currentProjection &&
@@ -65,7 +65,7 @@ app.prepare().then(() => {
                 currentProjection = projectionIndex;
                 currentIndex = index;
                 io.emit(
-                    "updateIndex",
+                    "screen:updateIndex",
                     projectionIndex,
                     index,
                     getPreferredIndex(),
@@ -73,12 +73,12 @@ app.prepare().then(() => {
             },
         );
 
-        socket.on("jumpToLastSlide", (callback) => {
+        socket.on("screen:jumpToLastSlide", (callback) => {
             callback(currentProjection, currentIndex, getPreferredIndex());
         });
 
         socket.on(
-            "specialScreen",
+            "caster:specialScreen",
             (type: "black" | "clear", active: boolean) => {
                 const lastIndex = getPreferredIndex();
                 specialScreen[type] = active;
@@ -86,7 +86,7 @@ app.prepare().then(() => {
                 const index = getPreferredIndex();
                 if (index === lastIndex) return;
 
-                io.emit("viewerManipulated", index);
+                io.emit("screen:viewerManipulated", index);
             },
         );
 
