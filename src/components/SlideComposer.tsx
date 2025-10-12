@@ -3,6 +3,7 @@
 import { ContentResizer } from "@/components/ContentResizer";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { useBackgrounds, useProjection } from "@/context/ProjectionContext";
+import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
 import { memo, useMemo } from "react";
 
@@ -22,25 +23,27 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
     }, [backgrounds, currentIndex, currentProjection, maps]);
 
     return (
-        <motion.div
-            key={maps[currentProjection]?.[currentIndex] ?? 0}
-            className="absolute h-full w-full"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1 }}
-        >
-            <ContentResizer className="h-full w-full">
-                <div className="flex h-[1080px] w-[1920px] flex-col items-center justify-center">
-                    <VideoPlayer
-                        src={background}
-                        muted
-                        autoPlay={true}
-                        loop
-                    ></VideoPlayer>
-                </div>
-            </ContentResizer>
-        </motion.div>
+        <AnimatePresence>
+            <motion.div
+                key={maps[currentProjection]?.[currentIndex] ?? 0}
+                className="absolute h-full w-full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1 }}
+            >
+                <ContentResizer className="h-full w-full">
+                    <div className="flex h-[1080px] w-[1920px] flex-col items-center justify-center">
+                        <VideoPlayer
+                            src={background}
+                            muted
+                            autoPlay={true}
+                            loop
+                        ></VideoPlayer>
+                    </div>
+                </ContentResizer>
+            </motion.div>
+        </AnimatePresence>
     );
 });
 

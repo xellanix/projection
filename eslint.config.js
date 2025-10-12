@@ -35,6 +35,7 @@ export default tseslint.config(
                 "error",
                 { checksVoidReturn: { attributes: false } },
             ],
+            "@next/next/no-img-element": "off",
         },
     },
     {

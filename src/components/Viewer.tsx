@@ -20,12 +20,21 @@ function ClearScreen() {
 }
 
 interface ViewerProps {
+    currentProjection: number;
     currentIndex: number;
 }
-export const Viewer = memo(function Viewer({ currentIndex = 0 }: ViewerProps) {
+export const Viewer = memo(function Viewer({
+    currentProjection = 0,
+    currentIndex = 0,
+}: ViewerProps) {
     const SlideCompose = useCallback(() => {
-        return <SlideComposer currentProjection={0} currentIndex={currentIndex} />;
-    }, [currentIndex]);
+        return (
+            <SlideComposer
+                currentProjection={currentProjection}
+                currentIndex={currentIndex}
+            />
+        );
+    }, [currentIndex, currentProjection]);
 
     const CurrentComponent = useMemo(
         () =>
@@ -39,9 +48,10 @@ export const Viewer = memo(function Viewer({ currentIndex = 0 }: ViewerProps) {
 
     return (
         <>
-            <AnimatePresence>
-                <SlideBackgroundComposer currentProjection={0} currentIndex={currentIndex} />
-            </AnimatePresence>
+            <SlideBackgroundComposer
+                currentProjection={currentProjection}
+                currentIndex={currentIndex}
+            />
 
             <AnimatePresence>
                 <motion.div
@@ -63,13 +73,20 @@ export const Viewer = memo(function Viewer({ currentIndex = 0 }: ViewerProps) {
 
 export function OnScreenViewer() {
     const socket = useSocket();
+    const [currentProjection, setCurrentProjection] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
         if (!socket) return;
 
-        const updateIndex = (_: number, viewIndex: number) =>
+        const updateIndex = (
+            currentProjection: number,
+            _: number,
+            viewIndex: number,
+        ) => {
+            setCurrentProjection(currentProjection);
             setCurrentIndex(viewIndex);
+        };
         const viewerManipulated = (index: number) => setCurrentIndex(index);
 
         socket.emit("jumpToLastSlide", updateIndex);
@@ -82,5 +99,10 @@ export function OnScreenViewer() {
         };
     }, [socket]);
 
-    return <Viewer currentIndex={currentIndex} />;
+    return (
+        <Viewer
+            currentProjection={currentProjection}
+            currentIndex={currentIndex}
+        />
+    );
 }

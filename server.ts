@@ -12,6 +12,7 @@ const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 let currentIndex = 0;
+let currentProjection = 0;
 const specialScreen = {
     black: false,
     clear: false,
@@ -52,14 +53,28 @@ app.prepare().then(() => {
     io.on("connection", (socket) => {
         console.log("✅ Client connected:", socket.id);
 
-        socket.on("requestUpdateIndex", (index: number) => {
-            if (currentIndex === index) return;
-            currentIndex = index;
-            io.emit("updateIndex", index, getPreferredIndex());
-        });
+        socket.on(
+            "requestUpdateIndex",
+            (projectionIndex: number, index: number) => {
+                if (
+                    projectionIndex === currentProjection &&
+                    currentIndex === index
+                )
+                    return;
+
+                currentProjection = projectionIndex;
+                currentIndex = index;
+                io.emit(
+                    "updateIndex",
+                    projectionIndex,
+                    index,
+                    getPreferredIndex(),
+                );
+            },
+        );
 
         socket.on("jumpToLastSlide", (callback) => {
-            callback(currentIndex, getPreferredIndex());
+            callback(currentProjection, currentIndex, getPreferredIndex());
         });
 
         socket.on(
