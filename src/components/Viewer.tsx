@@ -89,13 +89,13 @@ export function OnScreenViewer() {
         };
         const viewerManipulated = (index: number) => setCurrentIndex(index);
 
-        socket.emit("screen:jumpToLastSlide", updateIndex);
-        socket.on("screen:updateIndex", updateIndex);
-        socket.on("screen:viewerManipulated", viewerManipulated);
+        socket.emit("client:screen:index:init", updateIndex);
+        socket.on("server:screen:index:update", updateIndex);
+        socket.on("server:screen:specialScreen:set", viewerManipulated);
 
         return () => {
-            socket.off("screen:updateIndex", updateIndex);
-            socket.off("screen:viewerManipulated", viewerManipulated);
+            socket.off("server:screen:index:update", updateIndex);
+            socket.off("server:screen:specialScreen:set", viewerManipulated);
         };
     }, [socket]);
 

@@ -19,7 +19,7 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
 
     const background = useMemo(() => {
         const bgIndex = maps[currentProjection]?.[currentIndex] ?? 0;
-        return backgrounds[bgIndex];
+        return backgrounds[bgIndex] ?? "";
     }, [backgrounds, currentIndex, currentProjection, maps]);
 
     return (

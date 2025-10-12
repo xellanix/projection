@@ -53,8 +53,9 @@ app.prepare().then(() => {
     io.on("connection", (socket) => {
         console.log("✅ Client connected:", socket.id);
 
+        // "client:caster:index:update"
         socket.on(
-            "caster:requestUpdateIndex",
+            "client:caster:index:update",
             (projectionIndex: number, index: number) => {
                 if (
                     projectionIndex === currentProjection &&
@@ -65,20 +66,16 @@ app.prepare().then(() => {
                 currentProjection = projectionIndex;
                 currentIndex = index;
                 io.emit(
-                    "screen:updateIndex",
+                    "server:screen:index:update",
                     projectionIndex,
                     index,
                     getPreferredIndex(),
                 );
             },
         );
-
-        socket.on("screen:jumpToLastSlide", (callback) => {
-            callback(currentProjection, currentIndex, getPreferredIndex());
-        });
-
+        // "client:caster:specialScreen:set"
         socket.on(
-            "caster:specialScreen",
+            "client:caster:specialScreen:set",
             (type: "black" | "clear", active: boolean) => {
                 const lastIndex = getPreferredIndex();
                 specialScreen[type] = active;
@@ -86,9 +83,14 @@ app.prepare().then(() => {
                 const index = getPreferredIndex();
                 if (index === lastIndex) return;
 
-                io.emit("screen:viewerManipulated", index);
+                io.emit("server:screen:specialScreen:set", index);
             },
         );
+
+        // "client:screen:index:init"
+        socket.on("client:screen:index:init", (callback) => {
+            callback(currentProjection, currentIndex, getPreferredIndex());
+        });
 
         socket.on("disconnect", () => {
             console.log("❌ Client disconnected:", socket.id);
