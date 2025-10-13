@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
+import { usePreview } from "@/context/PreviewContext";
 import { useProjection } from "@/context/ProjectionContext";
 import { cn } from "@/lib/utils";
 import { ArrowRight01Icon } from "@hugeicons-pro/core-stroke-rounded";
@@ -68,7 +69,7 @@ export const ProjectionQueue = memo(function ProjectionQueue({
                             <div
                                 className={cn(
                                     "relative flex flex-row rounded-md",
-                                    "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-[1] before:w-0.75 before:rounded-full before:transition-[top,bottom] before:duration-133 before:ease-out",
+                                    "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-[1] before:w-0.75 before:rounded-full before:transition-all before:duration-133 before:ease-out",
                                     {
                                         "bg-sidebar-accent/50 before:top-2.5 before:bottom-2.5":
                                             i === currentProjection,
@@ -115,11 +116,64 @@ export const ProjectionQueue = memo(function ProjectionQueue({
                 </ScrollArea>
             </div>
 
-            <div className="px-7 py-2 h-12">
+            <div className="h-12 px-7 py-2">
                 <ContentResizer className="h-full w-full">
                     <BrandIcon />
                 </ContentResizer>
             </div>
+        </div>
+    );
+});
+
+interface ProjectionContentQueueProps {
+    currentProjection: number;
+    currentIndex: number;
+    setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
+}
+export const ProjectionContentQueue = memo(function ProjectionContentQueue({
+    currentProjection,
+    currentIndex,
+    setCurrentIndex,
+}: ProjectionContentQueueProps) {
+    const projections = useProjection();
+    const preview = usePreview();
+
+    const handleClick = useCallback(
+        (index: number) => () => {
+            setCurrentIndex(index);
+        },
+        [setCurrentIndex],
+    );
+
+    return (
+        <div className="flex h-full w-full flex-col overflow-hidden">
+            <ScrollArea className="h-full w-full">
+                <div className="flex h-full flex-col gap-2">
+                    {projections[currentProjection]?.contents.map((c, i) => (
+                        <Button
+                            key={i}
+                            className={cn(
+                                "relative justify-start overflow-hidden rounded-md text-left text-ellipsis",
+                                "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-[1] before:w-0.75 before:rounded-full before:transition-all before:duration-133 before:ease-out",
+                                {
+                                    "bg-accent/50 text-accent-foreground before:top-2.5 before:bottom-2.5":
+                                        i === currentIndex && preview.isPreview,
+                                },
+                                {
+                                    "bg-brand text-brand-foreground hover:bg-brand-hover hover:text-brand-foreground before:top-2.5 before:bottom-2.5":
+                                        i === currentIndex &&
+                                        !preview.isPreview,
+                                },
+                            )}
+                            variant={"ghost"}
+                            size={"sm"}
+                            onClick={handleClick(i)}
+                        >
+                            {c.content}
+                        </Button>
+                    ))}
+                </div>
+            </ScrollArea>
         </div>
     );
 });

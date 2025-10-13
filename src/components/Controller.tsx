@@ -15,16 +15,19 @@ import {
 } from "@hugeicons-pro/core-solid-rounded";
 import { IconButton, IconToggleButton } from "@/components/Buttons";
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
-import { PreviewProvider } from "@/context/PreviewContext";
 import { useProjectionLength } from "@/context/ProjectionContext";
 import {
     ResizableHandle,
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { ProjectionQueue } from "@/components/ProjectionQueue";
+import {
+    ProjectionContentQueue,
+    ProjectionQueue,
+} from "@/components/ProjectionQueue";
 import { useSocketStore } from "@/stores/socket.store";
 import { useShallow } from "zustand/react/shallow";
+import { Separator } from "@/components/ui/separator";
 
 interface SlideControllerProps {
     currentProjection: number;
@@ -169,7 +172,7 @@ export function OnScreenSlideController({
         <div className="relative flex h-full flex-col items-center gap-4">
             <span className="text-xl font-semibold">On Screen</span>
 
-            <div className="relative h-64 w-full">{children}</div>
+            <div className="relative h-64 min-h-64 w-full">{children}</div>
 
             <div className="flex w-full flex-row justify-between gap-4">
                 <SlideController
@@ -210,6 +213,14 @@ export function OnScreenSlideController({
                     </ButtonGroup>
                 </ButtonGroup>
             </div>
+
+            <Separator orientation="horizontal" />
+
+            <ProjectionContentQueue
+                currentProjection={currentProjection}
+                currentIndex={currentIndex}
+                setCurrentIndex={setCurrentIndex}
+            />
         </div>
     );
 }
@@ -254,13 +265,11 @@ export function PreviewSlideController() {
                 <div className="relative flex h-full flex-col items-center gap-4">
                     <span className="text-xl font-semibold">Preview</span>
 
-                    <div className="relative h-64 w-full">
-                        <PreviewProvider>
-                            <Viewer
-                                currentProjection={currentProjection}
-                                currentIndex={currentIndex}
-                            />
-                        </PreviewProvider>
+                    <div className="relative h-64 min-h-64 w-full">
+                        <Viewer
+                            currentProjection={currentProjection}
+                            currentIndex={currentIndex}
+                        />
                     </div>
 
                     <div className="flex w-full flex-row justify-between gap-4">
@@ -279,6 +288,14 @@ export function PreviewSlideController() {
                             accelerator={{ key: "Enter" }}
                         />
                     </div>
+
+                    <Separator orientation="horizontal" />
+
+                    <ProjectionContentQueue
+                        currentProjection={currentProjection}
+                        currentIndex={currentIndex}
+                        setCurrentIndex={setCurrentIndex}
+                    />
                 </div>
             </ResizablePanel>
         </ResizablePanelGroup>

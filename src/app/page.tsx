@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/resizable";
 import { OnScreenViewer } from "@/components/Viewer";
 import { GlobalKeyboardProvider } from "@/context/GlobalKeyboardContext";
+import { PreviewProvider } from "@/context/PreviewContext";
 
 export default function HomePage() {
     return (
@@ -19,7 +20,9 @@ export default function HomePage() {
             <GlobalKeyboardProvider>
                 <ResizablePanelGroup direction="horizontal" className="gap-4">
                     <ResizablePanel defaultSize={60}>
-                        <PreviewSlideController />
+                        <PreviewProvider>
+                            <PreviewSlideController />
+                        </PreviewProvider>
                     </ResizablePanel>
                     <ResizableHandle />
                     <ResizablePanel defaultSize={40} className="py-4 pr-4">
