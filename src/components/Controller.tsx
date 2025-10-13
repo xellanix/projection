@@ -244,6 +244,7 @@ export function PreviewSlideController() {
                 className="bg-sidebar text-sidebar-foreground"
             >
                 <ProjectionQueue
+                    currentProjection={currentProjection}
                     setCurrentProjection={setCurrentProjection}
                     setCurrentIndex={setCurrentIndex}
                 />

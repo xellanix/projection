@@ -99,6 +99,16 @@ export const GlobalKeyboardProvider = ({
 
                     break;
                 }
+                case "ArrowUp": {
+                    e.preventDefault();
+                    shortcuts.current["ArrowUp"]?.();
+                    break;
+                }
+                case "ArrowDown": {
+                    e.preventDefault();
+                    shortcuts.current["ArrowDown"]?.();
+                    break;
+                }
                 case "Enter": {
                     e.preventDefault();
                     shortcuts.current["Enter"]?.();
