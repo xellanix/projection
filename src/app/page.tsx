@@ -1,6 +1,7 @@
 import {
     OnScreenSlideController,
     PreviewSlideController,
+    ControllerRegister,
 } from "@/components/Controller";
 import {
     ResizableHandle,
@@ -13,6 +14,8 @@ import { GlobalKeyboardProvider } from "@/context/GlobalKeyboardContext";
 export default function HomePage() {
     return (
         <main className="flex h-dvh w-dvw flex-row">
+            <ControllerRegister />
+
             <GlobalKeyboardProvider>
                 <ResizablePanelGroup direction="horizontal" className="gap-4">
                     <ResizablePanel defaultSize={60}>

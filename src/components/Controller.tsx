@@ -2,7 +2,6 @@
 
 import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group";
 import { Viewer } from "@/components/Viewer";
-import { useSocket } from "@/context/SocketContext";
 import React, { useCallback, useEffect, useState } from "react";
 import {
     ArrowLeft01Icon,
@@ -24,6 +23,8 @@ import {
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { ProjectionQueue } from "@/components/ProjectionQueue";
+import { useSocketStore } from "@/stores/socket.store";
+import { useShallow } from "zustand/react/shallow";
 
 interface SlideControllerProps {
     currentProjection: number;
@@ -108,7 +109,7 @@ export function OnScreenSlideController({
 }: OnScreenSlideControllerProps) {
     const [currentProjection, setCurrentProjection] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const socket = useSocket();
+    const socket = useSocketStore((s) => s.socket);
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Init the index and listen for updates from the server
@@ -119,10 +120,13 @@ export function OnScreenSlideController({
             setCurrentIndex(index);
         };
 
-        socket.emit("client:screen:index:init", (projectionIndex: number, index: number) => {
-            updateIndex(projectionIndex, index);
-            setIsLoaded(true);
-        });
+        socket.emit(
+            "client:screen:index:init",
+            (projectionIndex: number, index: number) => {
+                updateIndex(projectionIndex, index);
+                setIsLoaded(true);
+            },
+        );
         socket.on("server:screen:index:update", updateIndex);
 
         return () => {
@@ -133,7 +137,11 @@ export function OnScreenSlideController({
     // Update the server with the current index
     useEffect(() => {
         if (!isLoaded) return;
-        socket?.emit("client:caster:index:update", currentProjection, currentIndex);
+        socket?.emit(
+            "client:caster:index:update",
+            currentProjection,
+            currentIndex,
+        );
     }, [currentIndex, socket, isLoaded, currentProjection]);
 
     // Send special screen commands
@@ -209,10 +217,14 @@ export function OnScreenSlideController({
 export function PreviewSlideController() {
     const [currentProjection, setCurrentProjection] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const socket = useSocket();
+    const socket = useSocketStore((s) => s.socket);
 
     const projectToScreen = useCallback(() => {
-        socket?.emit("client:caster:index:update", currentProjection, currentIndex);
+        socket?.emit(
+            "client:caster:index:update",
+            currentProjection,
+            currentIndex,
+        );
     }, [socket, currentProjection, currentIndex]);
 
     const [register, unregister] = useGlobalKeyboard();
@@ -226,11 +238,18 @@ export function PreviewSlideController() {
 
     return (
         <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel minSize={10} defaultSize={20} className="bg-sidebar text-sidebar-foreground">
-                <ProjectionQueue setCurrentProjection={setCurrentProjection} setCurrentIndex={setCurrentIndex} />
+            <ResizablePanel
+                minSize={10}
+                defaultSize={20}
+                className="bg-sidebar text-sidebar-foreground"
+            >
+                <ProjectionQueue
+                    setCurrentProjection={setCurrentProjection}
+                    setCurrentIndex={setCurrentIndex}
+                />
             </ResizablePanel>
             <ResizableHandle />
-            <ResizablePanel defaultSize={40} className="pl-4 py-4">
+            <ResizablePanel defaultSize={40} className="py-4 pl-4">
                 <div className="relative flex h-full flex-col items-center gap-4">
                     <span className="text-xl font-semibold">Preview</span>
 
@@ -263,4 +282,22 @@ export function PreviewSlideController() {
             </ResizablePanel>
         </ResizablePanelGroup>
     );
+}
+
+export function ControllerRegister() {
+    const [socket, socketId] = useSocketStore(
+        useShallow((s) => [s.socket, s.socketId]),
+    );
+
+    useEffect(() => {
+        if (!socket || !socketId) return;
+
+        socket.emit("client:socket:register", socketId);
+
+        return () => {
+            socket.emit("client:socket:unregister", socketId);
+        };
+    }, [socket, socketId]);
+
+    return null;
 }

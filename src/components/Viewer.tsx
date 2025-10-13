@@ -9,7 +9,7 @@ import {
     SlideComposer,
 } from "@/components/SlideComposer";
 import { ContentResizer } from "@/components/ContentResizer";
-import { useSocket } from "@/context/SocketContext";
+import { useSocketStore } from "@/stores/socket.store";
 
 function BlackScreen() {
     return <div className="h-[1080px] w-[1920px] bg-black" />;
@@ -72,7 +72,7 @@ export const Viewer = memo(function Viewer({
 });
 
 export function OnScreenViewer() {
-    const socket = useSocket();
+    const socket = useSocketStore((s) => s.socket);
     const [currentProjection, setCurrentProjection] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(0);
 

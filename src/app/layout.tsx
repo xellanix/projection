@@ -1,5 +1,5 @@
+import { SocketInitiator } from "@/components/stores/SocketInitiator";
 import { ProjectionProvider } from "@/context/ProjectionContext";
-import { SocketProvider } from "@/context/SocketContext";
 import "@/styles/globals.css";
 
 import { type Metadata } from "next";
@@ -16,9 +16,8 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body>
-                <SocketProvider>
-                    <ProjectionProvider>{children}</ProjectionProvider>
-                </SocketProvider>
+                <SocketInitiator />
+                <ProjectionProvider>{children}</ProjectionProvider>
             </body>
         </html>
     );

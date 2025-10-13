@@ -17,6 +17,7 @@ const specialScreen = {
     black: false,
     clear: false,
 };
+const controllerIds: string[] = [];
 
 // --- Utility Functions ---
 // Returns the index to be sent to the client
@@ -27,6 +28,14 @@ const getPreferredIndex = () => {
     else if (specialScreen.clear) return -2;
 
     return currentIndex;
+};
+
+// Removes a controller from the list
+const removeController = (id: string) => {
+    const index = controllerIds.indexOf(id);
+    if (index !== -1) controllerIds.splice(index, 1);
+
+    console.log("Unregistered controller:", id);
 };
 
 // --- Main App ---
@@ -52,6 +61,14 @@ app.prepare().then(() => {
 
     io.on("connection", (socket) => {
         console.log("✅ Client connected:", socket.id);
+
+        // "client:socket:register"
+        socket.on("client:socket:register", (id: string) => {
+            controllerIds.push(id);
+            console.log("Registered controller:", id);
+        });
+        // "client:socket:unregister"
+        socket.on("client:socket:unregister", removeController);
 
         // "client:caster:index:update"
         socket.on(
@@ -92,7 +109,28 @@ app.prepare().then(() => {
             callback(currentProjection, currentIndex, getPreferredIndex());
         });
 
+        // "client:video:bg:init:request"
+        socket.on("client:video:bg:init:request", () => {
+            const requestId = socket.id;
+            io.to(controllerIds[0]!).emit(
+                "server:video:bg:init:request",
+                requestId,
+            );
+        });
+        // "client:video:bg:init:response"
+        socket.on(
+            "client:video:bg:init:response",
+            (requestId: string, isPlaying: boolean, currentTime: number) => {
+                io.to(requestId).emit(
+                    "server:video:bg:init:response",
+                    isPlaying,
+                    currentTime,
+                );
+            },
+        );
+
         socket.on("disconnect", () => {
+            removeController(socket.id);
             console.log("❌ Client disconnected:", socket.id);
         });
     });
