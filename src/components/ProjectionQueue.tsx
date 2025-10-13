@@ -1,5 +1,7 @@
 "use client";
 
+import { BrandIcon } from "@/components/Brand";
+import { ContentResizer } from "@/components/ContentResizer";
 import { Button } from "@/components/ui/button";
 import {
     Collapsible,
@@ -113,15 +115,10 @@ export const ProjectionQueue = memo(function ProjectionQueue({
                 </ScrollArea>
             </div>
 
-            <div className="flex items-center gap-2 overflow-hidden px-7 py-2">
-                <img
-                    src="./favicon.svg"
-                    alt="Xellanix icon"
-                    className="size-7"
-                />
-                <h2 className="text-xl font-bold text-(--text-normal)">
-                    Projection
-                </h2>
+            <div className="px-7 py-2 h-12">
+                <ContentResizer className="h-full w-full">
+                    <BrandIcon />
+                </ContentResizer>
             </div>
         </div>
     );
