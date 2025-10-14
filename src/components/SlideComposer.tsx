@@ -33,7 +33,7 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
                 transition={{ duration: 1 }}
             >
                 <ContentResizer className="h-full w-full">
-                    <div className="flex h-[1080px] w-[1920px] flex-col items-center justify-center">
+                    <div className="flex h-[1080px] w-[1920px] flex-col items-center justify-center bg-black">
                         <VideoPlayer
                             src={background}
                             muted
