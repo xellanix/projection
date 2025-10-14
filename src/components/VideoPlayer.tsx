@@ -31,7 +31,7 @@ const OnScreenVideoPlayer = memo(function OnScreenVideoPlayer({
         // Consumer requests video state to server (1)
         socket.emit("client:video:bg:init:request");
         // Server asks Producer for video state (2)
-        socket.on("server:video:bg:init:request", (requestId: string) => {
+        const initRequest = (requestId: string) => {
             if (!videoRef.current) return;
 
             // Producer sends video state to server (3)
@@ -41,22 +41,21 @@ const OnScreenVideoPlayer = memo(function OnScreenVideoPlayer({
                 !videoRef.current.paused,
                 videoRef.current.currentTime,
             );
-        });
+        };
+        socket.on("server:video:bg:init:request", initRequest);
         // Server sends video state to Consumer (4)
-        socket.on(
-            "server:video:bg:init:response",
-            (isPlaying: boolean, currentTime: number) => {
-                if (!videoRef.current) return;
+        const initResponse = (isPlaying: boolean, currentTime: number) => {
+            if (!videoRef.current) return;
 
-                videoRef.current.currentTime = currentTime;
-                /* if (isPlaying) videoRef.current.play().catch(console.error);
+            videoRef.current.currentTime = currentTime;
+            /* if (isPlaying) videoRef.current.play().catch(console.error);
                 else videoRef.current.pause(); */
-            },
-        );
+        };
+        socket.on("server:video:bg:init:response", initResponse);
 
         return () => {
-            socket.off("server:video:bg:init:request");
-            socket.off("server:video:bg:init:response");
+            socket.off("server:video:bg:init:request", initRequest);
+            socket.off("server:video:bg:init:response", initResponse);
         };
     }, [socket]);
 
