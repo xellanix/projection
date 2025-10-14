@@ -65,10 +65,21 @@ app.prepare().then(() => {
         // "client:socket:register"
         socket.on("client:socket:register", (id: string) => {
             controllerIds.push(id);
+            socket.broadcast.emit("server:socket:hasAny", true);
             console.log("Registered controller:", id);
         });
         // "client:socket:unregister"
-        socket.on("client:socket:unregister", removeController);
+        socket.on("client:socket:unregister", (id: string) => {
+            removeController(id);
+            socket.broadcast.emit(
+                "server:socket:hasAny",
+                controllerIds.length > 0,
+            );
+        });
+        // "client:socket:hasAny"
+        socket.on("client:socket:hasAny", () => {
+            socket.emit("server:socket:hasAny", controllerIds.length > 0);
+        });
 
         // "client:caster:index:update"
         socket.on(
@@ -131,6 +142,10 @@ app.prepare().then(() => {
 
         socket.on("disconnect", () => {
             removeController(socket.id);
+            socket.broadcast.emit(
+                "server:socket:hasAny",
+                controllerIds.length > 0,
+            );
             console.log("❌ Client disconnected:", socket.id);
         });
     });

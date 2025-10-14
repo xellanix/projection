@@ -10,6 +10,18 @@ import {
 } from "@/components/SlideComposer";
 import { ContentResizer } from "@/components/ContentResizer";
 import { useSocketStore } from "@/stores/socket.store";
+import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from "@/components/ui/empty";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ModernTvIssueIcon } from "@hugeicons-pro/core-stroke-rounded";
+import { BrandIcon } from "@/components/Brand";
+import { Spinner } from "@/components/ui/spinner";
 
 function BlackScreen() {
     return <div className="h-[1080px] w-[1920px] bg-black" />;
@@ -105,4 +117,60 @@ export function OnScreenViewer() {
             currentIndex={currentIndex}
         />
     );
+}
+
+function EmptySignal() {
+    return (
+        <div className="dark text-foreground flex h-dvh w-dvw bg-black">
+            <Empty className="gap-12">
+                <div className="flex w-full flex-1" />
+
+                <EmptyHeader className="max-w-3xl gap-4">
+                    <EmptyMedia
+                        variant={"icon"}
+                        className="mb-4 size-20 rounded-xl [&_svg:not([class*='size-'])]:size-12"
+                    >
+                        <HugeiconsIcon icon={ModernTvIssueIcon} />
+                    </EmptyMedia>
+                    <EmptyTitle className="text-4xl font-bold">
+                        No Source Detected
+                    </EmptyTitle>
+                    <EmptyDescription className="text-xl/relaxed">
+                        Please start a controller stream to use this feature.
+                    </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent className="max-w-3xl gap-8 text-xl">
+                    <div className="flex w-full items-center justify-center gap-4">
+                        <Spinner className="size-5" /> Searching...
+                    </div>
+                </EmptyContent>
+
+                <div className="flex w-full flex-1 flex-col justify-center items-center">
+                    <div className="h-12 w-full max-w-32">
+                        <ContentResizer className="h-full w-full">
+                            <BrandIcon />
+                        </ContentResizer>
+                    </div>
+                </div>
+            </Empty>
+        </div>
+    );
+}
+
+export function SignalCatcher({ children }: { children: React.ReactNode }) {
+    const socket = useSocketStore((s) => s.socket);
+    const [hasController, setHasController] = useState(false);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.emit("client:socket:hasAny");
+        socket.on("server:socket:hasAny", setHasController);
+
+        return () => {
+            socket.off("server:socket:hasAny", setHasController);
+        };
+    }, [socket]);
+
+    return hasController ? children : <EmptySignal />;
 }

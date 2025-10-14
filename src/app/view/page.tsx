@@ -1,5 +1,9 @@
-import { OnScreenViewer } from "@/components/Viewer";
+import { OnScreenViewer, SignalCatcher } from "@/components/Viewer";
 
 export default function ViewerPage() {
-    return <OnScreenViewer />;
+    return (
+        <SignalCatcher>
+            <OnScreenViewer />
+        </SignalCatcher>
+    );
 }
