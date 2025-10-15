@@ -61,7 +61,7 @@ export const SlideComposer = memo(function SlideComposer({
 
     return (
         <div className="flex h-[1080px] w-[1920px] flex-col items-center justify-center">
-            <div className="relative flex flex-col items-center justify-center gap-4">
+            <div className="relative flex flex-col items-center justify-center gap-4 size-full">
                 {content && <SlideComposerContent content={content} />}
             </div>
         </div>

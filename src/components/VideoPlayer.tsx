@@ -1,6 +1,7 @@
 "use client";
 
 import { usePreview } from "@/context/PreviewContext";
+import { cn } from "@/lib/utils";
 import { useSocketStore } from "@/stores/socket.store";
 import { memo, useEffect, useRef, type DetailedHTMLProps } from "react";
 
@@ -12,17 +13,25 @@ type VideoPlayerProps = DetailedHTMLProps<
 export const VideoPlayer = memo(function VideoPlayer({
     background,
     autoPlay,
+    className,
     ...props
 }: VideoPlayerProps) {
     const preview = usePreview();
 
     if (preview.isPreview) {
-        return <video {...props} autoPlay={false} />;
+        return (
+            <video
+                {...props}
+                className={cn("size-full", className)}
+                autoPlay={false}
+            />
+        );
     }
 
     return (
         <OnScreenVideoPlayer
             {...props}
+            className={cn("size-full", className)}
             background={background}
             autoPlay={autoPlay}
         />
