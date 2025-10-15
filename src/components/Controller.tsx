@@ -172,7 +172,9 @@ export function OnScreenSlideController({
         <div className="relative flex h-full flex-col items-center gap-4">
             <span className="text-xl font-semibold">On Screen</span>
 
-            <div className="relative h-64 min-h-64 w-full">{children}</div>
+            <div className="relative h-64 min-h-64 w-full @max-sm:min-h-48">
+                {children}
+            </div>
 
             <div className="flex w-full flex-row justify-between gap-4">
                 <SlideController
@@ -189,6 +191,7 @@ export function OnScreenSlideController({
                             icon={ComputerRemoveIcon}
                             iconStrokeWidth={0}
                             text="Black"
+                            textClassName="@max-lg/screen:hidden"
                             accelerator={{ shift: true, key: "B" }}
                             onPressed={specialScreen("black")}
                         />
@@ -197,6 +200,7 @@ export function OnScreenSlideController({
                             icon={Copy02Icon}
                             iconStrokeWidth={0}
                             text="Clear"
+                            textClassName="@max-lg/screen:hidden"
                             accelerator={{ shift: true, key: "C" }}
                             onPressed={specialScreen("clear")}
                         />
@@ -207,6 +211,7 @@ export function OnScreenSlideController({
                             label="Full Screen"
                             icon={MaximizeScreenIcon}
                             text="Full Screen"
+                            textClassName="@max-sm/screen:hidden"
                             accelerator={{ shift: true, key: "F" }}
                             onClick={openFullscreenView}
                         />
@@ -261,11 +266,14 @@ export function PreviewSlideController() {
                 />
             </ResizablePanel>
             <ResizableHandle />
-            <ResizablePanel defaultSize={40} className="py-4 pl-4">
+            <ResizablePanel
+                defaultSize={40}
+                className="@container/preview py-4 pl-4"
+            >
                 <div className="relative flex h-full flex-col items-center gap-4">
                     <span className="text-xl font-semibold">Preview</span>
 
-                    <div className="relative h-64 min-h-64 w-full">
+                    <div className="relative h-64 min-h-64 w-full @max-sm:min-h-48">
                         <Viewer
                             currentProjection={currentProjection}
                             currentIndex={currentIndex}
@@ -284,6 +292,7 @@ export function PreviewSlideController() {
                             label="Project to Screen"
                             icon={MirroringScreenIcon}
                             text={"Project"}
+                            textClassName="@max-2xs/preview:hidden"
                             onClick={projectToScreen}
                             accelerator={{ key: "Enter" }}
                         />

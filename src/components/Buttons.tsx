@@ -15,6 +15,7 @@ interface BaseIconButtonProps {
     icon: IconSvgElement;
     iconStrokeWidth?: number;
     text?: string;
+    textClassName?: string;
     accelerator?: {
         shift?: boolean;
         meta?: boolean;
@@ -32,6 +33,7 @@ export function IconButton({
     icon,
     iconStrokeWidth,
     text,
+    textClassName,
     onClick,
     accelerator,
 }: IconButtonProps) {
@@ -48,7 +50,7 @@ export function IconButton({
                         icon={icon}
                         strokeWidth={iconStrokeWidth ?? 2}
                     />
-                    {text}
+                    {text && <span className={textClassName}>{text}</span>}
                 </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -77,6 +79,7 @@ export function IconToggleButton({
     icon,
     iconStrokeWidth,
     text,
+    textClassName,
     onPressed,
     accelerator,
 }: IconToggleButtonProps) {
@@ -120,7 +123,7 @@ export function IconToggleButton({
                             icon={icon}
                             strokeWidth={iconStrokeWidth ?? 2}
                         />
-                        {text}
+                        {text && <span className={textClassName}>{text}</span>}
                     </Toggle>
                 </div>
             </TooltipTrigger>

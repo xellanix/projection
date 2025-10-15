@@ -25,7 +25,10 @@ export default function HomePage() {
                         </PreviewProvider>
                     </ResizablePanel>
                     <ResizableHandle />
-                    <ResizablePanel defaultSize={40} className="py-4 pr-4">
+                    <ResizablePanel
+                        defaultSize={40}
+                        className="@container/screen py-4 pr-4"
+                    >
                         <OnScreenSlideController>
                             <OnScreenViewer />
                         </OnScreenSlideController>
