@@ -3,6 +3,7 @@
 import { ContentResizer } from "@/components/ContentResizer";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { useBackgrounds, useProjection } from "@/context/ProjectionContext";
+import type { ProjectionItem } from "@/types";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
 import { memo, useMemo } from "react";
@@ -37,8 +38,9 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
                         <VideoPlayer
                             src={background}
                             muted
-                            autoPlay={true}
+                            autoPlay
                             loop
+                            background
                         ></VideoPlayer>
                     </div>
                 </ContentResizer>
@@ -60,10 +62,29 @@ export const SlideComposer = memo(function SlideComposer({
     return (
         <div className="flex h-[1080px] w-[1920px] flex-col items-center justify-center">
             <div className="relative flex flex-col items-center justify-center gap-4">
-                <span className="text-8xl font-bold text-white">
-                    {content?.content}
-                </span>
+                {content && <SlideComposerContent content={content} />}
             </div>
         </div>
     );
+});
+
+const SlideComposerContent = memo(function SlideComposerContent({
+    content,
+}: {
+    content: ProjectionItem;
+}) {
+    switch (content.type) {
+        case "Video":
+            return <VideoPlayer src={content.content} autoPlay loop muted />;
+        case "Image":
+            return <img src={content.content} alt="Content Image" />;
+        case "Text":
+            return (
+                <span className="text-8xl font-bold text-white">
+                    {content.content}
+                </span>
+            );
+        default:
+            return null;
+    }
 });

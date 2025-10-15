@@ -121,24 +121,29 @@ app.prepare().then(() => {
         });
 
         // "client:video:bg:init:request"
-        socket.on("client:video:bg:init:request", () => {
+        // "client:video:fg:init:request"
+        const initRequest = (layer: "bg" | "fg") => () => {
             const requestId = socket.id;
             io.to(controllerIds[0]!).emit(
-                "server:video:bg:init:request",
+                `server:video:${layer}:init:request`,
                 requestId,
             );
-        });
+        };
+        socket.on("client:video:bg:init:request", initRequest("bg"));
+        socket.on("client:video:fg:init:request", initRequest("fg"));
         // "client:video:bg:init:response"
-        socket.on(
-            "client:video:bg:init:response",
+        // "client:video:fg:init:response"
+        const initResponse =
+            (layer: "bg" | "fg") =>
             (requestId: string, isPlaying: boolean, currentTime: number) => {
                 io.to(requestId).emit(
-                    "server:video:bg:init:response",
+                    `server:video:${layer}:init:response`,
                     isPlaying,
                     currentTime,
                 );
-            },
-        );
+            };
+        socket.on("client:video:bg:init:response", initResponse("bg"));
+        socket.on("client:video:fg:init:response", initResponse("fg"));
 
         socket.on("disconnect", () => {
             removeController(socket.id);
