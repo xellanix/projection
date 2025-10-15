@@ -108,7 +108,7 @@ export const ProjectionQueue = memo(function ProjectionQueue({
                                         size={"sm"}
                                         onClick={handleClick(i, j)}
                                     >
-                                        {c.content}
+                                        {c.name || c.content}
                                     </Button>
                                 ))}
                             </CollapsibleContent>
@@ -174,7 +174,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue({
                             size={"sm"}
                             onClick={handleClick(i)}
                         >
-                            {c.content}
+                            {c.name || c.content}
                         </Button>
                     ))}
                 </div>

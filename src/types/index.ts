@@ -1,5 +1,6 @@
 export type ProjectionItem = {
     type: "Text" | "Image" | "Video";
+    name?: string;
     content: string;
     bg?: string;
 };
