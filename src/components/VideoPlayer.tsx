@@ -2,6 +2,7 @@
 
 import { usePreview } from "@/context/PreviewContext";
 import { cn } from "@/lib/utils";
+import { useEcoStore } from "@/stores/eco.store";
 import { useSocketStore } from "@/stores/socket.store";
 import { memo, useEffect, useRef, type DetailedHTMLProps } from "react";
 
@@ -17,12 +18,15 @@ export const VideoPlayer = memo(function VideoPlayer({
     ...props
 }: VideoPlayerProps) {
     const preview = usePreview();
+    const ecoMode = useEcoStore((s) => s.ecoMode);
 
     if (preview.isPreview) {
         return (
             <video
                 {...props}
-                className={cn("size-full", className)}
+                className={cn("size-full", className, {
+                    "absolute size-0 opacity-0": ecoMode,
+                })}
                 autoPlay={false}
             />
         );
@@ -31,7 +35,9 @@ export const VideoPlayer = memo(function VideoPlayer({
     return (
         <OnScreenVideoPlayer
             {...props}
-            className={cn("size-full", className)}
+            className={cn("size-full", className, {
+                "absolute size-0 opacity-0": ecoMode,
+            })}
             background={background}
             autoPlay={autoPlay}
         />

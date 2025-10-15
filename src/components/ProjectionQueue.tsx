@@ -2,6 +2,7 @@
 
 import { BrandIcon } from "@/components/Brand";
 import { ContentResizer } from "@/components/ContentResizer";
+import { EcoModeButton } from "@/components/stores/EcoMode";
 import { Button } from "@/components/ui/button";
 import {
     Collapsible,
@@ -114,6 +115,10 @@ export const ProjectionQueue = memo(function ProjectionQueue({
                         </Collapsible>
                     ))}
                 </ScrollArea>
+            </div>
+
+            <div className="flex flex-col gap-2 px-4">
+                <EcoModeButton />
             </div>
 
             <div className="h-12 px-7 py-2">
