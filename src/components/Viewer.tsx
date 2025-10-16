@@ -22,6 +22,10 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ModernTvIssueIcon } from "@hugeicons-pro/core-stroke-rounded";
 import { BrandIcon } from "@/components/Brand";
 import { Spinner } from "@/components/ui/spinner";
+import {
+    transitionVariants,
+    useTransitionStore,
+} from "@/stores/transition.store";
 
 function BlackScreen() {
     return <div className="h-[1080px] w-[1920px] bg-black" />;
@@ -57,6 +61,11 @@ export const Viewer = memo(function Viewer({
                   : SlideCompose,
         [SlideCompose, currentIndex],
     );
+    const getTransition = useTransitionStore((s) => s.getTransition);
+    const transition = useMemo(
+        () => getTransition(currentProjection, currentIndex),
+        [currentProjection, currentIndex, getTransition],
+    );
 
     return (
         <>
@@ -65,14 +74,15 @@ export const Viewer = memo(function Viewer({
                 currentIndex={currentIndex}
             />
 
-            <AnimatePresence>
+            <AnimatePresence custom={transition}>
                 <motion.div
                     key={currentIndex}
                     className="absolute h-full w-full"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 1 }}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    custom={transition}
+                    variants={transitionVariants}
                     data-slot="foreground"
                 >
                     <ContentResizer className="h-full w-full">

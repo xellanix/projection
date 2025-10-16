@@ -3,6 +3,10 @@
 import { ContentResizer } from "@/components/ContentResizer";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { useBackgrounds, useProjection } from "@/context/ProjectionContext";
+import {
+    transitionVariants,
+    useTransitionStore,
+} from "@/stores/transition.store";
 import type { ProjectionItem } from "@/types";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
@@ -23,15 +27,22 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
         return backgrounds[bgIndex] ?? "";
     }, [backgrounds, currentIndex, currentProjection, maps]);
 
+    const getTransition = useTransitionStore((s) => s.getTransition);
+    const transition = useMemo(
+        () => getTransition(currentProjection, currentIndex),
+        [currentProjection, currentIndex, getTransition],
+    );
+
     return (
-        <AnimatePresence>
+        <AnimatePresence custom={transition}>
             <motion.div
                 key={maps[currentProjection]?.[currentIndex] ?? 0}
                 className="absolute h-full w-full"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1 }}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                custom={transition}
+                variants={transitionVariants}
                 data-slot="background"
             >
                 <ContentResizer className="h-full w-full">
