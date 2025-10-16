@@ -172,7 +172,10 @@ export function OnScreenSlideController({
         <div className="relative flex h-full flex-col items-center gap-4">
             <span className="text-xl font-semibold">On Screen</span>
 
-            <div className="relative h-64 min-h-64 w-full @max-sm:min-h-48">
+            <div
+                className="relative h-64 min-h-64 w-full @max-sm:min-h-48"
+                data-slot="viewer"
+            >
                 {children}
             </div>
 
@@ -273,7 +276,10 @@ export function PreviewSlideController() {
                 <div className="relative flex h-full flex-col items-center gap-4">
                     <span className="text-xl font-semibold">Preview</span>
 
-                    <div className="relative h-64 min-h-64 w-full @max-sm:min-h-48">
+                    <div
+                        className="relative h-64 min-h-64 w-full @max-sm:min-h-48"
+                        data-slot="viewer"
+                    >
                         <Viewer
                             currentProjection={currentProjection}
                             currentIndex={currentIndex}

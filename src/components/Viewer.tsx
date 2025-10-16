@@ -73,6 +73,7 @@ export const Viewer = memo(function Viewer({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 1 }}
+                    data-slot="foreground"
                 >
                     <ContentResizer className="h-full w-full">
                         <CurrentComponent />
@@ -145,7 +146,7 @@ function EmptySignal() {
                     </div>
                 </EmptyContent>
 
-                <div className="flex w-full flex-1 flex-col justify-center items-center">
+                <div className="flex w-full flex-1 flex-col items-center justify-center">
                     <div className="h-12 w-full max-w-32">
                         <ContentResizer className="h-full w-full">
                             <BrandIcon />

@@ -1,11 +1,20 @@
-import React, { useState, useLayoutEffect, useRef, useCallback, memo } from "react";
+import React, {
+    useState,
+    useLayoutEffect,
+    useRef,
+    useCallback,
+    memo,
+} from "react";
 
 interface ContentResizerProps {
     children: React.ReactNode;
     className?: string;
 }
 
-export const ContentResizer = memo(function ContentResizer({ children, className }: ContentResizerProps) {
+export const ContentResizer = memo(function ContentResizer({
+    children,
+    className,
+}: ContentResizerProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const [scale, setScale] = useState(0);
@@ -50,11 +59,10 @@ export const ContentResizer = memo(function ContentResizer({ children, className
     return (
         <div
             ref={containerRef}
-            className={`relative flex items-center justify-center overflow-hidden ${className}`}>
-            <div
-                ref={contentRef}
-                style={{ transform: `scale(${scale})` }}
-            >
+            className={`relative flex items-center justify-center overflow-hidden ${className}`}
+            data-slot="content-resizer"
+        >
+            <div ref={contentRef} style={{ transform: `scale(${scale})` }}>
                 {children}
             </div>
         </div>
