@@ -12,7 +12,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
 import { usePreview } from "@/context/PreviewContext";
-import { cn } from "@/lib/utils";
+import { cn, mod } from "@/lib/utils";
 import { useProjectionStore } from "@/stores/projection.store";
 import type { ProjectionItem } from "@/types";
 import { ArrowRight01Icon } from "@hugeicons-pro/core-stroke-rounded";
@@ -149,24 +149,54 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue({
     const preview = usePreview();
 
     const handleClick = useCallback(
-        (index: number) => () => {
-            setCurrentIndex(index);
-        },
+        (index: number) => () => setCurrentIndex(index),
         [setCurrentIndex],
     );
 
-    const grouped = useMemo(() => {
+    const [grouped, groupedKeys] = useMemo(() => {
         let index = 0;
-        return projections[currentProjection]?.contents.reduce(
-            (acc, { group, ...rest }) => {
-                const key = group ?? "Contents";
-                acc[key] = [...(acc[key] ?? []), { ...rest, index: index++ }];
-                return acc;
-            },
-            {} as Record<string, (ProjectionItem & { index: number })[]>,
-        );
+        const keys = new Set<string>();
+        return [
+            projections[currentProjection]?.contents.reduce(
+                (acc, { group, ...rest }) => {
+                    const key = group ?? "Contents";
+                    keys.add(key);
+                    acc[key] = [
+                        ...(acc[key] ?? []),
+                        { ...rest, index: index++ },
+                    ];
+                    return acc;
+                },
+                {} as Record<string, (ProjectionItem & { index: number })[]>,
+            ),
+            Array.from(keys),
+        ];
     }, [projections, currentProjection]);
-    const groupedKeys = useMemo(() => Object.keys(grouped ?? {}), [grouped]);
+
+    const goToGroup = useCallback(
+        (index: number) => () => {
+            if (!groupedKeys.length) return;
+            const group = groupedKeys[mod(index, groupedKeys.length)]!;
+
+            setCurrentIndex(grouped![group]![0]!.index);
+        },
+        [grouped, groupedKeys, setCurrentIndex],
+    );
+
+    const [register, unregister] = useGlobalKeyboard();
+    useEffect(() => {
+        for (let i = 0; i < 10; i++) {
+            register(`Shift+Digit${mod(i + 1, 10)}`, goToGroup(i));
+            register(`Shift+Numpad${mod(i + 1, 10)}`, goToGroup(i));
+        }
+
+        return () => {
+            for (let i = 0; i < 10; i++) {
+                unregister(`Shift+Digit${i}`);
+                unregister(`Shift+Numpad${i}`);
+            }
+        };
+    }, [goToGroup, register, unregister]);
 
     return (
         <div className="flex h-full w-full flex-col overflow-hidden">

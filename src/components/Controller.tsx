@@ -28,6 +28,7 @@ import { useSocketStore } from "@/stores/socket.store";
 import { useShallow } from "zustand/react/shallow";
 import { Separator } from "@/components/ui/separator";
 import { useProjectionStore } from "@/stores/projection.store";
+import { mod } from "@/lib/utils";
 
 interface SlideControllerProps {
     currentProjection: number;
@@ -45,37 +46,39 @@ export function SlideController({
         currentProjection,
     );
 
-    const goToPrevious = useCallback(() => {
-        setCurrentIndex(
-            (prev) => (prev - 1 + projectionLength) % projectionLength,
-        );
-    }, [projectionLength, setCurrentIndex]);
+    const move = useCallback(
+        (delta: number) => () => {
+            setCurrentIndex((prev) => mod(prev + delta, projectionLength));
+        },
+        [projectionLength, setCurrentIndex],
+    );
 
-    const goToNext = useCallback(() => {
-        setCurrentIndex((prev) => (prev + 1) % projectionLength);
-    }, [projectionLength, setCurrentIndex]);
+    const goToIndex = useCallback(
+        (index: number) => () => setCurrentIndex(mod(index, projectionLength)),
+        [projectionLength, setCurrentIndex],
+    );
 
     const [register, unregister] = useGlobalKeyboard();
 
     useEffect(() => {
-        if (isPreviewMode) {
-            register("Shift+ArrowLeft", goToPrevious);
-            register("Shift+ArrowRight", goToNext);
+        const previewKey = isPreviewMode ? "Shift+" : "";
 
-            return () => {
-                unregister("Shift+ArrowLeft");
-                unregister("Shift+ArrowRight");
-            };
-        } else {
-            register("ArrowLeft", goToPrevious);
-            register("ArrowRight", goToNext);
-
-            return () => {
-                unregister("ArrowLeft");
-                unregister("ArrowRight");
-            };
+        register(previewKey + "ArrowLeft", move(-1));
+        register(previewKey + "ArrowRight", move(1));
+        for (let i = 0; i < 10; i++) {
+            register(`Digit${mod(i + 1, 10)}`, goToIndex(i));
+            register(`Numpad${mod(i + 1, 10)}`, goToIndex(i));
         }
-    }, [goToPrevious, goToNext, register, unregister, isPreviewMode]);
+
+        return () => {
+            unregister(previewKey + "ArrowLeft");
+            unregister(previewKey + "ArrowRight");
+            for (let i = 0; i < 10; i++) {
+                unregister(`Digit${i}`);
+                unregister(`Numpad${i}`);
+            }
+        };
+    }, [move, register, unregister, isPreviewMode, goToIndex]);
 
     return (
         <ButtonGroup aria-label="Slide Navigation">
@@ -84,7 +87,7 @@ export function SlideController({
                     label="Previous Slide"
                     icon={ArrowLeft01Icon}
                     iconStrokeWidth={2.5}
-                    onClick={goToPrevious}
+                    onClick={move(-1)}
                     accelerator={{ key: "LeftArrow", shift: isPreviewMode }}
                 />
             </ButtonGroup>
@@ -98,7 +101,7 @@ export function SlideController({
                     label="Next Slide"
                     icon={ArrowRight01Icon}
                     iconStrokeWidth={2.5}
-                    onClick={goToNext}
+                    onClick={move(1)}
                     accelerator={{ key: "RightArrow", shift: isPreviewMode }}
                 />
             </ButtonGroup>

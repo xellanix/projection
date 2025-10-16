@@ -83,18 +83,16 @@ export const GlobalKeyboardProvider = ({
                 }
                 case "ArrowLeft": {
                     e.preventDefault();
-                    
-                    if (e.shiftKey)
-                        shortcuts.current["Shift+ArrowLeft"]?.();
+
+                    if (e.shiftKey) shortcuts.current["Shift+ArrowLeft"]?.();
                     else shortcuts.current["ArrowLeft"]?.();
 
                     break;
                 }
                 case "ArrowRight": {
                     e.preventDefault();
-                    
-                    if (e.shiftKey)
-                        shortcuts.current["Shift+ArrowRight"]?.();
+
+                    if (e.shiftKey) shortcuts.current["Shift+ArrowRight"]?.();
                     else shortcuts.current["ArrowRight"]?.();
 
                     break;
@@ -107,6 +105,33 @@ export const GlobalKeyboardProvider = ({
                 case "ArrowDown": {
                     e.preventDefault();
                     shortcuts.current["ArrowDown"]?.();
+                    break;
+                }
+                case "Digit0":
+                case "Digit1":
+                case "Digit2":
+                case "Digit3":
+                case "Digit4":
+                case "Digit5":
+                case "Digit6":
+                case "Digit7":
+                case "Digit8":
+                case "Digit9":
+                case "Numpad0":
+                case "Numpad1":
+                case "Numpad2":
+                case "Numpad3":
+                case "Numpad4":
+                case "Numpad5":
+                case "Numpad6":
+                case "Numpad7":
+                case "Numpad8":
+                case "Numpad9": {
+                    e.preventDefault();
+
+                    if (e.shiftKey) shortcuts.current["Shift+" + e.code]?.();
+                    else shortcuts.current[e.code]?.();
+
                     break;
                 }
                 case "Enter": {
