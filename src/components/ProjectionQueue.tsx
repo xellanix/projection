@@ -14,9 +14,14 @@ import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
 import { usePreview } from "@/context/PreviewContext";
 import { useProjection } from "@/context/ProjectionContext";
 import { cn } from "@/lib/utils";
+import type { ProjectionItem } from "@/types";
 import { ArrowRight01Icon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useCallback, useEffect } from "react";
+
+const createItemName = (c: ProjectionItem) => {
+    return c.name || (c.type !== "Component" && c.content) || "Untitled";
+};
 
 interface ProjectionQueueProps {
     currentProjection: number;
@@ -108,7 +113,7 @@ export const ProjectionQueue = memo(function ProjectionQueue({
                                         size={"sm"}
                                         onClick={handleClick(i, j)}
                                     >
-                                        {c.name || c.content}
+                                        {createItemName(c)}
                                     </Button>
                                 ))}
                             </CollapsibleContent>
@@ -174,7 +179,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue({
                             size={"sm"}
                             onClick={handleClick(i)}
                         >
-                            {c.name || c.content}
+                            {createItemName(c)}
                         </Button>
                     ))}
                 </div>
