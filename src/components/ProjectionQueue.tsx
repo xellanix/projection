@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import type { ProjectionItem } from "@/types";
 import { ArrowRight01Icon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { memo, useCallback, useEffect } from "react";
+import { memo, useCallback, useEffect, useMemo } from "react";
 
 const createItemName = (c: ProjectionItem) => {
     return c.name || (c.type !== "Component" && c.content) || "Untitled";
@@ -155,32 +155,53 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue({
         [setCurrentIndex],
     );
 
+    const grouped = useMemo(() => {
+        let index = 0;
+        return projections[currentProjection]?.contents.reduce(
+            (acc, { group, ...rest }) => {
+                const key = group ?? "";
+                acc[key] = [...(acc[key] ?? []), { ...rest, index: index++ }];
+                return acc;
+            },
+            {} as Record<string, (ProjectionItem & { index: number })[]>,
+        );
+    }, [projections, currentProjection]);
+    const groupedKeys = useMemo(() => Object.keys(grouped ?? {}), [grouped]);
+
     return (
         <div className="flex h-full w-full flex-col overflow-hidden">
             <ScrollArea className="h-full w-full">
                 <div className="flex h-full flex-col gap-2">
-                    {projections[currentProjection]?.contents.map((c, i) => (
-                        <Button
-                            key={i}
-                            className={cn(
-                                "relative justify-start overflow-hidden rounded-md text-left text-ellipsis",
-                                "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-[1] before:w-0.75 before:rounded-full before:transition-all before:duration-133 before:ease-out",
-                                {
-                                    "bg-accent/50 text-accent-foreground before:top-2.5 before:bottom-2.5":
-                                        i === currentIndex && preview.isPreview,
-                                },
-                                {
-                                    "bg-brand text-brand-foreground hover:bg-brand-hover hover:text-brand-foreground before:top-2.5 before:bottom-2.5":
-                                        i === currentIndex &&
-                                        !preview.isPreview,
-                                },
-                            )}
-                            variant={"ghost"}
-                            size={"sm"}
-                            onClick={handleClick(i)}
-                        >
-                            {createItemName(c)}
-                        </Button>
+                    {groupedKeys.map((g, i) => (
+                        <div key={i} className="flex w-full flex-col gap-2">
+                            <span className="text-md font-semibold">{g}</span>
+                            <div className="before:bg-border/50 relative flex flex-col gap-2 before:absolute before:top-2 before:bottom-2 before:left-0 before:-z-10 before:w-0.75 before:rounded-full">
+                                {grouped![g]?.map((c) => (
+                                    <Button
+                                        key={c.index}
+                                        className={cn(
+                                            "relative justify-start overflow-hidden rounded-md text-left text-ellipsis",
+                                            "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-[1] before:w-0.75 before:rounded-full before:transition-all before:duration-133 before:ease-out",
+                                            {
+                                                "bg-accent/50 text-accent-foreground before:top-2.5 before:bottom-2.5":
+                                                    c.index === currentIndex &&
+                                                    preview.isPreview,
+                                            },
+                                            {
+                                                "bg-brand text-brand-foreground hover:bg-brand-hover hover:text-brand-foreground before:top-2.5 before:bottom-2.5":
+                                                    c.index === currentIndex &&
+                                                    !preview.isPreview,
+                                            },
+                                        )}
+                                        variant={"ghost"}
+                                        size={"sm"}
+                                        onClick={handleClick(c.index)}
+                                    >
+                                        {createItemName(c)}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
                     ))}
                 </div>
             </ScrollArea>

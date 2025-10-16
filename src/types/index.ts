@@ -2,6 +2,7 @@ import type { JSX } from "react";
 
 type ProjectionItemBase = {
     name?: string;
+    group?: string;
     bg?: string;
 };
 type ProjectionItemPrimitive = ProjectionItemBase & {
