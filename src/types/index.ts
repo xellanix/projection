@@ -1,9 +1,19 @@
-export type ProjectionItem = {
-    type: "Text" | "Image" | "Video";
+import type { JSX } from "react";
+
+type ProjectionItemBase = {
     name?: string;
-    content: string;
     bg?: string;
 };
+type ProjectionItemPrimitive = ProjectionItemBase & {
+    type: "Text" | "Image" | "Video";
+    content: string;
+};
+type ProjectionItemComponent = ProjectionItemBase & {
+    type: "Component";
+    content: () => JSX.Element;
+};
+
+export type ProjectionItem = ProjectionItemPrimitive | ProjectionItemComponent;
 
 export type ProjectionMaster = {
     title: string;

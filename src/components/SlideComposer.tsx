@@ -32,6 +32,7 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 1 }}
+                data-slot="background"
             >
                 <ContentResizer className="h-full w-full">
                     <div className="flex h-[1080px] w-[1920px] flex-col items-center justify-center bg-black">
@@ -60,8 +61,14 @@ export const SlideComposer = memo(function SlideComposer({
     );
 
     return (
-        <div className="flex h-[1080px] w-[1920px] flex-col items-center justify-center">
-            <div className="relative flex flex-col items-center justify-center gap-4 size-full">
+        <div
+            className="flex h-[1080px] w-[1920px] flex-col items-center justify-center"
+            data-slot="composer"
+        >
+            <div
+                className="relative flex size-full flex-col items-center justify-center gap-4"
+                data-slot="composer-container"
+            >
                 {content && <SlideComposerContent content={content} />}
             </div>
         </div>
@@ -84,6 +91,8 @@ const SlideComposerContent = memo(function SlideComposerContent({
                     {content.content}
                 </span>
             );
+        case "Component":
+            return <content.content />;
         default:
             return null;
     }
