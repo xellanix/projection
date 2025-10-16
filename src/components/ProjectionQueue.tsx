@@ -12,8 +12,8 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
 import { usePreview } from "@/context/PreviewContext";
-import { useProjection } from "@/context/ProjectionContext";
 import { cn } from "@/lib/utils";
+import { useProjectionStore } from "@/stores/projection.store";
 import type { ProjectionItem } from "@/types";
 import { ArrowRight01Icon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -33,7 +33,7 @@ export const ProjectionQueue = memo(function ProjectionQueue({
     setCurrentProjection,
     setCurrentIndex,
 }: ProjectionQueueProps) {
-    const projections = useProjection();
+    const projections = useProjectionStore((s) => s.projections);
 
     const handleClick = useCallback(
         (projectionIndex: React.SetStateAction<number>, index: number) =>
@@ -145,7 +145,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue({
     currentIndex,
     setCurrentIndex,
 }: ProjectionContentQueueProps) {
-    const projections = useProjection();
+    const projections = useProjectionStore((s) => s.projections);
     const preview = usePreview();
 
     const handleClick = useCallback(

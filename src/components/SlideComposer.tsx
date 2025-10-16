@@ -2,7 +2,7 @@
 
 import { ContentResizer } from "@/components/ContentResizer";
 import { VideoPlayer } from "@/components/VideoPlayer";
-import { useBackgrounds, useProjection } from "@/context/ProjectionContext";
+import { useProjectionStore } from "@/stores/projection.store";
 import {
     transitionVariants,
     useTransitionStore,
@@ -20,12 +20,11 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
     currentProjection,
     currentIndex,
 }: SlideComposerProps) {
-    const [backgrounds, maps] = useBackgrounds();
-
-    const background = useMemo(() => {
-        const bgIndex = maps[currentProjection]?.[currentIndex] ?? 0;
-        return backgrounds[bgIndex] ?? "";
-    }, [backgrounds, currentIndex, currentProjection, maps]);
+    const getBackground = useProjectionStore((s) => s.getBackground);
+    const [background, index] = useMemo(
+        () => getBackground(currentProjection, currentIndex),
+        [currentIndex, currentProjection, getBackground],
+    );
 
     const getTransition = useTransitionStore((s) => s.getTransition);
     const transition = useMemo(
@@ -36,7 +35,7 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
     return (
         <AnimatePresence custom={transition}>
             <motion.div
-                key={maps[currentProjection]?.[currentIndex] ?? 0}
+                key={index}
                 className="absolute h-full w-full"
                 initial="enter"
                 animate="center"
@@ -65,7 +64,7 @@ export const SlideComposer = memo(function SlideComposer({
     currentProjection,
     currentIndex,
 }: SlideComposerProps) {
-    const masters = useProjection();
+    const masters = useProjectionStore((s) => s.projections);
     const content = useMemo(
         () => masters[currentProjection]?.contents[currentIndex] ?? null,
         [currentIndex, masters, currentProjection],

@@ -15,7 +15,6 @@ import {
 } from "@hugeicons-pro/core-solid-rounded";
 import { IconButton, IconToggleButton } from "@/components/Buttons";
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
-import { useProjectionLength } from "@/context/ProjectionContext";
 import {
     ResizableHandle,
     ResizablePanel,
@@ -28,6 +27,7 @@ import {
 import { useSocketStore } from "@/stores/socket.store";
 import { useShallow } from "zustand/react/shallow";
 import { Separator } from "@/components/ui/separator";
+import { useProjectionStore } from "@/stores/projection.store";
 
 interface SlideControllerProps {
     currentProjection: number;
@@ -41,7 +41,9 @@ export function SlideController({
     setCurrentIndex,
     isPreviewMode,
 }: SlideControllerProps) {
-    const projectionLength = useProjectionLength(currentProjection);
+    const projectionLength = useProjectionStore((s) => s.getProjectionLength)(
+        currentProjection,
+    );
 
     const goToPrevious = useCallback(() => {
         setCurrentIndex(
