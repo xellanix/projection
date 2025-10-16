@@ -159,7 +159,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue({
         let index = 0;
         return projections[currentProjection]?.contents.reduce(
             (acc, { group, ...rest }) => {
-                const key = group ?? "";
+                const key = group ?? "Contents";
                 acc[key] = [...(acc[key] ?? []), { ...rest, index: index++ }];
                 return acc;
             },
@@ -174,7 +174,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue({
                 <div className="flex h-full flex-col gap-2">
                     {groupedKeys.map((g, i) => (
                         <div key={i} className="flex w-full flex-col gap-2">
-                            <span className="text-md font-semibold">{g}</span>
+                            <span className="font-semibold">{g}</span>
                             <div className="before:bg-border/50 relative flex flex-col gap-2 before:absolute before:top-2 before:bottom-2 before:left-0 before:-z-10 before:w-0.75 before:rounded-full">
                                 {grouped![g]?.map((c) => (
                                     <Button
