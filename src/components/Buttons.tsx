@@ -1,4 +1,13 @@
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuShortcut,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Toggle } from "@/components/ui/toggle";
 import {
@@ -7,6 +16,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
+import { MoreHorizontalIcon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -26,7 +36,7 @@ interface BaseIconButtonProps {
 }
 
 interface IconButtonProps extends BaseIconButtonProps {
-    onClick: () => void;
+    onClick?: () => void;
 }
 export function IconButton({
     label,
@@ -72,6 +82,7 @@ export function IconButton({
 }
 
 interface IconToggleButtonProps extends BaseIconButtonProps {
+    pressed?: boolean;
     onPressed: (pressed: boolean) => void;
 }
 export function IconToggleButton({
@@ -82,8 +93,9 @@ export function IconToggleButton({
     textClassName,
     onPressed,
     accelerator,
+    ...props
 }: IconToggleButtonProps) {
-    const [pressed, setPressed] = useState(false);
+    const [pressed, setPressed] = useState(props.pressed ?? false);
 
     const togglePressed = useCallback(() => {
         setPressed((prev) => {
@@ -91,6 +103,10 @@ export function IconToggleButton({
             return !prev;
         });
     }, [onPressed]);
+
+    useEffect(() => {
+        setPressed(props.pressed ?? false);
+    }, [props.pressed]);
 
     const [register, unregister] = useGlobalKeyboard();
     useEffect(() => {
@@ -142,5 +158,89 @@ export function IconToggleButton({
                 </div>
             </TooltipContent>
         </Tooltip>
+    );
+}
+
+interface IconSplitButtonProps extends BaseIconButtonProps {
+    onClick: () => void;
+    children?: React.ReactNode;
+    moreLabel?: string;
+}
+export function IconSplitButton({
+    label,
+    moreLabel,
+    icon,
+    iconStrokeWidth,
+    text,
+    textClassName,
+    onClick,
+    accelerator,
+    children,
+}: IconSplitButtonProps) {
+    return (
+        <ButtonGroup
+            aria-label="Split Button"
+            className="[&>*:not(:first-child)>*]:rounded-l-none [&>*:not(:first-child)>*]:border-l-0 [&>*:not(:last-child)>*]:rounded-r-none"
+        >
+            <IconButton
+                label={label}
+                icon={icon}
+                iconStrokeWidth={iconStrokeWidth}
+                text={text}
+                textClassName={textClassName}
+                onClick={onClick}
+                accelerator={accelerator}
+            />
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <div>
+                        <IconButton
+                            label="More Options"
+                            icon={MoreHorizontalIcon}
+                            iconStrokeWidth={3}
+                        />
+                    </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuLabel>
+                        {moreLabel || "More Options"}
+                    </DropdownMenuLabel>
+                    {children}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </ButtonGroup>
+    );
+}
+
+export function IconDropdownMenuItem({
+    label,
+    icon,
+    iconStrokeWidth,
+    text,
+    textClassName,
+    onClick,
+    accelerator,
+}: IconButtonProps) {
+    return (
+        <DropdownMenuItem aria-label={label} onClick={onClick}>
+            <HugeiconsIcon
+                icon={icon}
+                strokeWidth={iconStrokeWidth ?? 2}
+                className="text-foreground"
+            />
+            <span className={textClassName}>{text}</span>
+
+            {accelerator && (
+                <DropdownMenuShortcut>
+                    <KbdGroup>
+                        {accelerator.shift && <Kbd>Shift</Kbd>}
+                        {accelerator.meta && <Kbd>Meta</Kbd>}
+                        {accelerator.alt && <Kbd>Alt</Kbd>}
+                        {accelerator.ctrl && <Kbd>Ctrl</Kbd>}
+                        <Kbd>{accelerator.key}</Kbd>
+                    </KbdGroup>
+                </DropdownMenuShortcut>
+            )}
+        </DropdownMenuItem>
     );
 }

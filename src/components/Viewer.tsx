@@ -19,7 +19,10 @@ import {
     EmptyTitle,
 } from "@/components/ui/empty";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ModernTvIssueIcon } from "@hugeicons-pro/core-stroke-rounded";
+import {
+    ModernTvIssueIcon,
+    VideoOffIcon,
+} from "@hugeicons-pro/core-stroke-rounded";
 import { BrandIcon } from "@/components/Brand";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -52,15 +55,16 @@ export const Viewer = memo(function Viewer({
         );
     }, [currentIndex, currentProjection]);
 
-    const CurrentComponent = useMemo(
-        () =>
-            currentIndex === -1
-                ? BlackScreen
-                : currentIndex === -2
-                  ? ClearScreen
-                  : SlideCompose,
-        [SlideCompose, currentIndex],
-    );
+    const CurrentComponent = useMemo(() => {
+        switch (currentIndex) {
+            case -1:
+                return BlackScreen;
+            case -2:
+                return ClearScreen;
+            default:
+                return SlideCompose;
+        }
+    }, [SlideCompose, currentIndex]);
     const getTransition = useTransitionStore((s) => s.getTransition);
     const transition = useMemo(
         () => getTransition(currentProjection, currentIndex),
@@ -122,6 +126,10 @@ export function OnScreenViewer() {
         };
     }, [socket]);
 
+    if (currentIndex === -3) {
+        return <EmptySignal variant="source-stopped" />;
+    }
+
     return (
         <Viewer
             currentProjection={currentProjection}
@@ -130,40 +138,65 @@ export function OnScreenViewer() {
     );
 }
 
-function EmptySignal() {
+interface EmptySignalProps {
+    variant?: "no-source" | "source-stopped";
+}
+function EmptySignal({ variant = "no-source" }: EmptySignalProps) {
     return (
-        <div className="dark text-foreground flex h-dvh w-dvw bg-black">
-            <Empty className="gap-12">
-                <div className="flex w-full flex-1" />
-
-                <EmptyHeader className="max-w-3xl gap-4">
-                    <EmptyMedia
-                        variant={"icon"}
-                        className="mb-4 size-20 rounded-xl [&_svg:not([class*='size-'])]:size-12"
-                    >
-                        <HugeiconsIcon icon={ModernTvIssueIcon} />
-                    </EmptyMedia>
-                    <EmptyTitle className="text-4xl font-bold">
-                        No Source Detected
-                    </EmptyTitle>
-                    <EmptyDescription className="text-xl/relaxed">
-                        Please start a controller stream to use this feature.
-                    </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent className="max-w-3xl gap-8 text-xl">
-                    <div className="flex w-full items-center justify-center gap-4">
-                        <Spinner className="size-5" /> Searching...
-                    </div>
-                </EmptyContent>
-
-                <div className="flex w-full flex-1 flex-col items-center justify-center">
-                    <div className="h-12 w-full max-w-32">
-                        <ContentResizer className="h-full w-full">
-                            <BrandIcon />
-                        </ContentResizer>
-                    </div>
+        <div className="dark text-foreground absolute h-full w-full bg-black">
+            <ContentResizer className="h-full w-full">
+                <div className="flex h-[1080px] w-[1920px]">
+                    <Empty className="gap-12">
+                        <div className="flex w-full flex-1" />
+                        <EmptyHeader className="max-w-3xl gap-4">
+                            <EmptyMedia
+                                variant={"icon"}
+                                className="mb-4 size-20 rounded-xl [&_svg:not([class*='size-'])]:size-12"
+                            >
+                                <HugeiconsIcon
+                                    icon={
+                                        variant === "no-source"
+                                            ? ModernTvIssueIcon
+                                            : VideoOffIcon
+                                    }
+                                />
+                            </EmptyMedia>
+                            <EmptyTitle className="text-4xl font-bold">
+                                {variant === "no-source"
+                                    ? "No Source Has Been Detected"
+                                    : "The Projection Has Been Stopped"}
+                            </EmptyTitle>
+                            <EmptyDescription className="text-xl/relaxed">
+                                {variant === "no-source" ? (
+                                    "Please start a controller stream to use this feature."
+                                ) : (
+                                    <>
+                                        To start the projection, click the{" "}
+                                        <b>
+                                            <u>Project</u>
+                                        </b>{" "}
+                                        button in the controller.
+                                    </>
+                                )}
+                            </EmptyDescription>
+                        </EmptyHeader>
+                        {variant === "no-source" && (
+                            <EmptyContent className="max-w-3xl gap-8 text-xl">
+                                <div className="flex w-full items-center justify-center gap-4">
+                                    <Spinner className="size-5" /> Searching...
+                                </div>
+                            </EmptyContent>
+                        )}
+                        <div className="flex w-full flex-1 flex-col items-center justify-center">
+                            <div className="h-12 w-full max-w-32">
+                                <ContentResizer className="h-full w-full">
+                                    <BrandIcon />
+                                </ContentResizer>
+                            </div>
+                        </div>
+                    </Empty>
                 </div>
-            </Empty>
+            </ContentResizer>
         </div>
     );
 }

@@ -7,13 +7,19 @@ import {
     ArrowLeft01Icon,
     ArrowRight01Icon,
     MaximizeScreenIcon,
-    MirroringScreenIcon,
+    Video02Icon,
+    VideoOffIcon,
 } from "@hugeicons-pro/core-stroke-rounded";
 import {
     Copy02Icon,
     ComputerRemoveIcon,
 } from "@hugeicons-pro/core-solid-rounded";
-import { IconButton, IconToggleButton } from "@/components/Buttons";
+import {
+    IconButton,
+    IconDropdownMenuItem,
+    IconSplitButton,
+    IconToggleButton,
+} from "@/components/Buttons";
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
 import {
     ResizableHandle,
@@ -119,6 +125,7 @@ export function OnScreenSlideController({
     const [currentIndex, setCurrentIndex] = useState(0);
     const socket = useSocketStore((s) => s.socket);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [options, setOptions] = useState<Record<string, boolean>>({});
 
     // Init the index and listen for updates from the server
     useEffect(() => {
@@ -130,8 +137,14 @@ export function OnScreenSlideController({
 
         socket.emit(
             "client:screen:index:init",
-            (projectionIndex: number, index: number) => {
+            (
+                projectionIndex: number,
+                index: number,
+                _: number,
+                specialScreen: Record<string, boolean>,
+            ) => {
                 updateIndex(projectionIndex, index);
+                setOptions(specialScreen);
                 setIsLoaded(true);
             },
         );
@@ -201,6 +214,7 @@ export function OnScreenSlideController({
                             text="Black"
                             textClassName="@max-lg/screen:hidden"
                             accelerator={{ shift: true, key: "B" }}
+                            pressed={options.black}
                             onPressed={specialScreen("black")}
                         />
                         <IconToggleButton
@@ -210,6 +224,7 @@ export function OnScreenSlideController({
                             text="Clear"
                             textClassName="@max-lg/screen:hidden"
                             accelerator={{ shift: true, key: "C" }}
+                            pressed={options.clear}
                             onPressed={specialScreen("clear")}
                         />
                     </ButtonGroup>
@@ -248,17 +263,25 @@ export function PreviewSlideController() {
             "client:caster:index:update",
             currentProjection,
             currentIndex,
+            true,
         );
     }, [socket, currentProjection, currentIndex]);
+
+    const stopProjection = useCallback(
+        () => socket?.emit("client:caster:specialScreen:set", "stopped", true),
+        [socket],
+    );
 
     const [register, unregister] = useGlobalKeyboard();
     useEffect(() => {
         register("Enter", projectToScreen);
+        register("Shift+Enter", stopProjection);
 
         return () => {
             unregister("Enter");
+            unregister("Shift+Enter");
         };
-    }, [projectToScreen, register, unregister]);
+    }, [projectToScreen, register, stopProjection, unregister]);
 
     return (
         <ResizablePanelGroup direction="horizontal">
@@ -299,14 +322,23 @@ export function PreviewSlideController() {
                             isPreviewMode={true}
                         />
 
-                        <IconButton
+                        <IconSplitButton
                             label="Project to Screen"
-                            icon={MirroringScreenIcon}
+                            icon={Video02Icon}
                             text={"Project"}
                             textClassName="@max-2xs/preview:hidden"
                             onClick={projectToScreen}
                             accelerator={{ key: "Enter" }}
-                        />
+                            moreLabel="Projections"
+                        >
+                            <IconDropdownMenuItem
+                                label="Stop Projection"
+                                icon={VideoOffIcon}
+                                text="Stop Projection"
+                                onClick={stopProjection}
+                                accelerator={{ shift: true, key: "Enter" }}
+                            />
+                        </IconSplitButton>
                     </div>
 
                     <Separator orientation="horizontal" />

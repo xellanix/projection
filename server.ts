@@ -16,6 +16,7 @@ let currentProjection = 0;
 const specialScreen = {
     black: false,
     clear: false,
+    stopped: false,
 };
 const controllerIds: string[] = [];
 
@@ -24,7 +25,8 @@ const controllerIds: string[] = [];
 // If the special screen is active, returns -1 or -2
 // Otherwise, returns the current index
 const getPreferredIndex = () => {
-    if (specialScreen.black) return -1;
+    if (specialScreen.stopped) return -3;
+    else if (specialScreen.black) return -1;
     else if (specialScreen.clear) return -2;
 
     return currentIndex;
@@ -84,15 +86,19 @@ app.prepare().then(() => {
         // "client:caster:index:update"
         socket.on(
             "client:caster:index:update",
-            (projectionIndex: number, index: number) => {
+            (projectionIndex: number, index: number, isProject?: boolean) => {
                 if (
                     projectionIndex === currentProjection &&
-                    currentIndex === index
+                    currentIndex === index &&
+                    ((isProject && !specialScreen.stopped) || !isProject)
                 )
                     return;
 
                 currentProjection = projectionIndex;
                 currentIndex = index;
+
+                if (isProject) specialScreen.stopped = false;
+
                 io.emit(
                     "server:screen:index:update",
                     projectionIndex,
@@ -117,7 +123,12 @@ app.prepare().then(() => {
 
         // "client:screen:index:init"
         socket.on("client:screen:index:init", (callback) => {
-            callback(currentProjection, currentIndex, getPreferredIndex());
+            callback(
+                currentProjection,
+                currentIndex,
+                getPreferredIndex(),
+                specialScreen,
+            );
         });
 
         // "client:video:bg:init:request"

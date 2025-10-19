@@ -136,7 +136,10 @@ export const GlobalKeyboardProvider = ({
                 }
                 case "Enter": {
                     e.preventDefault();
-                    shortcuts.current["Enter"]?.();
+
+                    if (e.shiftKey) shortcuts.current["Shift+Enter"]?.();
+                    else shortcuts.current["Enter"]?.();
+                    
                     break;
                 }
                 default:

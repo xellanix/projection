@@ -36,7 +36,7 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
         <AnimatePresence custom={transition}>
             <motion.div
                 key={index}
-                className="absolute h-full w-full"
+                className="absolute h-full w-full bg-black"
                 initial="enter"
                 animate="center"
                 exit="exit"
