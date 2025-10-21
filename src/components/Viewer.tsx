@@ -29,6 +29,7 @@ import {
     transitionVariants,
     useTransitionStore,
 } from "@/stores/transition.store";
+import { useShallow } from "zustand/react/shallow";
 
 function BlackScreen() {
     return <div className="h-[1080px] w-[1920px] bg-black" />;
@@ -46,6 +47,10 @@ export const Viewer = memo(function Viewer({
     currentProjection = 0,
     currentIndex = 0,
 }: ViewerProps) {
+    const transition = useTransitionStore(
+        useShallow((s) => s.getTransition(currentProjection, currentIndex)),
+    );
+
     const SlideCompose = useCallback(() => {
         return (
             <SlideComposer
@@ -65,11 +70,6 @@ export const Viewer = memo(function Viewer({
                 return SlideCompose;
         }
     }, [SlideCompose, currentIndex]);
-    const getTransition = useTransitionStore((s) => s.getTransition);
-    const transition = useMemo(
-        () => getTransition(currentProjection, currentIndex),
-        [currentProjection, currentIndex, getTransition],
-    );
 
     return (
         <>
@@ -98,7 +98,7 @@ export const Viewer = memo(function Viewer({
     );
 });
 
-export function OnScreenViewer() {
+export const OnScreenViewer = memo(function OnScreenViewer() {
     const socket = useSocketStore((s) => s.socket);
     const [currentProjection, setCurrentProjection] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -136,12 +136,14 @@ export function OnScreenViewer() {
             currentIndex={currentIndex}
         />
     );
-}
+});
 
 interface EmptySignalProps {
     variant?: "no-source" | "source-stopped";
 }
-function EmptySignal({ variant = "no-source" }: EmptySignalProps) {
+const EmptySignal = memo(function EmptySignal({
+    variant = "no-source",
+}: EmptySignalProps) {
     return (
         <div className="dark text-foreground absolute h-full w-full bg-black">
             <ContentResizer className="h-full w-full">
@@ -199,7 +201,7 @@ function EmptySignal({ variant = "no-source" }: EmptySignalProps) {
             </ContentResizer>
         </div>
     );
-}
+});
 
 export function SignalCatcher({ children }: { children: React.ReactNode }) {
     const socket = useSocketStore((s) => s.socket);

@@ -18,7 +18,7 @@ import {
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
 import { MoreHorizontalIcon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, memo } from "react";
 
 interface BaseIconButtonProps {
     label: string;
@@ -38,7 +38,7 @@ interface BaseIconButtonProps {
 interface IconButtonProps extends BaseIconButtonProps {
     onClick?: () => void;
 }
-export function IconButton({
+export const IconButton = memo(function IconButton({
     label,
     icon,
     iconStrokeWidth,
@@ -79,13 +79,13 @@ export function IconButton({
             </TooltipContent>
         </Tooltip>
     );
-}
+});
 
 interface IconToggleButtonProps extends BaseIconButtonProps {
     pressed?: boolean;
     onPressed: (pressed: boolean) => void;
 }
-export function IconToggleButton({
+export const IconToggleButton = memo(function IconToggleButton({
     label,
     icon,
     iconStrokeWidth,
@@ -159,14 +159,14 @@ export function IconToggleButton({
             </TooltipContent>
         </Tooltip>
     );
-}
+});
 
 interface IconSplitButtonProps extends BaseIconButtonProps {
     onClick: () => void;
     children?: React.ReactNode;
     moreLabel?: string;
 }
-export function IconSplitButton({
+export const IconSplitButton = memo(function IconSplitButton({
     label,
     moreLabel,
     icon,
@@ -210,9 +210,9 @@ export function IconSplitButton({
             </DropdownMenu>
         </ButtonGroup>
     );
-}
+});
 
-export function IconDropdownMenuItem({
+export const IconDropdownMenuItem = memo(function IconDropdownMenuItem({
     label,
     icon,
     iconStrokeWidth,
@@ -243,4 +243,4 @@ export function IconDropdownMenuItem({
             )}
         </DropdownMenuItem>
     );
-}
+});

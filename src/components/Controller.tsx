@@ -2,7 +2,7 @@
 
 import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group";
 import { Viewer } from "@/components/Viewer";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import {
     ArrowLeft01Icon,
     ArrowRight01Icon,
@@ -26,54 +26,65 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import {
-    ProjectionContentQueue,
-    ProjectionQueue,
-} from "@/components/ProjectionQueue";
+import { ProjectionContentQueue } from "@/components/ProjectionQueue";
 import { useSocketStore } from "@/stores/socket.store";
 import { useShallow } from "zustand/react/shallow";
 import { Separator } from "@/components/ui/separator";
-import { useProjectionStore } from "@/stores/projection.store";
 import { mod } from "@/lib/utils";
+import { useControl } from "@/context/ControlContext";
+import { usePreview } from "@/context/PreviewContext";
+import { Sidebar } from "@/components/Sidebar";
 
-interface SlideControllerProps {
-    currentProjection: number;
-    currentIndex: number;
-    setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
-    isPreviewMode: boolean;
-}
-export function SlideController({
-    currentProjection,
-    currentIndex,
-    setCurrentIndex,
+const NavButton = memo(function NavButton({
+    type,
     isPreviewMode,
-}: SlideControllerProps) {
-    const projectionLength = useProjectionStore((s) => s.getProjectionLength)(
-        currentProjection,
+}: {
+    type: "next" | "prev";
+    isPreviewMode: boolean;
+}) {
+    const move = useControl((s) => s.moveIndex);
+
+    return (
+        <ButtonGroup>
+            <IconButton
+                label={type === "prev" ? "Previous Slide" : "Next Slide"}
+                icon={type === "prev" ? ArrowLeft01Icon : ArrowRight01Icon}
+                iconStrokeWidth={2.5}
+                onClick={move(type === "prev" ? -1 : 1)}
+                accelerator={{ key: "LeftArrow", shift: isPreviewMode }}
+            />
+        </ButtonGroup>
+    );
+});
+const SlideIndex = memo(function SlideIndex() {
+    const [currentIndex, maxIndex] = useControl(
+        useShallow((s) => [s.currentIndex, s.maxIndex]),
     );
 
-    const move = useCallback(
-        (delta: number) => () => {
-            setCurrentIndex((prev) => mod(prev + delta, projectionLength));
-        },
-        [projectionLength, setCurrentIndex],
+    return (
+        <ButtonGroup>
+            <ButtonGroupText className="border-none bg-transparent p-2 text-center shadow-none">
+                Slide {currentIndex + 1} of {maxIndex + 1}
+            </ButtonGroupText>
+        </ButtonGroup>
     );
+});
 
-    const goToIndex = useCallback(
-        (index: number) => () => setCurrentIndex(mod(index, projectionLength)),
-        [projectionLength, setCurrentIndex],
-    );
+export const SlideController = memo(function SlideController() {
+    const { isPreview } = usePreview();
+    const setCurrentIndex = useControl((s) => s.setCurrentIndex);
 
     const [register, unregister] = useGlobalKeyboard();
-
     useEffect(() => {
-        const previewKey = isPreviewMode ? "Shift+" : "";
+        const previewKey = isPreview ? "Shift+" : "";
 
-        register(previewKey + "ArrowLeft", move(-1));
-        register(previewKey + "ArrowRight", move(1));
+        register(previewKey + "ArrowLeft", () => setCurrentIndex((p) => p - 1));
+        register(previewKey + "ArrowRight", () =>
+            setCurrentIndex((p) => p + 1),
+        );
         for (let i = 0; i < 10; i++) {
-            register(`Digit${mod(i + 1, 10)}`, goToIndex(i));
-            register(`Numpad${mod(i + 1, 10)}`, goToIndex(i));
+            register(`Digit${mod(i + 1, 10)}`, () => setCurrentIndex(i));
+            register(`Numpad${mod(i + 1, 10)}`, () => setCurrentIndex(i));
         }
 
         return () => {
@@ -84,45 +95,95 @@ export function SlideController({
                 unregister(`Numpad${i}`);
             }
         };
-    }, [move, register, unregister, isPreviewMode, goToIndex]);
+    }, [register, unregister, isPreview, setCurrentIndex]);
 
     return (
         <ButtonGroup aria-label="Slide Navigation">
-            <ButtonGroup>
-                <IconButton
-                    label="Previous Slide"
-                    icon={ArrowLeft01Icon}
-                    iconStrokeWidth={2.5}
-                    onClick={move(-1)}
-                    accelerator={{ key: "LeftArrow", shift: isPreviewMode }}
+            <NavButton type="prev" isPreviewMode={isPreview} />
+            <SlideIndex />
+            <NavButton type="next" isPreviewMode={isPreview} />
+        </ButtonGroup>
+    );
+});
+
+const OnScreenManipulator = memo(function OnScreenManipulator({
+    specialScreen,
+    openFullscreenView,
+    options,
+}: {
+    specialScreen: (type: string) => (pressed: boolean) => void;
+    openFullscreenView: () => void;
+    options: Record<string, boolean>;
+}) {
+    return (
+        <ButtonGroup aria-label="Slide Manipulations">
+            <ButtonGroup className="[&>*:not(:first-child)>*]:rounded-l-none [&>*:not(:first-child)>*]:border-l-0 [&>*:not(:last-child)>*]:rounded-r-none">
+                <IconToggleButton
+                    label="Black Screen"
+                    icon={ComputerRemoveIcon}
+                    iconStrokeWidth={0}
+                    text="Black"
+                    textClassName="@max-lg/screen:hidden"
+                    accelerator={{ shift: true, key: "B" }}
+                    pressed={options.black}
+                    onPressed={specialScreen("black")}
+                />
+                <IconToggleButton
+                    label="Clear Screen"
+                    icon={Copy02Icon}
+                    iconStrokeWidth={0}
+                    text="Clear"
+                    textClassName="@max-lg/screen:hidden"
+                    accelerator={{ shift: true, key: "C" }}
+                    pressed={options.clear}
+                    onPressed={specialScreen("clear")}
                 />
             </ButtonGroup>
-            <ButtonGroup>
-                <ButtonGroupText className="border-none bg-transparent p-2 text-center shadow-none">
-                    Slide {currentIndex + 1} of {projectionLength}
-                </ButtonGroupText>
-            </ButtonGroup>
+
             <ButtonGroup>
                 <IconButton
-                    label="Next Slide"
-                    icon={ArrowRight01Icon}
-                    iconStrokeWidth={2.5}
-                    onClick={move(1)}
-                    accelerator={{ key: "RightArrow", shift: isPreviewMode }}
+                    label="Full Screen"
+                    icon={MaximizeScreenIcon}
+                    text="Full Screen"
+                    textClassName="@max-sm/screen:hidden"
+                    accelerator={{ shift: true, key: "F" }}
+                    onClick={openFullscreenView}
                 />
             </ButtonGroup>
         </ButtonGroup>
     );
-}
+});
+
+const IndexSender = memo(function IndexSender({
+    isLoaded,
+}: {
+    isLoaded: boolean;
+}) {
+    const [currentProjection, currentIndex] = useControl(
+        useShallow((s) => [s.currentProjection, s.currentIndex]),
+    );
+    const socket = useSocketStore((s) => s.socket);
+
+    // Update the server with the current index
+    useEffect(() => {
+        if (!isLoaded) return;
+        socket?.emit(
+            "client:caster:index:update",
+            currentProjection,
+            currentIndex,
+        );
+    }, [currentIndex, socket, isLoaded, currentProjection]);
+
+    return null;
+});
 
 interface OnScreenSlideControllerProps {
     children: React.ReactNode;
 }
-export function OnScreenSlideController({
+export const OnScreenSlideController = memo(function OnScreenSlideController({
     children,
 }: OnScreenSlideControllerProps) {
-    const [currentProjection, setCurrentProjection] = useState(0);
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const setCurrent = useControl((s) => s.setCurrent);
     const socket = useSocketStore((s) => s.socket);
     const [isLoaded, setIsLoaded] = useState(false);
     const [options, setOptions] = useState<Record<string, boolean>>({});
@@ -130,10 +191,7 @@ export function OnScreenSlideController({
     // Init the index and listen for updates from the server
     useEffect(() => {
         if (!socket) return;
-        const updateIndex = (projectionIndex: number, index: number) => {
-            setCurrentProjection(projectionIndex);
-            setCurrentIndex(index);
-        };
+        const updateIndex = setCurrent;
 
         socket.emit(
             "client:screen:index:init",
@@ -153,17 +211,7 @@ export function OnScreenSlideController({
         return () => {
             socket.off("server:screen:index:update", updateIndex);
         };
-    }, [socket]);
-
-    // Update the server with the current index
-    useEffect(() => {
-        if (!isLoaded) return;
-        socket?.emit(
-            "client:caster:index:update",
-            currentProjection,
-            currentIndex,
-        );
-    }, [currentIndex, socket, isLoaded, currentProjection]);
+    }, [setCurrent, socket]);
 
     // Send special screen commands
     const specialScreen = useCallback(
@@ -188,6 +236,8 @@ export function OnScreenSlideController({
 
     return (
         <div className="relative flex h-full flex-col items-center gap-4">
+            <IndexSender isLoaded={isLoaded} />
+
             <span className="text-xl font-semibold">On Screen</span>
 
             <div
@@ -198,78 +248,73 @@ export function OnScreenSlideController({
             </div>
 
             <div className="flex w-full flex-row justify-between gap-4">
-                <SlideController
-                    currentProjection={currentProjection}
-                    currentIndex={currentIndex}
-                    setCurrentIndex={setCurrentIndex}
-                    isPreviewMode={false}
+                <SlideController />
+
+                <OnScreenManipulator
+                    openFullscreenView={openFullscreenView}
+                    specialScreen={specialScreen}
+                    options={options}
                 />
-
-                <ButtonGroup aria-label="Slide Manipulations">
-                    <ButtonGroup className="[&>*:not(:first-child)>*]:rounded-l-none [&>*:not(:first-child)>*]:border-l-0 [&>*:not(:last-child)>*]:rounded-r-none">
-                        <IconToggleButton
-                            label="Black Screen"
-                            icon={ComputerRemoveIcon}
-                            iconStrokeWidth={0}
-                            text="Black"
-                            textClassName="@max-lg/screen:hidden"
-                            accelerator={{ shift: true, key: "B" }}
-                            pressed={options.black}
-                            onPressed={specialScreen("black")}
-                        />
-                        <IconToggleButton
-                            label="Clear Screen"
-                            icon={Copy02Icon}
-                            iconStrokeWidth={0}
-                            text="Clear"
-                            textClassName="@max-lg/screen:hidden"
-                            accelerator={{ shift: true, key: "C" }}
-                            pressed={options.clear}
-                            onPressed={specialScreen("clear")}
-                        />
-                    </ButtonGroup>
-
-                    <ButtonGroup>
-                        <IconButton
-                            label="Full Screen"
-                            icon={MaximizeScreenIcon}
-                            text="Full Screen"
-                            textClassName="@max-sm/screen:hidden"
-                            accelerator={{ shift: true, key: "F" }}
-                            onClick={openFullscreenView}
-                        />
-                    </ButtonGroup>
-                </ButtonGroup>
             </div>
 
             <Separator orientation="horizontal" />
 
-            <ProjectionContentQueue
-                currentProjection={currentProjection}
-                currentIndex={currentIndex}
-                setCurrentIndex={setCurrentIndex}
-            />
+            <ProjectionContentQueue />
         </div>
     );
-}
+});
 
-export function PreviewSlideController() {
-    const [currentProjection, setCurrentProjection] = useState(0);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const socket = useSocketStore((s) => s.socket);
+const PreviewManipulator = memo(function PreviewManipulator({
+    projectToScreen,
+    stopProjection,
+}: {
+    projectToScreen: () => void;
+    stopProjection: () => void;
+}) {
+    return (
+        <IconSplitButton
+            label="Project to Screen"
+            icon={Video02Icon}
+            text={"Project"}
+            textClassName="@max-2xs/preview:hidden"
+            onClick={projectToScreen}
+            accelerator={{ key: "Enter" }}
+            moreLabel="Projections"
+        >
+            <IconDropdownMenuItem
+                label="Stop Projection"
+                icon={VideoOffIcon}
+                text="Stop Projection"
+                onClick={stopProjection}
+                accelerator={{ shift: true, key: "Enter" }}
+            />
+        </IconSplitButton>
+    );
+});
+
+export const PreviewSlideController = memo(function PreviewSlideController() {
+    const [setCurrent, emit, currentProjection, currentIndex] = useControl(
+        useShallow((s) => [
+            s.setCurrent,
+            s.emit,
+            s.currentProjection,
+            s.currentIndex,
+        ]),
+    );
+
+    useEffect(() => setCurrent(0, 0), [setCurrent]);
 
     const projectToScreen = useCallback(() => {
-        socket?.emit(
-            "client:caster:index:update",
-            currentProjection,
-            currentIndex,
+        emit("client:caster:index:update", (s) => [
+            s.currentProjection,
+            s.currentIndex,
             true,
-        );
-    }, [socket, currentProjection, currentIndex]);
+        ]);
+    }, [emit]);
 
     const stopProjection = useCallback(
-        () => socket?.emit("client:caster:specialScreen:set", "stopped", true),
-        [socket],
+        () => emit("client:caster:specialScreen:set", () => ["stopped", true]),
+        [emit],
     );
 
     const [register, unregister] = useGlobalKeyboard();
@@ -281,7 +326,7 @@ export function PreviewSlideController() {
             unregister("Enter");
             unregister("Shift+Enter");
         };
-    }, [projectToScreen, register, stopProjection, unregister]);
+    }, [projectToScreen, stopProjection, register, unregister]);
 
     return (
         <ResizablePanelGroup direction="horizontal">
@@ -290,11 +335,7 @@ export function PreviewSlideController() {
                 defaultSize={20}
                 className="bg-sidebar text-sidebar-foreground"
             >
-                <ProjectionQueue
-                    currentProjection={currentProjection}
-                    setCurrentProjection={setCurrentProjection}
-                    setCurrentIndex={setCurrentIndex}
-                />
+                <Sidebar />
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel
@@ -315,44 +356,22 @@ export function PreviewSlideController() {
                     </div>
 
                     <div className="flex w-full flex-row justify-between gap-4">
-                        <SlideController
-                            currentProjection={currentProjection}
-                            currentIndex={currentIndex}
-                            setCurrentIndex={setCurrentIndex}
-                            isPreviewMode={true}
-                        />
+                        <SlideController />
 
-                        <IconSplitButton
-                            label="Project to Screen"
-                            icon={Video02Icon}
-                            text={"Project"}
-                            textClassName="@max-2xs/preview:hidden"
-                            onClick={projectToScreen}
-                            accelerator={{ key: "Enter" }}
-                            moreLabel="Projections"
-                        >
-                            <IconDropdownMenuItem
-                                label="Stop Projection"
-                                icon={VideoOffIcon}
-                                text="Stop Projection"
-                                onClick={stopProjection}
-                                accelerator={{ shift: true, key: "Enter" }}
-                            />
-                        </IconSplitButton>
+                        <PreviewManipulator
+                            projectToScreen={projectToScreen}
+                            stopProjection={stopProjection}
+                        />
                     </div>
 
                     <Separator orientation="horizontal" />
 
-                    <ProjectionContentQueue
-                        currentProjection={currentProjection}
-                        currentIndex={currentIndex}
-                        setCurrentIndex={setCurrentIndex}
-                    />
+                    <ProjectionContentQueue />
                 </div>
             </ResizablePanel>
         </ResizablePanelGroup>
     );
-}
+});
 
 export function ControllerRegister() {
     const [socket, socketId] = useSocketStore(

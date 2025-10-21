@@ -16,19 +16,13 @@ import { Toggle } from "@/components/ui/toggle";
 import { useEcoStore } from "@/stores/eco.store";
 import { Idea01Icon, Leaf01Icon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useState } from "react";
+import { memo, useState } from "react";
 
-export function EcoModeButton() {
+export const EcoModeButton = memo(function EcoModeButton() {
     const { ecoMode, setEcoMode } = useEcoStore();
     const [openAlert, setOpenAlert] = useState(false);
 
-    const toggleEco = () => {
-        if (!ecoMode) {
-            setOpenAlert(true);
-        } else {
-            setEcoMode(!ecoMode);
-        }
-    };
+    const toggleEco = () => (!ecoMode ? setOpenAlert(true) : setEcoMode(false));
 
     const continueEco = () => {
         setEcoMode(true);
@@ -80,4 +74,4 @@ export function EcoModeButton() {
             </AlertDialogContent>
         </AlertDialog>
     );
-}
+})

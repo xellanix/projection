@@ -19,6 +19,7 @@ interface ProjectionActions {
         projectionIndex: number,
         contentIndex: number,
     ) => [string, number];
+    getContents: (projectionIndex: number) => ProjectionMaster["contents"];
 }
 
 type ProjectionStore = ProjectionState & ProjectionActions;
@@ -52,12 +53,14 @@ export const useProjectionStore = create<ProjectionStore>((_, get) => ({
     ...backgroundMiner(_projections),
     projections: _projections,
 
-    getProjectionLength(projectionIndex: number) {
-        return get().projections[projectionIndex]?.contents.length ?? 0;
-    },
+    getProjectionLength: (projectionIndex: number) =>
+        get().projections[projectionIndex]?.contents.length ?? 0,
 
-    getBackground(projectionIndex: number, contentIndex: number) {
+    getBackground: (projectionIndex: number, contentIndex: number) => {
         const bgIndex = get().maps[projectionIndex]?.[contentIndex] ?? 0;
         return [get().backgrounds[bgIndex] ?? "", bgIndex];
     },
+
+    getContents: (projectionIndex: number) =>
+        get().projections[projectionIndex]?.contents ?? [],
 }));

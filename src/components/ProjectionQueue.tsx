@@ -1,8 +1,5 @@
 "use client";
 
-import { BrandIcon } from "@/components/Brand";
-import { ContentResizer } from "@/components/ContentResizer";
-import { EcoModeButton } from "@/components/stores/EcoMode";
 import { Button } from "@/components/ui/button";
 import {
     Collapsible,
@@ -10,6 +7,7 @@ import {
     CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useControl } from "@/context/ControlContext";
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
 import { usePreview } from "@/context/PreviewContext";
 import { cn, mod } from "@/lib/utils";
@@ -18,21 +16,16 @@ import type { ProjectionItem } from "@/types";
 import { ArrowRight01Icon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useCallback, useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 const createItemName = (c: ProjectionItem) => {
     return c.name || (c.type !== "Component" && c.content) || "Untitled";
 };
 
-interface ProjectionQueueProps {
-    currentProjection: number;
-    setCurrentProjection: React.Dispatch<React.SetStateAction<number>>;
-    setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
-}
-export const ProjectionQueue = memo(function ProjectionQueue({
-    currentProjection,
-    setCurrentProjection,
-    setCurrentIndex,
-}: ProjectionQueueProps) {
+export const ProjectionQueue = memo(function ProjectionQueue() {
+    const [setCurrentProjection, setCurrentIndex] = useControl(
+        useShallow((s) => [s.setCurrentProjection, s.setCurrentIndex]),
+    );
     const projections = useProjectionStore((s) => s.projections);
 
     const handleClick = useCallback(
@@ -62,7 +55,7 @@ export const ProjectionQueue = memo(function ProjectionQueue({
     }, [handleClick, projections.length, register, unregister]);
 
     return (
-        <div className="flex h-full flex-col gap-2 py-4">
+        <>
             <span className="px-7 text-lg font-semibold">Queue</span>
 
             <div className="flex-1 overflow-hidden">
@@ -72,38 +65,11 @@ export const ProjectionQueue = memo(function ProjectionQueue({
                             key={i}
                             className="group/collapsible flex flex-col"
                         >
-                            <div
-                                className={cn(
-                                    "relative flex flex-row rounded-md",
-                                    "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-[1] before:w-0.75 before:rounded-full before:transition-all before:duration-133 before:ease-out",
-                                    {
-                                        "bg-sidebar-accent/50 before:top-2.5 before:bottom-2.5":
-                                            i === currentProjection,
-                                    },
-                                )}
-                            >
-                                <Button
-                                    className="hover:bg-sidebar-accent active:bg-sidebar-accent hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground flex-1 justify-start rounded-md text-left"
-                                    variant={"ghost"}
-                                    size={"sm"}
-                                    onClick={handleClick(i, 0)}
-                                >
-                                    {p.title}
-                                </Button>
-                                <CollapsibleTrigger asChild>
-                                    <Button
-                                        variant={"ghost"}
-                                        size={"icon-sm"}
-                                        className="hover:bg-sidebar-accent active:bg-sidebar-accent hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground rounded-md"
-                                    >
-                                        <HugeiconsIcon
-                                            icon={ArrowRight01Icon}
-                                            strokeWidth={2.5}
-                                            className="transition-transform duration-133 ease-out group-data-[state=open]/collapsible:rotate-90"
-                                        />
-                                    </Button>
-                                </CollapsibleTrigger>
-                            </div>
+                            <QueueItem
+                                i={i}
+                                title={p.title}
+                                handleClick={handleClick}
+                            />
                             <CollapsibleContent className="flex flex-col">
                                 {p.contents.map((c, j) => (
                                     <Button
@@ -121,43 +87,70 @@ export const ProjectionQueue = memo(function ProjectionQueue({
                     ))}
                 </ScrollArea>
             </div>
+        </>
+    );
+});
 
-            <div className="flex flex-col gap-2 px-4">
-                <EcoModeButton />
-            </div>
+const QueueItem = memo(function QueueItem({
+    i,
+    title,
+    handleClick,
+}: {
+    i: number;
+    title: string;
+    handleClick: (i: number, j: number) => () => void;
+}) {
+    const [isActive] = useControl(
+        useShallow((s) => [s.currentProjection === i]),
+    );
 
-            <div className="h-12 px-7 py-2">
-                <ContentResizer className="h-full w-full">
-                    <BrandIcon />
-                </ContentResizer>
-            </div>
+    return (
+        <div
+            className={cn(
+                "relative flex flex-row rounded-md",
+                "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-[1] before:w-0.75 before:rounded-full before:transition-all before:duration-133 before:ease-out",
+                {
+                    "bg-sidebar-accent/50 before:top-2.5 before:bottom-2.5":
+                        isActive,
+                },
+            )}
+        >
+            <Button
+                className="hover:bg-sidebar-accent active:bg-sidebar-accent hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground flex-1 justify-start rounded-md text-left"
+                variant={"ghost"}
+                size={"sm"}
+                onClick={handleClick(i, 0)}
+            >
+                {title}
+            </Button>
+            <CollapsibleTrigger asChild>
+                <Button
+                    variant={"ghost"}
+                    size={"icon-sm"}
+                    className="hover:bg-sidebar-accent active:bg-sidebar-accent hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground rounded-md"
+                >
+                    <HugeiconsIcon
+                        icon={ArrowRight01Icon}
+                        strokeWidth={2.5}
+                        className="transition-transform duration-133 ease-out group-data-[state=open]/collapsible:rotate-90"
+                    />
+                </Button>
+            </CollapsibleTrigger>
         </div>
     );
 });
 
-interface ProjectionContentQueueProps {
-    currentProjection: number;
-    currentIndex: number;
-    setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
-}
-export const ProjectionContentQueue = memo(function ProjectionContentQueue({
-    currentProjection,
-    currentIndex,
-    setCurrentIndex,
-}: ProjectionContentQueueProps) {
-    const projections = useProjectionStore((s) => s.projections);
-    const preview = usePreview();
-
-    const handleClick = useCallback(
-        (index: number) => () => setCurrentIndex(index),
-        [setCurrentIndex],
+export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
+    const [currentProjection, setCurrentIndex] = useControl(
+        useShallow((s) => [s.currentProjection, s.setCurrentIndex]),
     );
+    const getContents = useProjectionStore((s) => s.getContents);
 
     const [grouped, groupedKeys] = useMemo(() => {
         let index = 0;
         const keys = new Set<string>();
         return [
-            projections[currentProjection]?.contents.reduce(
+            getContents(currentProjection).reduce(
                 (acc, { group, ...rest }) => {
                     const key = group ?? "Contents";
                     keys.add(key);
@@ -171,14 +164,14 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue({
             ),
             Array.from(keys),
         ];
-    }, [projections, currentProjection]);
+    }, [getContents, currentProjection]);
 
     const goToGroup = useCallback(
         (index: number) => () => {
             if (!groupedKeys.length) return;
             const group = groupedKeys[mod(index, groupedKeys.length)]!;
 
-            setCurrentIndex(grouped![group]![0]!.index);
+            setCurrentIndex(grouped[group]![0]!.index);
         },
         [grouped, groupedKeys, setCurrentIndex],
     );
@@ -203,38 +196,64 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue({
             <ScrollArea className="h-full w-full">
                 <div className="flex h-full flex-col gap-2">
                     {groupedKeys.map((g, i) => (
-                        <div key={i} className="flex w-full flex-col gap-2">
-                            <span className="font-semibold">{g}</span>
-                            <div className="before:bg-border/50 relative flex flex-col gap-2 before:absolute before:top-2 before:bottom-2 before:left-0 before:-z-10 before:w-0.75 before:rounded-full">
-                                {grouped![g]?.map((c) => (
-                                    <Button
-                                        key={c.index}
-                                        className={cn(
-                                            "relative justify-start overflow-hidden rounded-md text-left text-ellipsis",
-                                            "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-[1] before:w-0.75 before:rounded-full before:transition-all before:duration-133 before:ease-out",
-                                            {
-                                                "bg-accent/50 text-accent-foreground before:top-2.5 before:bottom-2.5":
-                                                    c.index === currentIndex &&
-                                                    preview.isPreview,
-                                            },
-                                            {
-                                                "bg-brand text-brand-foreground hover:bg-brand-hover hover:text-brand-foreground before:top-2.5 before:bottom-2.5":
-                                                    c.index === currentIndex &&
-                                                    !preview.isPreview,
-                                            },
-                                        )}
-                                        variant={"ghost"}
-                                        size={"sm"}
-                                        onClick={handleClick(c.index)}
-                                    >
-                                        {createItemName(c)}
-                                    </Button>
-                                ))}
-                            </div>
-                        </div>
+                        <ContentQueueGroup key={i} g={g} items={grouped[g]!} />
                     ))}
                 </div>
             </ScrollArea>
         </div>
+    );
+});
+
+const ContentQueueGroup = memo(function ContentQueueGroup({
+    g,
+    items,
+}: {
+    g: string;
+    items: (ProjectionItem & {
+        index: number;
+    })[];
+}) {
+    return (
+        <div className="flex w-full flex-col gap-2">
+            <span className="font-semibold">{g}</span>
+            <div className="before:bg-border/50 relative flex flex-col gap-2 before:absolute before:top-2 before:bottom-2 before:left-0 before:-z-10 before:w-0.75 before:rounded-full">
+                {items.map((c) => (
+                    <ContentQueueItem key={c.index} c={c} />
+                ))}
+            </div>
+        </div>
+    );
+});
+
+const ContentQueueItem = memo(function ContentQueueItem({
+    c,
+}: {
+    c: ProjectionItem & { index: number };
+}) {
+    const [isActive, setCurrentIndex] = useControl(
+        useShallow((s) => [s.currentIndex === c.index, s.setCurrentIndex]),
+    );
+    const { isPreview } = usePreview();
+
+    return (
+        <Button
+            className={cn(
+                "relative justify-start overflow-hidden rounded-md text-left text-ellipsis",
+                "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-[1] before:w-0.75 before:rounded-full before:transition-all before:duration-133 before:ease-out",
+                {
+                    "bg-accent/50 text-accent-foreground before:top-2.5 before:bottom-2.5":
+                        isActive && isPreview,
+                },
+                {
+                    "bg-brand text-brand-foreground hover:bg-brand-hover hover:text-brand-foreground before:top-2.5 before:bottom-2.5":
+                        isActive && !isPreview,
+                },
+            )}
+            variant={"ghost"}
+            size={"sm"}
+            onClick={() => setCurrentIndex(c.index)}
+        >
+            {createItemName(c)}
+        </Button>
     );
 });

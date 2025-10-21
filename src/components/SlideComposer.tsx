@@ -64,10 +64,10 @@ export const SlideComposer = memo(function SlideComposer({
     currentProjection,
     currentIndex,
 }: SlideComposerProps) {
-    const masters = useProjectionStore((s) => s.projections);
+    const getContents = useProjectionStore((s) => s.getContents);
     const content = useMemo(
-        () => masters[currentProjection]?.contents[currentIndex] ?? null,
-        [currentIndex, masters, currentProjection],
+        () => getContents(currentProjection)[currentIndex] ?? null,
+        [currentIndex, getContents, currentProjection],
     );
 
     return (
