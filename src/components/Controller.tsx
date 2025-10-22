@@ -123,13 +123,13 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
 
     return (
         <ButtonGroup aria-label="Slide Manipulations">
-            <ButtonGroup className="[&>*:not(:first-child)>*]:rounded-l-none [&>*:not(:first-child)>*]:border-l-0 [&>*:not(:last-child)>*]:rounded-r-none">
+            <ButtonGroup className="@max-lg/screen:opacity-100 [&>*:not(:first-child)>*]:rounded-l-none [&>*:not(:first-child)>*]:border-l-0 [&>*:not(:last-child)>*]:rounded-r-none">
                 <IconToggleButton
                     label="Black Screen"
                     icon={ComputerRemoveIcon}
                     iconStrokeWidth={0}
                     text="Black"
-                    textClassName="@max-lg/screen:hidden"
+                    textClassName="@max-xl/screen:hidden"
                     accelerator={{ shift: true, key: "B" }}
                     pressed={isBlack}
                     onPressed={specialScreen("black")}
@@ -139,7 +139,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
                     icon={Copy02Icon}
                     iconStrokeWidth={0}
                     text="Clear"
-                    textClassName="@max-lg/screen:hidden"
+                    textClassName="@max-xl/screen:hidden"
                     accelerator={{ shift: true, key: "C" }}
                     pressed={isClear}
                     onPressed={specialScreen("clear")}
@@ -155,7 +155,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
                     label="Full Screen"
                     icon={MaximizeScreenIcon}
                     text="Full Screen"
-                    textClassName="@max-sm/screen:hidden"
+                    textClassName="@max-md/screen:hidden"
                     accelerator={{ shift: true, key: "F" }}
                     onClick={openFullscreenView}
                 />

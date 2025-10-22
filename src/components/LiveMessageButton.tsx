@@ -19,7 +19,7 @@ import {
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
 import { useSettingsStore } from "@/stores/settings.store";
 import { useSocketStore } from "@/stores/socket.store";
-import { MaximizeScreenIcon } from "@hugeicons-pro/core-stroke-rounded";
+import { Chat01Icon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useCallback, useEffect, useState, type FormEvent } from "react";
 
@@ -45,10 +45,10 @@ const MessageToggle = memo(function MessageToggle({
                         onPressedChange={onPressed}
                     >
                         <HugeiconsIcon
-                            icon={MaximizeScreenIcon}
+                            icon={Chat01Icon}
                             strokeWidth={2}
                         />
-                        <span>Message</span>
+                        <span className="@max-lg/screen:hidden">Message</span>
                     </Toggle>
                 </div>
             </TooltipTrigger>
