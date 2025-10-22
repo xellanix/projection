@@ -1,6 +1,7 @@
 "use client";
 
 import { usePreview } from "@/context/PreviewContext";
+import { useViewOnly } from "@/context/ViewOnlyContext";
 import { cn } from "@/lib/utils";
 import { useEcoStore } from "@/stores/eco.store";
 import { useSocketStore } from "@/stores/socket.store";
@@ -19,6 +20,7 @@ export const VideoPlayer = memo(function VideoPlayer({
 }: VideoPlayerProps) {
     const preview = usePreview();
     const ecoMode = useEcoStore((s) => s.ecoMode);
+    const { isViewOnly } = useViewOnly();
 
     if (preview.isPreview) {
         return (
@@ -36,7 +38,7 @@ export const VideoPlayer = memo(function VideoPlayer({
         <OnScreenVideoPlayer
             {...props}
             className={cn("size-full", className, {
-                "absolute size-0 opacity-0": ecoMode,
+                "absolute size-0 opacity-0": ecoMode && !isViewOnly,
             })}
             background={background}
             autoPlay={autoPlay}
