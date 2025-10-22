@@ -35,6 +35,7 @@ import { useControl } from "@/context/ControlContext";
 import { usePreview } from "@/context/PreviewContext";
 import { Sidebar } from "@/components/Sidebar";
 import { LiveMessageButton } from "@/components/LiveMessageButton";
+import { useSettingsStore } from "@/stores/settings.store";
 
 const NavButton = memo(function NavButton({
     type,
@@ -102,12 +103,11 @@ export const SlideController = memo(function SlideController() {
     );
 });
 
-const OnScreenManipulator = memo(function OnScreenManipulator({
-    options,
-}: {
-    options: Record<string, boolean>;
-}) {
+const OnScreenManipulator = memo(function OnScreenManipulator() {
     const socket = useSocketStore((s) => s.socket);
+    const [isBlack, isClear] = useSettingsStore(
+        useShallow((s) => [s.local.screen.black, s.local.screen.clear]),
+    );
 
     const openFullscreenView = useCallback(() => {
         window.open("/view", "_blank", "noopener,noreferrer");
@@ -131,7 +131,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator({
                     text="Black"
                     textClassName="@max-lg/screen:hidden"
                     accelerator={{ shift: true, key: "B" }}
-                    pressed={options.black}
+                    pressed={isBlack}
                     onPressed={specialScreen("black")}
                 />
                 <IconToggleButton
@@ -141,7 +141,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator({
                     text="Clear"
                     textClassName="@max-lg/screen:hidden"
                     accelerator={{ shift: true, key: "C" }}
-                    pressed={options.clear}
+                    pressed={isClear}
                     onPressed={specialScreen("clear")}
                 />
             </ButtonGroup>
@@ -196,12 +196,15 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
     const setCurrent = useControl((s) => s.setCurrent);
     const socket = useSocketStore((s) => s.socket);
     const [isLoaded, setIsLoaded] = useState(false);
-    const [options, setOptions] = useState<Record<string, boolean>>({});
+    const setScreen = useSettingsStore((s) => s.setScreen);
 
     // Init the index and listen for updates from the server
     useEffect(() => {
         if (!socket) return;
         const updateIndex = setCurrent;
+        const sync = (specialScreen: Record<string, boolean>) => {
+            setScreen(specialScreen);
+        };
 
         socket.emit(
             "client:screen:index:init",
@@ -212,16 +215,18 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
                 specialScreen: Record<string, boolean>,
             ) => {
                 updateIndex(projectionIndex, index);
-                setOptions(specialScreen);
+                setScreen(specialScreen);
                 setIsLoaded(true);
             },
         );
         socket.on("server:screen:index:update", updateIndex);
+        socket.on("server:caster:specialScreen:sync", sync);
 
         return () => {
             socket.off("server:screen:index:update", updateIndex);
+            socket.off("server:caster:specialScreen:sync", sync);
         };
-    }, [setCurrent, socket]);
+    }, [setCurrent, setScreen, socket]);
 
     return (
         <div className="relative flex h-full flex-col items-center gap-4">
@@ -239,7 +244,7 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
             <div className="flex w-full flex-row justify-between gap-4">
                 <SlideController />
 
-                <OnScreenManipulator options={options} />
+                <OnScreenManipulator />
             </div>
 
             <Separator orientation="horizontal" />

@@ -114,9 +114,11 @@ app.prepare().then(() => {
         // "client:caster:specialScreen:set"
         socket.on(
             "client:caster:specialScreen:set",
-            (type: "black" | "clear", active: boolean) => {
+            (type: "black" | "clear" | "stopped", active: boolean) => {
                 const lastIndex = getPreferredIndex();
                 specialScreen[type] = active;
+
+                io.emit("server:caster:specialScreen:sync", specialScreen);
 
                 const index = getPreferredIndex();
                 if (index === lastIndex) return;

@@ -25,6 +25,8 @@ interface SettingsActions {
         partial: P | ((state: WritableDraft<T>) => void),
     ) => void;
 
+    setScreen: (partial: Partial<SettingsScreenState>) => void;
+
     setMessage: (message: string, isOpen: boolean) => void;
     toggleMessage: (force?: boolean) => void;
 }
@@ -46,6 +48,12 @@ export const useSettingsStore = create<SettingsStore>()(
         },
 
         set,
+
+        setScreen: (partial) => {
+            set((s) => {
+                Object.assign(s.local.screen, partial);
+            });
+        },
 
         setMessage: (message: string, isOpen: boolean) => {
             set((s) => {
