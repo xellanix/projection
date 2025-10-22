@@ -34,6 +34,7 @@ import { mod } from "@/lib/utils";
 import { useControl } from "@/context/ControlContext";
 import { usePreview } from "@/context/PreviewContext";
 import { Sidebar } from "@/components/Sidebar";
+import { LiveMessageButton } from "@/components/LiveMessageButton";
 
 const NavButton = memo(function NavButton({
     type,
@@ -51,7 +52,10 @@ const NavButton = memo(function NavButton({
                 icon={type === "prev" ? ArrowLeft01Icon : ArrowRight01Icon}
                 iconStrokeWidth={2.5}
                 onClick={move(type === "prev" ? -1 : 1)}
-                accelerator={{ key: "LeftArrow", shift: isPreviewMode }}
+                accelerator={{
+                    key: type === "prev" ? "ArrowLeft" : "ArrowRight",
+                    shift: isPreviewMode,
+                }}
             />
         </ButtonGroup>
     );
@@ -76,26 +80,18 @@ export const SlideController = memo(function SlideController() {
 
     const [register, unregister] = useGlobalKeyboard();
     useEffect(() => {
-        const previewKey = isPreview ? "Shift+" : "";
-
-        register(previewKey + "ArrowLeft", () => setCurrentIndex((p) => p - 1));
-        register(previewKey + "ArrowRight", () =>
-            setCurrentIndex((p) => p + 1),
-        );
         for (let i = 0; i < 10; i++) {
             register(`Digit${mod(i + 1, 10)}`, () => setCurrentIndex(i));
             register(`Numpad${mod(i + 1, 10)}`, () => setCurrentIndex(i));
         }
 
         return () => {
-            unregister(previewKey + "ArrowLeft");
-            unregister(previewKey + "ArrowRight");
             for (let i = 0; i < 10; i++) {
                 unregister(`Digit${i}`);
                 unregister(`Numpad${i}`);
             }
         };
-    }, [register, unregister, isPreview, setCurrentIndex]);
+    }, [register, unregister, setCurrentIndex]);
 
     return (
         <ButtonGroup aria-label="Slide Navigation">
@@ -107,14 +103,24 @@ export const SlideController = memo(function SlideController() {
 });
 
 const OnScreenManipulator = memo(function OnScreenManipulator({
-    specialScreen,
-    openFullscreenView,
     options,
 }: {
-    specialScreen: (type: string) => (pressed: boolean) => void;
-    openFullscreenView: () => void;
     options: Record<string, boolean>;
 }) {
+    const socket = useSocketStore((s) => s.socket);
+
+    const openFullscreenView = useCallback(() => {
+        window.open("/view", "_blank", "noopener,noreferrer");
+    }, []);
+
+    // Send special screen commands
+    const specialScreen = useCallback(
+        (type: string) => (pressed: boolean) => {
+            socket?.emit("client:caster:specialScreen:set", type, pressed);
+        },
+        [socket],
+    );
+
     return (
         <ButtonGroup aria-label="Slide Manipulations">
             <ButtonGroup className="[&>*:not(:first-child)>*]:rounded-l-none [&>*:not(:first-child)>*]:border-l-0 [&>*:not(:last-child)>*]:rounded-r-none">
@@ -138,6 +144,10 @@ const OnScreenManipulator = memo(function OnScreenManipulator({
                     pressed={options.clear}
                     onPressed={specialScreen("clear")}
                 />
+            </ButtonGroup>
+
+            <ButtonGroup>
+                <LiveMessageButton />
             </ButtonGroup>
 
             <ButtonGroup>
@@ -213,27 +223,6 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
         };
     }, [setCurrent, socket]);
 
-    // Send special screen commands
-    const specialScreen = useCallback(
-        (type: string) => (pressed: boolean) => {
-            socket?.emit("client:caster:specialScreen:set", type, pressed);
-        },
-        [socket],
-    );
-
-    const openFullscreenView = useCallback(() => {
-        window.open("/view", "_blank", "noopener,noreferrer");
-    }, []);
-
-    const [register, unregister] = useGlobalKeyboard();
-    useEffect(() => {
-        register("Shift+F", openFullscreenView);
-
-        return () => {
-            unregister("Shift+F");
-        };
-    }, [openFullscreenView, register, unregister]);
-
     return (
         <div className="relative flex h-full flex-col items-center gap-4">
             <IndexSender isLoaded={isLoaded} />
@@ -250,11 +239,7 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
             <div className="flex w-full flex-row justify-between gap-4">
                 <SlideController />
 
-                <OnScreenManipulator
-                    openFullscreenView={openFullscreenView}
-                    specialScreen={specialScreen}
-                    options={options}
-                />
+                <OnScreenManipulator options={options} />
             </div>
 
             <Separator orientation="horizontal" />

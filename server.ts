@@ -18,6 +18,10 @@ const specialScreen = {
     clear: false,
     stopped: false,
 };
+const message = {
+    message: "",
+    isOpen: false,
+};
 const controllerIds: string[] = [];
 
 // --- Utility Functions ---
@@ -130,6 +134,20 @@ app.prepare().then(() => {
                 specialScreen,
             );
         });
+
+        // "client:caster:message:toggle"
+        socket.on(
+            "client:caster:message:toggle",
+            (_message: string, force?: boolean) => {
+                message.message = _message;
+                message.isOpen = force ?? !message.isOpen;
+                io.emit(
+                    "server:screen:message:toggle",
+                    message.message,
+                    message.isOpen,
+                );
+            },
+        );
 
         // "client:video:bg:init:request"
         // "client:video:fg:init:request"

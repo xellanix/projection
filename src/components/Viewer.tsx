@@ -30,6 +30,8 @@ import {
     useTransitionStore,
 } from "@/stores/transition.store";
 import { useShallow } from "zustand/react/shallow";
+import { LiveMessage } from "@/components/LiveMessage";
+import { useSettingsStore } from "@/stores/settings.store";
 
 function BlackScreen() {
     return <div className="h-[1080px] w-[1920px] bg-black" />;
@@ -98,10 +100,21 @@ export const Viewer = memo(function Viewer({
     );
 });
 
+const LiveMessageEngine = memo(function LiveMessageEngine() {
+    const [{ message, isOpen }, setIsOpen] = useSettingsStore(
+        useShallow((s) => [s.local.message, s.toggleMessage]),
+    );
+
+    return (
+        <LiveMessage message={message} isOpen={isOpen} setIsOpen={setIsOpen} />
+    );
+});
+
 export const OnScreenViewer = memo(function OnScreenViewer() {
     const socket = useSocketStore((s) => s.socket);
     const [currentProjection, setCurrentProjection] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const setMessage = useSettingsStore((s) => s.setMessage);
 
     useEffect(() => {
         if (!socket) return;
@@ -119,22 +132,27 @@ export const OnScreenViewer = memo(function OnScreenViewer() {
         socket.emit("client:screen:index:init", updateIndex);
         socket.on("server:screen:index:update", updateIndex);
         socket.on("server:screen:specialScreen:set", viewerManipulated);
+        socket.on("server:screen:message:toggle", setMessage);
 
         return () => {
             socket.off("server:screen:index:update", updateIndex);
             socket.off("server:screen:specialScreen:set", viewerManipulated);
+            socket.off("server:screen:message:toggle", setMessage);
         };
-    }, [socket]);
+    }, [setMessage, socket]);
 
     if (currentIndex === -3) {
         return <EmptySignal variant="source-stopped" />;
     }
 
     return (
-        <Viewer
-            currentProjection={currentProjection}
-            currentIndex={currentIndex}
-        />
+        <>
+            <Viewer
+                currentProjection={currentProjection}
+                currentIndex={currentIndex}
+            />
+            <LiveMessageEngine />
+        </>
     );
 });
 

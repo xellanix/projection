@@ -81,6 +81,13 @@ export const GlobalKeyboardProvider = ({
                     shortcuts.current["Shift+F"]?.();
                     break;
                 }
+                case "KeyM": {
+                    if (!e.shiftKey) return;
+
+                    e.preventDefault();
+                    shortcuts.current["Shift+M"]?.();
+                    break;
+                }
                 case "ArrowLeft": {
                     e.preventDefault();
 

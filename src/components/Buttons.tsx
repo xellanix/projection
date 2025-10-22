@@ -47,6 +47,22 @@ export const IconButton = memo(function IconButton({
     onClick,
     accelerator,
 }: IconButtonProps) {
+    const [register, unregister] = useGlobalKeyboard();
+    useEffect(() => {
+        if (accelerator) {
+            const key = `${accelerator.shift ? "Shift+" : ""}${
+                accelerator.meta ? "Meta+" : ""
+            }${accelerator.alt ? "Alt+" : ""}${
+                accelerator.ctrl ? "Ctrl+" : ""
+            }${accelerator.key}`;
+
+            register(key, onClick ?? (() => {/* do nothing */}));
+            return () => {
+                unregister(key);
+            };
+        }
+    }, [accelerator, register, unregister, onClick]);
+
     return (
         <Tooltip>
             <TooltipTrigger asChild>
