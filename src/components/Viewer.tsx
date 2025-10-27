@@ -100,20 +100,12 @@ export const Viewer = memo(function Viewer({
     );
 });
 
-const LiveMessageEngine = memo(function LiveMessageEngine() {
-    const [{ message, isOpen }, setIsOpen] = useSettingsStore(
-        useShallow((s) => [s.local.message, s.toggleMessage]),
-    );
-
-    return (
-        <LiveMessage message={message} isOpen={isOpen} setIsOpen={setIsOpen} />
-    );
-});
-
 export const OnScreenViewer = memo(function OnScreenViewer() {
     const socket = useSocketStore((s) => s.socket);
     const [currentProjection, setCurrentProjection] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [remaining, setRemaining] = useState(3);
+    const [progress, setProgress] = useState(0);
     const setMessage = useSettingsStore((s) => s.setMessage);
 
     useEffect(() => {
@@ -128,16 +120,29 @@ export const OnScreenViewer = memo(function OnScreenViewer() {
             setCurrentIndex(viewIndex);
         };
         const viewerManipulated = (index: number) => setCurrentIndex(index);
+        const initMessage = (
+            message: string,
+            isOpen: boolean,
+            remaining?: number,
+            progress?: number,
+        ) => {
+            setMessage(message, isOpen);
+            setRemaining(remaining ?? 3);
+            setProgress(progress ?? 0);
+        };
 
         socket.emit("client:screen:index:init", updateIndex);
+        socket.emit("client:screen:message:init:request");
         socket.on("server:screen:index:update", updateIndex);
         socket.on("server:screen:specialScreen:set", viewerManipulated);
-        socket.on("server:screen:message:toggle", setMessage);
+        socket.on("server:screen:message:toggle", initMessage);
+        socket.on("server:screen:message:init", initMessage);
 
         return () => {
             socket.off("server:screen:index:update", updateIndex);
             socket.off("server:screen:specialScreen:set", viewerManipulated);
-            socket.off("server:screen:message:toggle", setMessage);
+            socket.off("server:screen:message:toggle", initMessage);
+            socket.off("server:screen:message:init", initMessage);
         };
     }, [setMessage, socket]);
 
@@ -151,7 +156,7 @@ export const OnScreenViewer = memo(function OnScreenViewer() {
                 currentProjection={currentProjection}
                 currentIndex={currentIndex}
             />
-            <LiveMessageEngine />
+            <LiveMessage remaining={remaining} progress={progress} />
         </>
     );
 });
@@ -224,17 +229,23 @@ const EmptySignal = memo(function EmptySignal({
 export function SignalCatcher({ children }: { children: React.ReactNode }) {
     const socket = useSocketStore((s) => s.socket);
     const [hasController, setHasController] = useState(false);
+    const setMessage = useSettingsStore((s) => s.setMessage);
 
     useEffect(() => {
         if (!socket) return;
 
+        const hasAnyCallback = (hasAny: boolean) => {
+            setHasController(hasAny);
+            if (!hasAny) setMessage("", false);
+        };
+
         socket.emit("client:socket:hasAny");
-        socket.on("server:socket:hasAny", setHasController);
+        socket.on("server:socket:hasAny", hasAnyCallback);
 
         return () => {
-            socket.off("server:socket:hasAny", setHasController);
+            socket.off("server:socket:hasAny", hasAnyCallback);
         };
-    }, [socket]);
+    }, [setMessage, socket]);
 
     return hasController ? children : <EmptySignal />;
 }

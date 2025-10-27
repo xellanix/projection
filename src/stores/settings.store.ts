@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type { WritableDraft } from "immer";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";

@@ -69,6 +69,12 @@ export interface MarqueeHandle {
      * @returns {number} A value from 0 to 1.
      */
     getProgress: () => number;
+
+    /**
+     * Gets the number of remaining loops, including the current one.
+     * @returns {number} The number of remaining loops.
+     */
+    getRemainingLoops: () => number;
 }
 
 /**
@@ -115,7 +121,7 @@ export const Marquee = memo(
                     const width = contentRef.current.offsetWidth;
                     setContentWidth(width);
                 }
-            }, [children, loop]); // Re-measure if children or loop strategy changes
+            }, [children]); // Re-measure if children or loop strategy changes
 
             /** Measures the width of the container and observes resizing. */
             useLayoutEffect(() => {
@@ -168,6 +174,27 @@ export const Marquee = memo(
                 iterations = loop > 0 ? 1 : 0;
             }
 
+            // --- Ref to hold dynamic state ---
+            /**
+             * This ref holds all the values that the imperative handle's
+             * functions need to read. This solves the stale closure problem.
+             */
+            const stateRef = useRef({
+                durationMs,
+                shouldUseTwoCloneRender,
+                delay,
+                isInfinite,
+                loop,
+            });
+            // Update the ref on every render
+            stateRef.current = {
+                durationMs,
+                shouldUseTwoCloneRender,
+                delay,
+                isInfinite,
+                loop,
+            };
+
             // --- WAAPI Animation and Event Effect ---
             /**
              * This effect creates, updates, and controls the
@@ -205,7 +232,6 @@ export const Marquee = memo(
 
                 if (pause) animation.pause();
                 if (progress !== undefined) {
-                    animation.pause();
                     animation.currentTime = progress * durationMs;
                 }
 
@@ -234,8 +260,14 @@ export const Marquee = memo(
             useImperativeHandle(
                 ref,
                 () => ({
+                    /**
+                     * Gets the current progress of the animation (0 to 1).
+                     */
                     getProgress: () => {
-                        if (progress !== undefined) return progress;
+                        // Read from props/state refs to get the latest values
+                        const { durationMs, shouldUseTwoCloneRender, delay } =
+                            stateRef.current;
+
                         const animation = animationRef.current;
                         if (!animation || durationMs === 0) return 0;
                         const currentTime =
@@ -245,6 +277,7 @@ export const Marquee = memo(
                         if (activeTime <= 0) return 0;
 
                         if (shouldUseTwoCloneRender) {
+                            // Two-clone: progress is % of a single cycle
                             const cycleProgress =
                                 (activeTime % durationMs) / durationMs;
                             if (
@@ -255,11 +288,55 @@ export const Marquee = memo(
                             }
                             return cycleProgress;
                         } else {
+                            // Long-chain: progress is % of total animation
                             return Math.min(1, activeTime / durationMs);
                         }
                     },
+                    /**
+                     * Gets the number of loops remaining, including the current one.
+                     */
+                    getRemainingLoops: () => {
+                        // Read from props/state refs to get the latest values
+                        const {
+                            durationMs,
+                            shouldUseTwoCloneRender,
+                            delay,
+                            isInfinite,
+                            loop,
+                        } = stateRef.current;
+
+                        if (isInfinite) {
+                            return Infinity;
+                        }
+
+                        const animation = animationRef.current;
+                        if (!animation || durationMs === 0 || loop === 0) {
+                            return 0;
+                        }
+
+                        if (animation.playState === "finished") {
+                            return 0;
+                        }
+
+                        const currentTime =
+                            (animation.currentTime as number) || 0;
+                        const activeTime = currentTime - delay;
+
+                        if (activeTime <= 0) {
+                            return loop;
+                        }
+
+                        if (shouldUseTwoCloneRender) {
+                            const currentLoopNumber =
+                                Math.floor(activeTime / durationMs) + 1;
+                            const remaining = loop - currentLoopNumber + 1;
+                            return Math.max(0, remaining);
+                        } else {
+                            return 1;
+                        }
+                    },
                 }),
-                [progress, durationMs, shouldUseTwoCloneRender, delay],
+                [],
             );
 
             // --- Render Logic ---

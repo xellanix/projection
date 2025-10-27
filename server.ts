@@ -44,6 +44,14 @@ const removeController = (id: string) => {
     console.log("Unregistered controller:", id);
 };
 
+// Resets the temporary variables if there are no controllers
+const resetIfNoController = () => {
+    if (controllerIds.length > 0) return;
+
+    message.message = "";
+    message.isOpen = false;
+};
+
 // --- Main App ---
 app.prepare().then(() => {
     const httpServer = createServer((req, res) => {
@@ -77,6 +85,7 @@ app.prepare().then(() => {
         // "client:socket:unregister"
         socket.on("client:socket:unregister", (id: string) => {
             removeController(id);
+            resetIfNoController();
             socket.broadcast.emit(
                 "server:socket:hasAny",
                 controllerIds.length > 0,
@@ -84,6 +93,7 @@ app.prepare().then(() => {
         });
         // "client:socket:hasAny"
         socket.on("client:socket:hasAny", () => {
+            resetIfNoController();
             socket.emit("server:socket:hasAny", controllerIds.length > 0);
         });
 
@@ -126,6 +136,30 @@ app.prepare().then(() => {
                 io.emit("server:screen:specialScreen:set", index);
             },
         );
+        // "client:caster:message:toggle:request"
+        socket.on(
+            "client:caster:message:toggle:request",
+            (message: string, force?: boolean) => {
+                io.to(controllerIds[0]!).emit(
+                    `server:caster:message:toggle:request`,
+                    message,
+                    force,
+                );
+            },
+        );
+        // "client:caster:message:toggle"
+        socket.on(
+            "client:caster:message:toggle",
+            (_message: string, force?: boolean) => {
+                message.message = _message;
+                message.isOpen = force ?? !message.isOpen;
+                io.emit(
+                    "server:screen:message:toggle",
+                    message.message,
+                    message.isOpen,
+                );
+            },
+        );
 
         // "client:screen:index:init"
         socket.on("client:screen:index:init", (callback) => {
@@ -137,16 +171,25 @@ app.prepare().then(() => {
             );
         });
 
-        // "client:caster:message:toggle"
+        // "client:screen:message:init:request"
+        socket.on("client:screen:message:init:request", () => {
+            io.to(controllerIds[0]!).emit("server:screen:message:init:request");
+        });
+        // "client:screen:message:init"
         socket.on(
-            "client:caster:message:toggle",
-            (_message: string, force?: boolean) => {
-                message.message = _message;
-                message.isOpen = force ?? !message.isOpen;
+            "client:screen:message:init",
+            (
+                message: string,
+                isOpen: boolean,
+                remaining: number,
+                progress: number,
+            ) => {
                 io.emit(
-                    "server:screen:message:toggle",
-                    message.message,
-                    message.isOpen,
+                    "server:screen:message:init",
+                    message,
+                    isOpen,
+                    remaining,
+                    progress,
                 );
             },
         );

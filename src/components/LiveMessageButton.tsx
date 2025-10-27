@@ -73,13 +73,27 @@ export const LiveMessageButton = memo(function LiveMessageButton() {
     const serverToggle = useCallback(
         (isOpen: boolean, message?: string) => {
             socket?.emit(
-                "client:caster:message:toggle",
+                "client:caster:message:toggle:request",
                 message ?? "",
                 isOpen,
             );
         },
         [socket],
     );
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const request = (message: string, force?: boolean) => {
+            socket.emit("client:caster:message:toggle", message, force);
+        };
+
+        socket.on("server:caster:message:toggle:request", request);
+
+        return () => {
+            socket.off("server:caster:message:toggle:request", request);
+        }
+    }, [socket]);
 
     const toggleMessage = useCallback(
         () => (!opened ? setOpenAlert(true) : serverToggle(false)),
