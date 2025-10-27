@@ -34,7 +34,19 @@ import { LiveMessage } from "@/components/LiveMessage";
 import { useSettingsStore } from "@/stores/settings.store";
 
 function BlackScreen() {
-    return <div className="h-[1080px] w-[1920px] bg-black" />;
+    const contentResolution = useSettingsStore(
+        (s) => s.global.remap.contentResolution,
+    );
+
+    return (
+        <div
+            className="bg-black"
+            style={{
+                width: `${contentResolution.width}px`,
+                height: `${contentResolution.height}px`,
+            }}
+        />
+    );
 }
 
 function ClearScreen() {
@@ -167,10 +179,20 @@ interface EmptySignalProps {
 const EmptySignal = memo(function EmptySignal({
     variant = "no-source",
 }: EmptySignalProps) {
+    const contentResolution = useSettingsStore(
+        (s) => s.global.remap.contentResolution,
+    );
+
     return (
         <div className="dark text-foreground absolute h-full w-full bg-black">
             <ContentResizer className="h-full w-full">
-                <div className="flex h-[1080px] w-[1920px]">
+                <div
+                    className="flex"
+                    style={{
+                        width: `${contentResolution.width}px`,
+                        height: `${contentResolution.height}px`,
+                    }}
+                >
                     <Empty className="gap-12">
                         <div className="flex w-full flex-1" />
                         <EmptyHeader className="max-w-3xl gap-4">

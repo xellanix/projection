@@ -27,3 +27,8 @@ export type ProjectionMaster = {
 };
 
 export type ProjectionBackgroundsMap = Record<number, Record<number, number>>;
+
+export type Size = {
+    width: number;
+    height: number;
+};

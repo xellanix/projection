@@ -16,7 +16,12 @@ export const LiveMessage = memo(function LiveMessage({
     remaining,
     progress,
 }: LiveMessageProps) {
-    const isOpen = useSettingsStore((s) => s.local.message.isOpen);
+    const [isOpen, contentResolution] = useSettingsStore(
+        useShallow((s) => [
+            s.local.message.isOpen,
+            s.global.remap.contentResolution,
+        ]),
+    );
 
     const isAnimatePresent =
         (remaining === 3 && progress === 0) ||
@@ -25,12 +30,18 @@ export const LiveMessage = memo(function LiveMessage({
     return (
         <div className="absolute h-full w-full">
             <ContentResizer className="h-full w-full">
-                <div className="relative flex h-[1080px] w-[1920px] flex-col items-center justify-center">
+                <div
+                    className="relative flex flex-col items-center justify-center"
+                    style={{
+                        width: `${contentResolution.width}px`,
+                        height: `${contentResolution.height}px`,
+                    }}
+                >
                     <AnimatePresence>
                         {isOpen && (
                             <motion.div
                                 className="absolute h-full w-full *:absolute *:bottom-0"
-                                initial={{ x: 1920, opacity: 0 }}
+                                initial={{ x: contentResolution.width, opacity: 0 }}
                                 animate={{
                                     x: 0,
                                     opacity: 1,
@@ -39,7 +50,7 @@ export const LiveMessage = memo(function LiveMessage({
                                         ease: "easeOut",
                                     },
                                 }}
-                                exit={{ x: -1920, opacity: 0 }}
+                                exit={{ x: -contentResolution.width, opacity: 0 }}
                                 transition={{ duration: 0.5, ease: "easeOut" }}
                             >
                                 <LiveMessageMarquee
@@ -57,7 +68,7 @@ export const LiveMessage = memo(function LiveMessage({
 
 const LiveMessageMarquee = memo(function LiveMessageMarquee({
     remaining,
-    progress
+    progress,
 }: LiveMessageProps) {
     const marqueeRef = useRef<MarqueeHandle>(null);
 

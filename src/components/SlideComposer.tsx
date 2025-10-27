@@ -3,6 +3,7 @@
 import { ContentResizer } from "@/components/ContentResizer";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { useProjectionStore } from "@/stores/projection.store";
+import { useSettingsStore } from "@/stores/settings.store";
 import {
     transitionVariants,
     useTransitionStore,
@@ -20,6 +21,10 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
     currentProjection,
     currentIndex,
 }: SlideComposerProps) {
+    const contentResolution = useSettingsStore(
+        (s) => s.global.remap.contentResolution,
+    );
+
     const getBackground = useProjectionStore((s) => s.getBackground);
     const [background, index] = useMemo(
         () => getBackground(currentProjection, currentIndex),
@@ -36,7 +41,7 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
         <AnimatePresence custom={transition}>
             <motion.div
                 key={index}
-                className="absolute h-full w-full bg-black"
+                className="absolute h-full w-full"
                 initial="enter"
                 animate="center"
                 exit="exit"
@@ -45,7 +50,13 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
                 data-slot="background"
             >
                 <ContentResizer className="h-full w-full">
-                    <div className="flex h-[1080px] w-[1920px] flex-col items-center justify-center bg-black">
+                    <div
+                        className="flex flex-col items-center justify-center"
+                        style={{
+                            width: `${contentResolution.width}px`,
+                            height: `${contentResolution.height}px`,
+                        }}
+                    >
                         <VideoPlayer
                             src={background}
                             muted
@@ -64,6 +75,10 @@ export const SlideComposer = memo(function SlideComposer({
     currentProjection,
     currentIndex,
 }: SlideComposerProps) {
+    const contentResolution = useSettingsStore(
+        (s) => s.global.remap.contentResolution,
+    );
+
     const getContents = useProjectionStore((s) => s.getContents);
     const content = useMemo(
         () => getContents(currentProjection)[currentIndex] ?? null,
@@ -72,7 +87,11 @@ export const SlideComposer = memo(function SlideComposer({
 
     return (
         <div
-            className="flex h-[1080px] w-[1920px] flex-col items-center justify-center"
+            className="flex flex-col items-center justify-center"
+            style={{
+                width: `${contentResolution.width}px`,
+                height: `${contentResolution.height}px`,
+            }}
             data-slot="composer"
         >
             <div

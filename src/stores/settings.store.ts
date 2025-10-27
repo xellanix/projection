@@ -1,21 +1,30 @@
+import type { Size } from "@/types";
 import type { WritableDraft } from "immer";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-interface SettingsScreenState {
+interface SettingsLocalScreenState {
     black: boolean;
     clear: boolean;
     stopped: boolean;
 }
-interface SettingsMessageState {
+interface SettingsLocalMessageState {
     message: string;
     isOpen: boolean;
 }
 
+interface SettingsGlobalRemapState {
+    screenResolution: Size;
+    contentResolution: Size;
+}
+
 interface SettingsState {
     local: {
-        screen: SettingsScreenState;
-        message: SettingsMessageState;
+        screen: SettingsLocalScreenState;
+        message: SettingsLocalMessageState;
+    };
+    global: {
+        remap: SettingsGlobalRemapState;
     };
 }
 
@@ -24,10 +33,12 @@ interface SettingsActions {
         partial: P | ((state: WritableDraft<T>) => void),
     ) => void;
 
-    setScreen: (partial: Partial<SettingsScreenState>) => void;
+    setScreen: (partial: Partial<SettingsLocalScreenState>) => void;
 
     setMessage: (message: string, isOpen: boolean) => void;
     toggleMessage: (force?: boolean) => void;
+
+    setRemap: (partial: Partial<SettingsGlobalRemapState>) => void;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -43,6 +54,18 @@ export const useSettingsStore = create<SettingsStore>()(
             message: {
                 message: "",
                 isOpen: false,
+            },
+        },
+        global: {
+            remap: {
+                screenResolution: {
+                    width: 1920,
+                    height: 1080,
+                },
+                contentResolution: {
+                    width: 1920,
+                    height: 1080,
+                },
             },
         },
 
@@ -63,6 +86,12 @@ export const useSettingsStore = create<SettingsStore>()(
         toggleMessage: (force?: boolean) => {
             set((s) => {
                 s.local.message.isOpen = force ?? !s.local.message.isOpen;
+            });
+        },
+
+        setRemap: (partial) => {
+            set((s) => {
+                Object.assign(s.global.remap, partial);
             });
         },
     })),
