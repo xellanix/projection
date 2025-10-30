@@ -13,7 +13,7 @@ export const Sidebar = memo(function Sidebar() {
                 <EcoModeButton />
             </div>
 
-            <div className="h-12 px-7 py-2">
+            <div className="h-7 px-4 mt-2">
                 <ContentResizer className="h-full w-full">
                     <BrandIcon />
                 </ContentResizer>

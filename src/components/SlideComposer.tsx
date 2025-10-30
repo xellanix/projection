@@ -51,7 +51,7 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
             >
                 <ContentResizer className="h-full w-full">
                     <div
-                        className="flex flex-col items-center justify-center"
+                        className="flex flex-col items-center justify-center bg-black"
                         style={{
                             width: `${contentResolution.width}px`,
                             height: `${contentResolution.height}px`,

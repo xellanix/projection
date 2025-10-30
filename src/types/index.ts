@@ -26,6 +26,10 @@ export type ProjectionMaster = {
     transition?: ProjectionTransition;
 };
 
+export type ProjectionMasterWithId = ProjectionMaster & {
+    id: string;
+};
+
 export type ProjectionBackgroundsMap = Record<number, Record<number, number>>;
 
 export type Size = {

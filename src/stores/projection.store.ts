@@ -1,6 +1,13 @@
 import { _projections } from "@/slides";
-import type { ProjectionBackgroundsMap, ProjectionMaster } from "@/types";
+import type {
+    ProjectionBackgroundsMap,
+    ProjectionMaster,
+    ProjectionMasterWithId,
+} from "@/types";
 import { create } from "zustand";
+import { v4 as uuidv4 } from "uuid";
+
+type Setter<T> = React.SetStateAction<T>;
 
 type ProjectionBackgrounds = {
     backgrounds: string[];
@@ -8,7 +15,7 @@ type ProjectionBackgrounds = {
 };
 
 interface ProjectionState {
-    projections: ProjectionMaster[];
+    projections: ProjectionMasterWithId[];
     backgrounds: string[];
     maps: ProjectionBackgroundsMap;
 }
@@ -20,6 +27,11 @@ interface ProjectionActions {
         contentIndex: number,
     ) => [string, number];
     getContents: (projectionIndex: number) => ProjectionMaster["contents"];
+
+    setProjections: (projections: Setter<ProjectionMaster[]>) => void;
+    setProjectionsWithIds: (
+        projections: Setter<ProjectionMasterWithId[]>,
+    ) => void;
 }
 
 type ProjectionStore = ProjectionState & ProjectionActions;
@@ -49,9 +61,16 @@ const backgroundMiner = (
     return { backgrounds, maps: backgroundsMap };
 };
 
-export const useProjectionStore = create<ProjectionStore>((_, get) => ({
+const generateIds = (projections: ProjectionMaster[]) => {
+    return projections.map<ProjectionMasterWithId>((p) => ({
+        ...p,
+        id: uuidv4(),
+    }));
+};
+
+export const useProjectionStore = create<ProjectionStore>((set, get) => ({
     ...backgroundMiner(_projections),
-    projections: _projections,
+    projections: generateIds(_projections),
 
     getProjectionLength: (projectionIndex: number) =>
         get().projections[projectionIndex]?.contents.length ?? 0,
@@ -63,4 +82,30 @@ export const useProjectionStore = create<ProjectionStore>((_, get) => ({
 
     getContents: (projectionIndex: number) =>
         get().projections[projectionIndex]?.contents ?? [],
+
+    setProjections: (projections) => {
+        set((s) => {
+            const p =
+                typeof projections === "function"
+                    ? projections(s.projections)
+                    : projections;
+            return {
+                ...backgroundMiner(p),
+                projections: generateIds(p),
+            };
+        });
+    },
+
+    setProjectionsWithIds: (projections) => {
+        set((s) => {
+            const p =
+                typeof projections === "function"
+                    ? projections(s.projections)
+                    : projections;
+            return {
+                ...backgroundMiner(p),
+                projections: p,
+            };
+        });
+    },
 }));

@@ -7,13 +7,25 @@ import {
     CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+    Sortable,
+    SortableContent,
+    SortableItem,
+    SortableItemHandle,
+    SortableOverlay,
+} from "@/components/ui/sortable";
 import { useControl } from "@/context/ControlContext";
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
 import { usePreview } from "@/context/PreviewContext";
 import { cn, mod } from "@/lib/utils";
 import { useProjectionStore } from "@/stores/projection.store";
-import type { ProjectionItem } from "@/types";
-import { ArrowRight01Icon } from "@hugeicons-pro/core-stroke-rounded";
+import type { ProjectionItem, ProjectionMasterWithId } from "@/types";
+import type { UniqueIdentifier } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
+import {
+    ArrowRight01Icon,
+    DragDropVerticalIcon,
+} from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useCallback, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -26,7 +38,9 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
     const [setCurrentProjection, setCurrentIndex] = useControl(
         useShallow((s) => [s.setCurrentProjection, s.setCurrentIndex]),
     );
-    const projections = useProjectionStore((s) => s.projections);
+    const [projections, setProjectionsWithIds] = useProjectionStore(
+        useShallow((s) => [s.projections, s.setProjectionsWithIds]),
+    );
 
     const handleClick = useCallback(
         (projectionIndex: React.SetStateAction<number>, index: number) =>
@@ -35,6 +49,49 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
                 setCurrentIndex(index);
             },
         [setCurrentProjection, setCurrentIndex],
+    );
+
+    const onMoved = useCallback(
+        (ev: { activeIndex: number; overIndex: number }) => {
+            setProjectionsWithIds((p) =>
+                arrayMove(p, ev.activeIndex, ev.overIndex),
+            );
+            setCurrentProjection((p) => {
+                if (p === ev.activeIndex) {
+                    return ev.overIndex;
+                } else if (p < ev.activeIndex) {
+                    if (ev.overIndex <= p) {
+                        return p + 1;
+                    } else return p;
+                } else {
+                    if (ev.overIndex >= p) {
+                        return p - 1;
+                    } else return p;
+                }
+            });
+        },
+        [setCurrentProjection, setProjectionsWithIds],
+    );
+
+    const overlay = useCallback(
+        (activeItem: { value: UniqueIdentifier }) => {
+            const pIndex = projections.findIndex(
+                (p) => p.id === activeItem.value,
+            );
+
+            if (pIndex === -1) return null;
+
+            return (
+                <QueueItem
+                    p={projections[pIndex]!}
+                    i={pIndex}
+                    handleClick={() => () => {
+                        /**/
+                    }}
+                />
+            );
+        },
+        [projections],
     );
 
     const [register, unregister] = useGlobalKeyboard();
@@ -56,42 +113,69 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
 
     return (
         <>
-            <span className="px-7 text-lg font-semibold">Queue</span>
+            <span className="px-4 text-lg font-semibold">Queue</span>
 
             <div className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full w-full px-4">
-                    {projections.map((p, i) => (
-                        <Collapsible
-                            key={i}
-                            className="group/collapsible flex flex-col"
-                        >
-                            <QueueItem
-                                i={i}
-                                title={p.title}
-                                handleClick={handleClick}
-                            />
-                            <CollapsibleContent className="flex flex-col">
-                                {p.contents.map((c, j) => (
-                                    <Button
-                                        key={j}
-                                        className="hover:bg-sidebar-accent active:bg-sidebar-accent hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground before:bg-border relative justify-start overflow-hidden rounded-md pl-9 text-left text-ellipsis before:absolute before:top-0 before:bottom-full before:left-3 before:h-full before:w-0.5"
-                                        variant={"ghost"}
-                                        size={"sm"}
-                                        onClick={handleClick(i, j)}
-                                    >
-                                        {createItemName(c)}
-                                    </Button>
-                                ))}
-                            </CollapsibleContent>
-                        </Collapsible>
-                    ))}
-                </ScrollArea>
+                <Sortable
+                    value={projections}
+                    onMove={onMoved}
+                    getItemValue={(i) => i.id}
+                >
+                    <ScrollArea className="h-full w-full px-4 [&>div>div]:!flex [&>div>div]:!flex-col">
+                        <SortableContent>
+                            {projections.map((p, i) => (
+                                <QueueItem
+                                    key={p.id}
+                                    p={p}
+                                    i={i}
+                                    handleClick={handleClick}
+                                />
+                            ))}
+                        </SortableContent>
+                    </ScrollArea>
+                    <SortableOverlay>{overlay}</SortableOverlay>
+                </Sortable>
             </div>
         </>
     );
 });
 
 const QueueItem = memo(function QueueItem({
+    p,
+    i,
+    handleClick,
+}: {
+    p: ProjectionMasterWithId;
+    i: number;
+    handleClick: (i: number, j: number) => () => void;
+}) {
+    return (
+        <SortableItem value={p.id} asChild>
+            <Collapsible className="group/collapsible flex flex-col">
+                <QueueCollapsibleItem
+                    i={i}
+                    title={p.title}
+                    handleClick={handleClick}
+                />
+                <CollapsibleContent className="flex flex-col">
+                    {p.contents.map((c, j) => (
+                        <Button
+                            key={j}
+                            className="hover:bg-sidebar-accent active:bg-sidebar-accent hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground before:bg-border relative block justify-start truncate rounded-md pl-11 text-left before:absolute before:top-0 before:bottom-full before:left-3 before:h-full before:w-0.5"
+                            variant={"ghost"}
+                            size={"sm"}
+                            onClick={handleClick(i, j)}
+                        >
+                            {createItemName(c)}
+                        </Button>
+                    ))}
+                </CollapsibleContent>
+            </Collapsible>
+        </SortableItem>
+    );
+});
+
+const QueueCollapsibleItem = memo(function QueueCollapsibleItem({
     i,
     title,
     handleClick,
@@ -107,16 +191,29 @@ const QueueItem = memo(function QueueItem({
     return (
         <div
             className={cn(
-                "relative flex flex-row rounded-md",
-                "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-[1] before:w-0.75 before:rounded-full before:transition-all before:duration-133 before:ease-out",
+                "relative flex flex-row rounded-md transition-all duration-133 ease-out",
                 {
-                    "bg-sidebar-accent/50 before:top-2.5 before:bottom-2.5":
+                    "active-projection bg-brand text-brand-foreground":
                         isActive,
                 },
             )}
         >
+            <SortableItemHandle asChild>
+                <Button
+                    variant={"ghost"}
+                    size={"icon-sm"}
+                    className="hover:text-foreground in-[.active-projection]:hover:text-brand-foreground active:text-foreground in-[.active-projection]:active:text-brand-foreground rounded-md hover:bg-transparent active:bg-transparent"
+                >
+                    <HugeiconsIcon
+                        icon={DragDropVerticalIcon}
+                        strokeWidth={4}
+                        size={"1rem"}
+                    />
+                </Button>
+            </SortableItemHandle>
+
             <Button
-                className="hover:bg-sidebar-accent active:bg-sidebar-accent hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground flex-1 justify-start rounded-md text-left"
+                className="hover:bg-sidebar-accent in-[.active-projection]:hover:bg-brand-hover active:bg-sidebar-accent in-[.active-projection]:active:bg-brand-hover hover:text-sidebar-accent-foreground in-[.active-projection]:hover:text-brand-foreground active:text-sidebar-accent-foreground in-[.active-projection]:active:text-brand-foreground block flex-1 justify-start truncate rounded-md text-left"
                 variant={"ghost"}
                 size={"sm"}
                 onClick={handleClick(i, 0)}
@@ -127,7 +224,7 @@ const QueueItem = memo(function QueueItem({
                 <Button
                     variant={"ghost"}
                     size={"icon-sm"}
-                    className="hover:bg-sidebar-accent active:bg-sidebar-accent hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground rounded-md"
+                    className="hover:bg-sidebar-accent in-[.active-projection]:hover:bg-brand-hover active:bg-sidebar-accent in-[.active-projection]:active:bg-brand-hover hover:text-sidebar-accent-foreground in-[.active-projection]:hover:text-brand-foreground active:text-sidebar-accent-foreground in-[.active-projection]:active:text-brand-foreground rounded-md"
                 >
                     <HugeiconsIcon
                         icon={ArrowRight01Icon}
@@ -216,7 +313,7 @@ const ContentQueueGroup = memo(function ContentQueueGroup({
     return (
         <div className="flex w-full flex-col gap-2">
             <span className="font-semibold">{g}</span>
-            <div className="before:bg-border/50 relative flex flex-col gap-2 before:absolute before:top-2 before:bottom-2 before:left-0 before:-z-10 before:w-0.75 before:rounded-full">
+            <div className="before:bg-accent/80 relative flex flex-col gap-2 before:absolute before:top-2 before:bottom-2 before:left-0 before:-z-10 before:w-0.75 before:rounded-full">
                 {items.map((c) => (
                     <ContentQueueItem key={c.index} c={c} />
                 ))}
@@ -241,7 +338,7 @@ const ContentQueueItem = memo(function ContentQueueItem({
                 "relative justify-start overflow-hidden rounded-md text-left text-ellipsis",
                 "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-[1] before:w-0.75 before:rounded-full before:transition-all before:duration-133 before:ease-out",
                 {
-                    "bg-accent/50 text-accent-foreground before:top-2.5 before:bottom-2.5":
+                    "bg-accent/80 text-accent-foreground before:top-2.5 before:bottom-2.5":
                         isActive && isPreview,
                 },
                 {
