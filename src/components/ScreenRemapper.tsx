@@ -3,23 +3,19 @@
 import { ContentResizer } from "@/components/ContentResizer";
 import { useSettingsStore } from "@/stores/settings.store";
 import type { Size } from "@/types";
-import { useSearchParams } from "next/navigation";
 import { memo, useCallback, useLayoutEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 interface ScreenRemapperProps {
-    contentFit?: "fit" | "fill";
     children: React.ReactNode;
 }
-function ScreenRemapperR({
-    contentFit = "fit",
-    children,
-}: ScreenRemapperProps) {
+function ScreenRemapperR({ children }: ScreenRemapperProps) {
     const [scale, setScale] = useState<Size>({ width: 0, height: 0 });
-    const [screenRes, contentRes] = useSettingsStore(
+    const [screenRes, contentRes, contentFit] = useSettingsStore(
         useShallow((s) => [
             s.global.remap.screenResolution,
             s.global.remap.contentResolution,
+            s.global.remap.scaleStrategy,
         ]),
     );
 
@@ -57,7 +53,7 @@ function ScreenRemapperR({
         <div className="absolute h-full w-full">
             <ContentResizer className="h-full w-full">
                 <div
-                    className="relative flex items-center justify-center bg-black"
+                    className="relative flex items-center justify-center overflow-hidden bg-black"
                     style={{
                         width: `${contentRes.width}px`,
                         height: `${contentRes.height}px`,
@@ -79,20 +75,3 @@ function ScreenRemapperR({
 }
 export const ScreenRemapper = memo(ScreenRemapperR);
 ScreenRemapper.displayName = "ScreenRemapper";
-
-function ScreenRemapperInitR() {
-    const setRemap = useSettingsStore((s) => s.setRemap);
-    const params = useSearchParams();
-
-    const w = params.get("width");
-    const h = params.get("height");
-
-    if (w && h) {
-        const _ = { width: parseInt(w, 10), height: parseInt(h, 10) };
-        setRemap({ screenResolution: _ });
-    }
-
-    return null;
-}
-export const ScreenRemapperInit = memo(ScreenRemapperInitR);
-ScreenRemapperInit.displayName = "ScreenRemapperInit";

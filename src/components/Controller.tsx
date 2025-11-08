@@ -6,7 +6,7 @@ import React, { memo, useCallback, useEffect, useState } from "react";
 import {
     ArrowLeft01Icon,
     ArrowRight01Icon,
-    MaximizeScreenIcon,
+    FullScreenIcon,
     Video02Icon,
     VideoOffIcon,
 } from "@hugeicons-pro/core-stroke-rounded";
@@ -153,7 +153,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
             <ButtonGroup>
                 <IconButton
                     label="Full Screen"
-                    icon={MaximizeScreenIcon}
+                    icon={FullScreenIcon}
                     text="Full Screen"
                     textClassName="@max-md/screen:hidden"
                     accelerator={{ shift: true, key: "F" }}

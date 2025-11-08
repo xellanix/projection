@@ -1,31 +1,22 @@
-import type { Size } from "@/types";
+import { defaultSettings } from "@/data/settings";
+import type {
+    AppSettings,
+    SettingsLocalMessageState,
+    SettingsLocalScreenState,
+} from "@/types/settings";
 import type { WritableDraft } from "immer";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-
-interface SettingsLocalScreenState {
-    black: boolean;
-    clear: boolean;
-    stopped: boolean;
-}
-interface SettingsLocalMessageState {
-    message: string;
-    isOpen: boolean;
-}
-
-interface SettingsGlobalRemapState {
-    screenResolution: Size;
-    contentResolution: Size;
-}
 
 interface SettingsState {
     local: {
         screen: SettingsLocalScreenState;
         message: SettingsLocalMessageState;
     };
-    global: {
-        remap: SettingsGlobalRemapState;
-    };
+    global: AppSettings;
+    temp: {
+        activePage: string;
+    } & AppSettings;
 }
 
 interface SettingsActions {
@@ -38,7 +29,9 @@ interface SettingsActions {
     setMessage: (message: string, isOpen: boolean) => void;
     toggleMessage: (force?: boolean) => void;
 
-    setRemap: (partial: Partial<SettingsGlobalRemapState>) => void;
+    setActivePage: (page: string) => void;
+
+    setRemap: (partial: Partial<AppSettings["remap"]>) => void;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -56,17 +49,10 @@ export const useSettingsStore = create<SettingsStore>()(
                 isOpen: false,
             },
         },
-        global: {
-            remap: {
-                screenResolution: {
-                    width: 1920,
-                    height: 1080,
-                },
-                contentResolution: {
-                    width: 1920,
-                    height: 1080,
-                },
-            },
+        global: defaultSettings,
+        temp: {
+            ...defaultSettings,
+            activePage: "1",
         },
 
         set,
@@ -86,6 +72,12 @@ export const useSettingsStore = create<SettingsStore>()(
         toggleMessage: (force?: boolean) => {
             set((s) => {
                 s.local.message.isOpen = force ?? !s.local.message.isOpen;
+            });
+        },
+
+        setActivePage: (page: string) => {
+            set((s) => {
+                s.temp.activePage = page;
             });
         },
 

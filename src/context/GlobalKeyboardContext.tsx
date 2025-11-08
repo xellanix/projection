@@ -55,6 +55,7 @@ export const GlobalKeyboardProvider = ({
                 focusedTag === "TEXTAREA" ||
                 active?.getAttribute("contenteditable") === "true";
 
+            if (document.body.dataset["scrollLocked"] === "1") return;
             if (isTextField) return; // Allow native behavior
 
             if (e.ctrlKey || e.metaKey || e.altKey) return;

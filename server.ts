@@ -3,6 +3,9 @@ import { createServer } from "http";
 import { parse } from "url";
 import next from "next";
 import { Server } from "socket.io";
+import type { AppSettings } from "@/types/settings";
+import { defaultSettings } from "@/data/settings";
+import * as ps from "./server.persistence";
 
 // --- Server Setup ---
 const dev = process.env.NODE_ENV !== "production";
@@ -23,6 +26,7 @@ const message = {
     isOpen: false,
 };
 const controllerIds: string[] = [];
+let settings = ps.readJsonFile(ps.settingsFP, defaultSettings);
 
 // --- Utility Functions ---
 // Returns the index to be sent to the client
@@ -218,6 +222,18 @@ app.prepare().then(() => {
             };
         socket.on("client:video:bg:init:response", initResponse("bg"));
         socket.on("client:video:fg:init:response", initResponse("fg"));
+
+        // "client:settings:init"
+        socket.on("client:settings:init", () => {
+            settings = ps.readJsonFile(ps.settingsFP, defaultSettings);
+            socket.emit("server:settings:init", settings);
+        });
+        // "client:settings:update"
+        socket.on("client:settings:update", (s: AppSettings) => {
+            settings = s;
+            ps.wrtieJsonFile(ps.settingsFP, settings);
+            socket.broadcast.emit("server:settings:update", settings);
+        });
 
         socket.on("disconnect", () => {
             removeController(socket.id);

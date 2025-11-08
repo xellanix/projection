@@ -113,7 +113,13 @@ const SlideComposerContent = memo(function SlideComposerContent({
         case "Video":
             return <VideoPlayer src={content.content} autoPlay loop muted />;
         case "Image":
-            return <img src={content.content} alt="Content Image" />;
+            return (
+                <img
+                    src={content.content}
+                    alt="Content Image"
+                    className="size-full object-contain"
+                />
+            );
         case "Text":
             return (
                 <span className="text-8xl font-bold text-white">
