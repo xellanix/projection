@@ -46,7 +46,7 @@ yarn-error.log*
 .idea
 
 # temporary files
-/public/_temp
 .vscode/settings.json
 config.toml
 .npmrc
+__*

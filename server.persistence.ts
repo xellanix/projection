@@ -23,4 +23,4 @@ export const wrtieJsonFile = <T>(filePath: string, value: T) => {
     }
 };
 
-export const settingsFP = "public/_temp/settings.json";
+export const settingsFP = "public/__temp/settings.json";

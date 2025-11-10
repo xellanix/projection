@@ -1,4 +1,4 @@
-import { _projections } from "@/slides";
+import { _projections } from "@/data/__temp/slides";
 import type {
     ProjectionBackgroundsMap,
     ProjectionMaster,

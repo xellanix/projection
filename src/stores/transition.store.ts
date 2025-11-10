@@ -1,4 +1,4 @@
-import { _projections } from "@/slides";
+import { _projections } from "@/data/__temp/slides";
 import type { ProjectionMaster, ProjectionTransition } from "@/types";
 import type { Variant, Variants } from "motion/react";
 import { create } from "zustand";
