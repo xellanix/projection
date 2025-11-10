@@ -49,11 +49,11 @@ export const useTransitionStore = create<TransitionStore>((_, get) => ({
     ...transitionMiner(_projections),
 
     getTransition(projectionIndex: number, contentIndex: number) {
-        return (
-            get().transitions[
-                get().maps[projectionIndex]?.[contentIndex] ?? 0
-            ] ?? "none"
-        );
+        return contentIndex < 0
+            ? "fade"
+            : (get().transitions[
+                  get().maps[projectionIndex]?.[contentIndex] ?? 0
+              ] ?? "none");
     },
 }));
 
