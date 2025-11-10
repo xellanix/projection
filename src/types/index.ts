@@ -14,7 +14,7 @@ type ProjectionItemPrimitive = ProjectionItemBase & {
 };
 type ProjectionItemComponent = ProjectionItemBase & {
     type: "Component";
-    content: () => JSX.Element;
+    content: (() => JSX.Element) | React.MemoExoticComponent<() => JSX.Element>;
 };
 
 export type ProjectionItem = ProjectionItemPrimitive | ProjectionItemComponent;
