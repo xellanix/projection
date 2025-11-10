@@ -2,6 +2,7 @@
 
 import { ContentResizer } from "@/components/ContentResizer";
 import { VideoPlayer } from "@/components/VideoPlayer";
+import { cn } from "@/lib/utils";
 import { useProjectionStore } from "@/stores/projection.store";
 import { useSettingsStore } from "@/stores/settings.store";
 import {
@@ -122,7 +123,13 @@ const SlideComposerContent = memo(function SlideComposerContent({
             );
         case "Text":
             return (
-                <span className="text-8xl font-bold text-white">
+                <span
+                    className={cn(
+                        "text-8xl font-bold text-white",
+                        content.options?.className,
+                    )}
+                    style={{ ...content.options?.style }}
+                >
                     {content.content}
                 </span>
             );

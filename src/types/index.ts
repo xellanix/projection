@@ -9,15 +9,26 @@ type ProjectionItemBase = {
     transition?: ProjectionTransition;
 };
 type ProjectionItemPrimitive = ProjectionItemBase & {
-    type: "Text" | "Image" | "Video";
+    type: "Image" | "Video";
     content: string;
+};
+type ProjectionItemText = ProjectionItemBase & {
+    type: "Text";
+    content: string;
+    options?: {
+        className?: string;
+        style?: React.CSSProperties;
+    };
 };
 type ProjectionItemComponent = ProjectionItemBase & {
     type: "Component";
     content: (() => JSX.Element) | React.MemoExoticComponent<() => JSX.Element>;
 };
 
-export type ProjectionItem = ProjectionItemPrimitive | ProjectionItemComponent;
+export type ProjectionItem =
+    | ProjectionItemPrimitive
+    | ProjectionItemText
+    | ProjectionItemComponent;
 
 export type ProjectionMaster = {
     title: string;
