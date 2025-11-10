@@ -41,7 +41,7 @@ interface ControlActions {
 export type ControlStore = ControlState & ControlActions;
 
 const loop = (value: number, max: number) => {
-    if (value < 0) return max - 1;
+    if (value < 0) return max;
     if (value > max) return 0;
     return value;
 };
