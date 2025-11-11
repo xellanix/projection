@@ -57,12 +57,13 @@ export const useTransitionStore = create<TransitionStore>((_, get) => ({
     },
 }));
 
+const transitionDuration = 0.3;
 const enterExit: Variant = (type: ProjectionTransition) => {
     switch (type) {
         case "fade":
             return {
                 opacity: 0,
-                transition: { duration: 1 },
+                transition: { duration: transitionDuration },
             };
         case "none":
         default:
@@ -77,7 +78,7 @@ export const transitionVariants: Variants = {
     enter: enterExit,
     center: {
         opacity: 1,
-        transition: { duration: 1 },
+        transition: { duration: transitionDuration },
     },
     exit: enterExit,
 };
