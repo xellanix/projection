@@ -17,22 +17,20 @@ type ProjectionBackgrounds = {
 interface ProjectionState {
     projections: ProjectionMasterWithId[];
     backgrounds: string[];
-    currentBackground: [string | undefined, number];
     maps: ProjectionBackgroundsMap;
 }
 
 interface ProjectionActions {
     getProjectionLength: (projectionIndex: number) => number;
+    getBackground: (
+        projectionIndex: number,
+        contentIndex: number,
+    ) => [string, number];
     getContents: (projectionIndex: number) => ProjectionMaster["contents"];
 
     setProjections: (projections: Setter<ProjectionMaster[]>) => void;
     setProjectionsWithIds: (
         projections: Setter<ProjectionMasterWithId[]>,
-    ) => void;
-
-    setCurrentBackground: (
-        projectionIndex: number,
-        contentIndex: number,
     ) => void;
 }
 
@@ -73,10 +71,14 @@ const generateIds = (projections: ProjectionMaster[]) => {
 export const useProjectionStore = create<ProjectionStore>((set, get) => ({
     ...backgroundMiner(_projections),
     projections: generateIds(_projections),
-    currentBackground: [undefined, 0],
 
     getProjectionLength: (projectionIndex: number) =>
         get().projections[projectionIndex]?.contents.length ?? 0,
+
+    getBackground: (projectionIndex: number, contentIndex: number) => {
+        const bgIndex = get().maps[projectionIndex]?.[contentIndex] ?? 0;
+        return [get().backgrounds[bgIndex] ?? "", bgIndex];
+    },
 
     getContents: (projectionIndex: number) =>
         get().projections[projectionIndex]?.contents ?? [],
@@ -104,18 +106,6 @@ export const useProjectionStore = create<ProjectionStore>((set, get) => ({
                 ...backgroundMiner(p),
                 projections: p,
             };
-        });
-    },
-
-    setCurrentBackground: (projectionIndex, contentIndex) => {
-        if (projectionIndex < 0 || contentIndex < 0) return;
-
-        const bgIndex = get().maps[projectionIndex]?.[contentIndex] ?? 0;
-        set({
-            currentBackground: [
-                get().backgrounds[bgIndex] ?? undefined,
-                bgIndex,
-            ],
         });
     },
 }));

@@ -12,7 +12,7 @@ import {
 import type { ProjectionItem } from "@/types";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
-import { memo, useEffect, useMemo } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 
 interface SlideComposerProps {
     currentProjection: number;
@@ -26,12 +26,16 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
         (s) => s.global.remap.contentResolution,
     );
 
-    const setBg = useProjectionStore((s) => s.setCurrentBackground);
-    const [background, index] = useProjectionStore((s) => s.currentBackground);
-    
+    const getBackground = useProjectionStore((s) => s.getBackground);
+    const [[background, index], setBg] = useState(
+        getBackground(currentProjection, currentIndex),
+    );
+
     useEffect(() => {
-        setBg(currentProjection, currentIndex);
-    }, [currentIndex, currentProjection, setBg]);
+        if (currentProjection < 0 || currentIndex < 0) return;
+
+        setBg(getBackground(currentProjection, currentIndex));
+    }, [currentIndex, currentProjection, getBackground]);
 
     const getTransition = useTransitionStore((s) => s.getTransition);
     const transition = useMemo(
