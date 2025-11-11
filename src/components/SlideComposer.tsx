@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useProjectionStore } from "@/stores/projection.store";
 import { useSettingsStore } from "@/stores/settings.store";
 import {
-    transitionVariants,
+    bgTransitionVariants,
     useTransitionStore,
 } from "@/stores/transition.store";
 import type { ProjectionItem } from "@/types";
@@ -52,7 +52,7 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
                 animate="center"
                 exit="exit"
                 custom={transition}
-                variants={transitionVariants}
+                variants={bgTransitionVariants}
                 data-slot="background"
             >
                 <ContentResizer className="h-full w-full">

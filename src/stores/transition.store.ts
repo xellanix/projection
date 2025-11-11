@@ -57,28 +57,33 @@ export const useTransitionStore = create<TransitionStore>((_, get) => ({
     },
 }));
 
-const transitionDuration = 0.3;
-const enterExit: Variant = (type: ProjectionTransition) => {
-    switch (type) {
-        case "fade":
-            return {
-                opacity: 0,
-                transition: { duration: transitionDuration },
-            };
-        case "none":
-        default:
-            return {
-                opacity: 1,
-                transition: { duration: 0 },
-            };
-    }
-};
 // Motion variants
-export const transitionVariants: Variants = {
-    enter: enterExit,
-    center: {
-        opacity: 1,
-        transition: { duration: transitionDuration },
-    },
-    exit: enterExit,
+const variants = (duration: number): Variants => {
+    const enterExit: Variant = (type: ProjectionTransition) => {
+        switch (type) {
+            case "fade":
+                return {
+                    opacity: 0,
+                    transition: { duration },
+                };
+            case "none":
+            default:
+                return {
+                    opacity: 1,
+                    transition: { duration: 0 },
+                };
+        }
+    };
+
+    return {
+        enter: enterExit,
+        center: {
+            opacity: 1,
+            transition: { duration },
+        },
+        exit: enterExit,
+    };
 };
+const transitionDuration = 0.3;
+export const transitionVariants = variants(transitionDuration);
+export const bgTransitionVariants = variants(Math.max(transitionDuration, 1));
