@@ -50,11 +50,19 @@ const backgroundMiner = (
             backgrounds.push(bg);
         }
 
+        const bgIndex = backgrounds.indexOf(bg);
         for (let j = 0; j < projection.contents.length; j++) {
             const content = projection.contents[j]!;
+            const contentBg = content.bg;
+
+            if (contentBg && !backgrounds.includes(contentBg)) {
+                backgrounds.push(contentBg);
+            }
 
             backgroundsMap[i] ??= {} as ProjectionBackgroundsMap[number];
-            backgroundsMap[i]![j] = backgrounds.indexOf(content.bg ?? bg);
+            backgroundsMap[i]![j] = contentBg
+                ? backgrounds.indexOf(contentBg)
+                : bgIndex;
         }
     }
 
