@@ -100,7 +100,7 @@ export const Viewer = memo(function Viewer({
 
             <AnimatePresence custom={transition}>
                 <motion.div
-                    key={currentIndex}
+                    key={`${currentProjection}-${currentIndex}`}
                     className="absolute h-full w-full"
                     initial="enter"
                     animate="center"
