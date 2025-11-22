@@ -1,0 +1,1 @@
+wt.exe -w 0 -d . powershell -NoExit -Command "bun run start:windows" `; split-pane -V -d . powershell -NoExit -Command "bun run cloudflared"
