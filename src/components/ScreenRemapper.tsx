@@ -53,7 +53,7 @@ function ScreenRemapperR({ children }: ScreenRemapperProps) {
         <div className="absolute h-full w-full">
             <ContentResizer className="h-full w-full">
                 <div
-                    className="relative flex items-center justify-center overflow-hidden bg-black"
+                    className="relative flex items-center justify-center overflow-hidden"
                     style={{
                         width: `${contentRes.width}px`,
                         height: `${contentRes.height}px`,
