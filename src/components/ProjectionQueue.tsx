@@ -6,6 +6,7 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
     Sortable,
@@ -293,7 +294,12 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
             <ScrollArea className="h-full w-full">
                 <div className="flex h-full flex-col gap-2">
                     {groupedKeys.map((g, i) => (
-                        <ContentQueueGroup key={i} g={g} items={grouped[g]!} />
+                        <ContentQueueGroup
+                            key={i}
+                            index={i}
+                            g={g}
+                            items={grouped[g]!}
+                        />
                     ))}
                 </div>
             </ScrollArea>
@@ -302,9 +308,11 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
 });
 
 const ContentQueueGroup = memo(function ContentQueueGroup({
+    index,
     g,
     items,
 }: {
+    index: number;
     g: string;
     items: (ProjectionItem & {
         index: number;
@@ -312,7 +320,12 @@ const ContentQueueGroup = memo(function ContentQueueGroup({
 }) {
     return (
         <div className="flex w-full flex-col gap-2">
-            <span className="font-semibold">{g}</span>
+            <div className="flex flex-row items-center gap-3">
+                <KbdGroup>
+                    <Kbd>{index + 1}</Kbd>
+                </KbdGroup>
+                <span className="font-semibold">{g}</span>
+            </div>
             <div className="before:bg-accent/80 relative flex flex-col gap-2 before:absolute before:top-2 before:bottom-2 before:left-0 before:-z-10 before:w-0.75 before:rounded-full">
                 {items.map((c) => (
                     <ContentQueueItem key={c.index} c={c} />
