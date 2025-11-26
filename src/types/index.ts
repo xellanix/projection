@@ -1,5 +1,3 @@
-import type { JSX } from "react";
-
 export type ProjectionTransition = "none" | "fade";
 
 type ProjectionItemBase = {
@@ -22,9 +20,8 @@ type ProjectionItemText = ProjectionItemBase & {
 };
 type ProjectionItemComponent = ProjectionItemBase & {
     type: "Component";
-    content: (() => JSX.Element) | React.MemoExoticComponent<() => JSX.Element>;
+    content: React.ReactNode;
 };
-
 export type ProjectionItem =
     | ProjectionItemPrimitive
     | ProjectionItemText
