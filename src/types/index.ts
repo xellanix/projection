@@ -1,9 +1,11 @@
 export type ProjectionTransition = "none" | "fade";
 
+type BackgroundUnion = "transparent" | (string & {});
+
 type ProjectionItemBase = {
     name?: string;
     group?: string;
-    bg?: string;
+    bg?: BackgroundUnion;
     transition?: ProjectionTransition;
 };
 type ProjectionItemPrimitive = ProjectionItemBase & {
@@ -29,7 +31,7 @@ export type ProjectionItem =
 
 export type ProjectionMaster = {
     title: string;
-    bg: string;
+    bg: BackgroundUnion;
     contents: ProjectionItem[];
     transition?: ProjectionTransition;
 };

@@ -2,6 +2,7 @@
 
 import { ContentResizer } from "@/components/ContentResizer";
 import { VideoPlayer } from "@/components/VideoPlayer";
+import { isTransparent } from "@/lib/background";
 import { cn } from "@/lib/utils";
 import { useProjectionStore } from "@/stores/projection.store";
 import { useSettingsStore } from "@/stores/settings.store";
@@ -21,7 +22,8 @@ interface SlideComposerProps {
 export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
     currentProjection,
     currentIndex,
-}: SlideComposerProps) {
+    children,
+}: SlideComposerProps & { children: React.ReactNode }) {
     const contentResolution = useSettingsStore(
         (s) => s.global.remap.contentResolution,
     );
@@ -44,36 +46,40 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
     );
 
     return (
-        <AnimatePresence custom={transition}>
-            <motion.div
-                key={index}
-                className="absolute h-full w-full"
-                initial="enter"
-                animate="center"
-                exit="exit"
-                custom={transition}
-                variants={bgTransitionVariants}
-                data-slot="background"
-            >
-                <ContentResizer className="h-full w-full">
-                    <div
-                        className="flex flex-col items-center justify-center"
-                        style={{
-                            width: `${contentResolution.width}px`,
-                            height: `${contentResolution.height}px`,
-                        }}
-                    >
-                        <VideoPlayer
-                            src={background}
-                            muted
-                            autoPlay
-                            loop
-                            background
-                        ></VideoPlayer>
-                    </div>
-                </ContentResizer>
-            </motion.div>
-        </AnimatePresence>
+        <>
+            {!isTransparent(background) && children}
+
+            <AnimatePresence custom={transition}>
+                <motion.div
+                    key={index}
+                    className="absolute h-full w-full"
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    custom={transition}
+                    variants={bgTransitionVariants}
+                    data-slot="background"
+                >
+                    <ContentResizer className="h-full w-full">
+                        <div
+                            className="flex flex-col items-center justify-center"
+                            style={{
+                                width: `${contentResolution.width}px`,
+                                height: `${contentResolution.height}px`,
+                            }}
+                        >
+                            <VideoPlayer
+                                src={background}
+                                muted
+                                autoPlay
+                                loop
+                                background
+                            ></VideoPlayer>
+                        </div>
+                    </ContentResizer>
+                </motion.div>
+            </AnimatePresence>
+        </>
     );
 });
 

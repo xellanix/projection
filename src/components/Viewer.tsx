@@ -87,16 +87,16 @@ export const Viewer = memo(function Viewer({
 
     return (
         <>
-            <div className="absolute size-full">
-                <ContentResizer className="size-full">
-                    <BlackScreen />
-                </ContentResizer>
-            </div>
-
             <SlideBackgroundComposer
                 currentProjection={currentProjection}
                 currentIndex={currentIndex}
-            />
+            >
+                <div className="absolute size-full animate-in fade-in duration-1000">
+                    <ContentResizer className="size-full">
+                        <BlackScreen />
+                    </ContentResizer>
+                </div>
+            </SlideBackgroundComposer>
 
             <AnimatePresence custom={transition}>
                 <motion.div
