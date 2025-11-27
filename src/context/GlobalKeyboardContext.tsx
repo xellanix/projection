@@ -60,6 +60,8 @@ export const GlobalKeyboardProvider = ({
 
             if (e.ctrlKey || e.metaKey || e.altKey) return;
 
+            if (e.repeat) return;
+
             switch (e.code) {
                 case "KeyB": {
                     if (e.shiftKey) return;
