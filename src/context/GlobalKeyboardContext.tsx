@@ -62,17 +62,17 @@ export const GlobalKeyboardProvider = ({
 
             switch (e.code) {
                 case "KeyB": {
-                    if (!e.shiftKey) return;
+                    if (e.shiftKey) return;
 
                     e.preventDefault();
-                    shortcuts.current["Shift+B"]?.();
+                    shortcuts.current["B"]?.();
                     break;
                 }
                 case "KeyC": {
-                    if (!e.shiftKey) return;
+                    if (e.shiftKey) return;
 
                     e.preventDefault();
-                    shortcuts.current["Shift+C"]?.();
+                    shortcuts.current["C"]?.();
                     break;
                 }
                 case "KeyF": {
@@ -106,11 +106,15 @@ export const GlobalKeyboardProvider = ({
                     break;
                 }
                 case "ArrowUp": {
+                    if (e.shiftKey) return;
+
                     e.preventDefault();
                     shortcuts.current["ArrowUp"]?.();
                     break;
                 }
                 case "ArrowDown": {
+                    if (e.shiftKey) return;
+
                     e.preventDefault();
                     shortcuts.current["ArrowDown"]?.();
                     break;

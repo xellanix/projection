@@ -130,7 +130,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
                     iconStrokeWidth={0}
                     text="Black"
                     textClassName="@max-xl/screen:hidden"
-                    accelerator={{ shift: true, key: "B" }}
+                    accelerator={{ key: "B" }}
                     pressed={isBlack}
                     onPressed={specialScreen("black")}
                 />
@@ -140,7 +140,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
                     iconStrokeWidth={0}
                     text="Clear"
                     textClassName="@max-xl/screen:hidden"
-                    accelerator={{ shift: true, key: "C" }}
+                    accelerator={{ key: "C" }}
                     pressed={isClear}
                     onPressed={specialScreen("clear")}
                 />
