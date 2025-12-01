@@ -274,8 +274,10 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
         [grouped, groupedKeys, setCurrentIndex],
     );
 
+    const { isPreview } = usePreview();
     const [register, unregister] = useGlobalKeyboard();
     useEffect(() => {
+        if (isPreview) return;
         for (let i = 0; i < 10; i++) {
             register(`Shift+Digit${mod(i + 1, 10)}`, goToGroup(i));
             register(`Shift+Numpad${mod(i + 1, 10)}`, goToGroup(i));
@@ -287,7 +289,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
                 unregister(`Shift+Numpad${i}`);
             }
         };
-    }, [goToGroup, register, unregister]);
+    }, [goToGroup, isPreview, register, unregister]);
 
     return (
         <div className="flex h-full w-full flex-col overflow-hidden">
