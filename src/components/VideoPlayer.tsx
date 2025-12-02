@@ -2,7 +2,6 @@
 
 import { usePreview } from "@/context/PreviewContext";
 import { useViewOnly } from "@/context/ViewOnlyContext";
-import { isTransparent } from "@/lib/background";
 import { cn } from "@/lib/utils";
 import { useEcoStore } from "@/stores/eco.store";
 import { useSocketStore } from "@/stores/socket.store";
@@ -22,8 +21,6 @@ export const VideoPlayer = memo(function VideoPlayer({
     const preview = usePreview();
     const ecoMode = useEcoStore((s) => s.ecoMode);
     const { isViewOnly } = useViewOnly();
-
-    if (isTransparent(props.src)) return null;
 
     if (preview.isPreview) {
         return (

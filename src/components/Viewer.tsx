@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
 
@@ -32,6 +32,7 @@ import {
 import { useShallow } from "zustand/react/shallow";
 import { LiveMessage } from "@/components/LiveMessage";
 import { useSettingsStore } from "@/stores/settings.store";
+import { SPECIAL_INDEX } from "@/data/special-index";
 
 function BlackScreen() {
     const contentResolution = useSettingsStore(
@@ -53,6 +54,30 @@ function ClearScreen() {
     return <></>;
 }
 
+const ScreenContent = memo(function ScreenContent({
+    currentProjection,
+    currentIndex,
+}: {
+    currentProjection: number;
+    currentIndex: number;
+}) {
+    switch (currentIndex) {
+        case SPECIAL_INDEX.TRANSPARENT:
+            return <ClearScreen />;
+        case SPECIAL_INDEX.BLACK:
+            return <BlackScreen />;
+        case SPECIAL_INDEX.CLEAR:
+            return <ClearScreen />;
+        default:
+            return (
+                <SlideComposer
+                    currentProjection={currentProjection}
+                    currentIndex={currentIndex}
+                />
+            );
+    }
+});
+
 interface ViewerProps {
     currentProjection: number;
     currentIndex: number;
@@ -65,33 +90,13 @@ export const Viewer = memo(function Viewer({
         useShallow((s) => s.getTransition(currentProjection, currentIndex)),
     );
 
-    const SlideCompose = useCallback(() => {
-        return (
-            <SlideComposer
-                currentProjection={currentProjection}
-                currentIndex={currentIndex}
-            />
-        );
-    }, [currentIndex, currentProjection]);
-
-    const CurrentComponent = useMemo(() => {
-        switch (currentIndex) {
-            case -1:
-                return BlackScreen;
-            case -2:
-                return ClearScreen;
-            default:
-                return SlideCompose;
-        }
-    }, [SlideCompose, currentIndex]);
-
     return (
         <>
             <SlideBackgroundComposer
                 currentProjection={currentProjection}
                 currentIndex={currentIndex}
             >
-                <div className="absolute size-full animate-in fade-in duration-1000">
+                <div className="animate-in fade-in absolute size-full duration-1000">
                     <ContentResizer className="size-full">
                         <BlackScreen />
                     </ContentResizer>
@@ -110,7 +115,10 @@ export const Viewer = memo(function Viewer({
                     data-slot="foreground"
                 >
                     <ContentResizer className="h-full w-full">
-                        <CurrentComponent />
+                        <ScreenContent
+                            currentProjection={currentProjection}
+                            currentIndex={currentIndex}
+                        />
                     </ContentResizer>
                 </motion.div>
             </AnimatePresence>
@@ -164,7 +172,7 @@ export const OnScreenViewer = memo(function OnScreenViewer() {
         };
     }, [setMessage, socket]);
 
-    if (currentIndex === -3) {
+    if (currentIndex === SPECIAL_INDEX.STOPPED) {
         return <EmptySignal variant="source-stopped" />;
     }
 

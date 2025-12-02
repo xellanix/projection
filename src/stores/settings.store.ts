@@ -42,6 +42,7 @@ export const useSettingsStore = create<SettingsStore>()(
             screen: {
                 black: false,
                 clear: false,
+                transparent: false,
                 stopped: false,
             },
             message: {

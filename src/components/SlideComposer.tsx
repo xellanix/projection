@@ -2,6 +2,7 @@
 
 import { ContentResizer } from "@/components/ContentResizer";
 import { VideoPlayer } from "@/components/VideoPlayer";
+import { SPECIAL_INDEX } from "@/data/special-index";
 import { isTransparent } from "@/lib/background";
 import { cn } from "@/lib/utils";
 import { useProjectionStore } from "@/stores/projection.store";
@@ -45,13 +46,20 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
         [currentProjection, currentIndex, getTransition],
     );
 
+    const isShowBg = useMemo(() => {
+        const _ =
+            isTransparent(background) ||
+            currentIndex === SPECIAL_INDEX.TRANSPARENT;
+        return !_;
+    }, [background, currentIndex]);
+
     return (
         <>
-            {!isTransparent(background) && children}
+            {isShowBg && children}
 
             <AnimatePresence custom={transition}>
                 <motion.div
-                    key={index}
+                    key={isShowBg ? index : SPECIAL_INDEX.TRANSPARENT}
                     className="absolute h-full w-full"
                     initial="enter"
                     animate="center"
@@ -68,13 +76,15 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
                                 height: `${contentResolution.height}px`,
                             }}
                         >
-                            <VideoPlayer
-                                src={background}
-                                muted
-                                autoPlay
-                                loop
-                                background
-                            ></VideoPlayer>
+                            {isShowBg && (
+                                <VideoPlayer
+                                    src={background}
+                                    muted
+                                    autoPlay
+                                    loop
+                                    background
+                                ></VideoPlayer>
+                            )}
                         </div>
                     </ContentResizer>
                 </motion.div>

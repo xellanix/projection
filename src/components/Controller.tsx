@@ -4,16 +4,14 @@ import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group";
 import { Viewer } from "@/components/Viewer";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import {
+    Copy02Icon as TransparentIcon,
     ArrowLeft01Icon,
     ArrowRight01Icon,
     FullScreenIcon,
     Video02Icon,
     VideoOffIcon,
 } from "@hugeicons-pro/core-stroke-rounded";
-import {
-    Copy02Icon,
-    ComputerRemoveIcon,
-} from "@hugeicons-pro/core-solid-rounded";
+import { Copy01Icon, Copy02Icon } from "@hugeicons-pro/core-solid-rounded";
 import {
     IconButton,
     IconDropdownMenuItem,
@@ -69,7 +67,7 @@ const SlideIndex = memo(function SlideIndex() {
     return (
         <ButtonGroup>
             <ButtonGroupText className="border-none bg-transparent p-2 text-center shadow-none">
-                Slide {currentIndex + 1} of {maxIndex + 1}
+                {currentIndex + 1} of {maxIndex + 1}
             </ButtonGroupText>
         </ButtonGroup>
     );
@@ -105,8 +103,12 @@ export const SlideController = memo(function SlideController() {
 
 const OnScreenManipulator = memo(function OnScreenManipulator() {
     const socket = useSocketStore((s) => s.socket);
-    const [isBlack, isClear] = useSettingsStore(
-        useShallow((s) => [s.local.screen.black, s.local.screen.clear]),
+    const [isBlack, isClear, isTransparent] = useSettingsStore(
+        useShallow((s) => [
+            s.local.screen.black,
+            s.local.screen.clear,
+            s.local.screen.transparent,
+        ]),
     );
 
     const openFullscreenView = useCallback(() => {
@@ -123,13 +125,23 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
 
     return (
         <ButtonGroup aria-label="Slide Manipulations">
-            <ButtonGroup className="@max-lg/screen:opacity-100 [&>*:not(:first-child)>*]:rounded-l-none [&>*:not(:first-child)>*]:border-l-0 [&>*:not(:last-child)>*]:rounded-r-none">
+            <ButtonGroup className="[&>*:not(:first-child)>*]:rounded-l-none [&>*:not(:first-child)>*]:border-l-0 [&>*:not(:last-child)>*]:rounded-r-none">
+                <IconToggleButton
+                    label="Transparent Screen"
+                    icon={TransparentIcon}
+                    iconStrokeWidth={2}
+                    text="Transparent"
+                    textClassName="@max-2xl/screen:hidden"
+                    accelerator={{ key: "T" }}
+                    pressed={isTransparent}
+                    onPressed={specialScreen("transparent")}
+                />
                 <IconToggleButton
                     label="Black Screen"
-                    icon={ComputerRemoveIcon}
+                    icon={Copy01Icon}
                     iconStrokeWidth={0}
                     text="Black"
-                    textClassName="@max-xl/screen:hidden"
+                    textClassName="@max-2xl/screen:hidden"
                     accelerator={{ key: "B" }}
                     pressed={isBlack}
                     onPressed={specialScreen("black")}
@@ -139,7 +151,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
                     icon={Copy02Icon}
                     iconStrokeWidth={0}
                     text="Clear"
-                    textClassName="@max-xl/screen:hidden"
+                    textClassName="@max-2xl/screen:hidden"
                     accelerator={{ key: "C" }}
                     pressed={isClear}
                     onPressed={specialScreen("clear")}

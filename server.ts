@@ -3,9 +3,10 @@ import { createServer } from "http";
 import { parse } from "url";
 import next from "next";
 import { Server } from "socket.io";
-import type { AppSettings } from "@/types/settings";
+import type { AppSettings, SettingsLocalScreenState } from "@/types/settings";
 import { defaultSettings } from "@/data/settings";
 import * as ps from "./server.persistence";
+import { SPECIAL_INDEX } from "@/data/special-index";
 
 // --- Server Setup ---
 const dev = process.env.NODE_ENV !== "production";
@@ -16,9 +17,10 @@ const handle = app.getRequestHandler();
 
 let currentIndex = 0;
 let currentProjection = 0;
-const specialScreen = {
+const specialScreen: SettingsLocalScreenState = {
     black: false,
     clear: false,
+    transparent: false,
     stopped: false,
 };
 const message = {
@@ -33,9 +35,10 @@ let settings = ps.readJsonFile(ps.settingsFP, defaultSettings);
 // If the special screen is active, returns -1 or -2
 // Otherwise, returns the current index
 const getPreferredIndex = () => {
-    if (specialScreen.stopped) return -3;
-    else if (specialScreen.black) return -1;
-    else if (specialScreen.clear) return -2;
+    if (specialScreen.stopped) return SPECIAL_INDEX.STOPPED;
+    else if (specialScreen.transparent) return SPECIAL_INDEX.TRANSPARENT;
+    else if (specialScreen.black) return SPECIAL_INDEX.BLACK;
+    else if (specialScreen.clear) return SPECIAL_INDEX.CLEAR;
 
     return currentIndex;
 };
@@ -128,7 +131,10 @@ app.prepare().then(() => {
         // "client:caster:specialScreen:set"
         socket.on(
             "client:caster:specialScreen:set",
-            (type: "black" | "clear" | "stopped", active: boolean) => {
+            (
+                type: "black" | "clear" | "transparent" | "stopped",
+                active: boolean,
+            ) => {
                 const lastIndex = getPreferredIndex();
                 specialScreen[type] = active;
 

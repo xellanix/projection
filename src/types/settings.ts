@@ -3,6 +3,7 @@ import type { Size } from "@/types";
 export type SettingsLocalScreenState = {
     black: boolean;
     clear: boolean;
+    transparent: boolean;
     stopped: boolean;
 };
 export type SettingsLocalMessageState = {
