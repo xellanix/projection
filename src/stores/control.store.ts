@@ -1,22 +1,27 @@
 import { useProjectionStore } from "@/stores/projection.store";
 import { useSocketStore } from "@/stores/socket.store";
-import { createStore } from "zustand";
+import { createStore, create } from "zustand";
 
 type Setter<T> = React.SetStateAction<T>;
 type ReactDispatch<T> = React.Dispatch<Setter<T>>;
 
-interface ControlState {
+interface BaseControlState {
     currentProjection: number;
     currentIndex: number;
+}
+
+interface ControlState extends BaseControlState {
     maxProjection: number;
     maxIndex: number;
 }
 
-interface ControlActions {
+interface BaseControlActions {
     setCurrentIndex: ReactDispatch<number>;
     setCurrentProjection: ReactDispatch<number>;
     setCurrent: (projection: Setter<number>, index: Setter<number>) => void;
+}
 
+interface ControlActions extends BaseControlActions {
     setMaxIndex: (index: number) => void;
     setMaxProjection: (index: number) => void;
 
@@ -38,6 +43,7 @@ interface ControlActions {
     ) => void;
 }
 
+export type BaseControlStore = BaseControlState & BaseControlActions;
 export type ControlStore = ControlState & ControlActions;
 
 const loop = (value: number, max: number) => {
@@ -143,3 +149,36 @@ export const createControlStore = () =>
             socket.emit(event, ...args(get()));
         },
     }));
+
+export const useSidebarControl = create<BaseControlStore>((set) => ({
+    currentIndex: 0,
+    currentProjection: 0,
+
+    setCurrentIndex: (i: Setter<number>) =>
+        set((s) => ({
+            currentIndex: typeof i === "function" ? i(s.currentIndex) : i,
+        })),
+    setCurrentProjection: (i: Setter<number>) =>
+        set((s) => {
+            const final = typeof i === "function" ? i(s.currentProjection) : i;
+            return {
+                currentProjection: final,
+                maxIndex:
+                    useProjectionStore.getState().getProjectionLength(final) -
+                    1,
+            };
+        }),
+    setCurrent: (projection: Setter<number>, index: Setter<number>) =>
+        set((s) => {
+            const currentProjection =
+                typeof projection === "function"
+                    ? projection(s.currentProjection)
+                    : projection;
+            const maxIndex = _maxIndex(currentProjection);
+            return {
+                currentIndex: _setIndex(index, s.currentIndex, maxIndex),
+                currentProjection,
+                maxIndex,
+            };
+        }),
+}));

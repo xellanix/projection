@@ -1,15 +1,16 @@
 import {
+    ControllerRegister,
     OnScreenSlideController,
     PreviewSlideController,
-    ControllerRegister,
 } from "@/components/Controller";
+import { ControlPanel, SidebarPanel } from "@/components/ControlPanel";
+import { Sidebar } from "@/components/Sidebar";
 import {
-    ResizableHandle,
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { OnScreenViewer } from "@/components/Viewer";
-import { ControlProvider } from "@/context/ControlContext";
+import { ControlProvider, SidebarControlSync } from "@/context/ControlContext";
 import { GlobalKeyboardProvider } from "@/context/GlobalKeyboardContext";
 import { PreviewProvider } from "@/context/PreviewContext";
 
@@ -19,24 +20,29 @@ export default function HomePage() {
             <ControllerRegister />
 
             <GlobalKeyboardProvider>
-                <ResizablePanelGroup direction="horizontal" className="gap-4">
-                    <ResizablePanel defaultSize={60}>
-                        <PreviewProvider>
-                            <ControlProvider>
-                                <PreviewSlideController />
-                            </ControlProvider>
-                        </PreviewProvider>
-                    </ResizablePanel>
-                    <ResizableHandle />
-                    <ResizablePanel
-                        defaultSize={40}
-                        className="@container/screen py-4 pr-4"
-                    >
-                        <ControlProvider>
-                            <OnScreenSlideController>
-                                <OnScreenViewer />
-                            </OnScreenSlideController>
-                        </ControlProvider>
+                <ResizablePanelGroup direction="horizontal">
+                    <SidebarPanel>
+                        <Sidebar />
+                    </SidebarPanel>
+
+                    <ResizablePanel defaultSize={80} className="px-4 py-4">
+                        <ControlPanel
+                            preview={
+                                <PreviewProvider>
+                                    <ControlProvider>
+                                        <SidebarControlSync />
+                                        <PreviewSlideController />
+                                    </ControlProvider>
+                                </PreviewProvider>
+                            }
+                            onScreen={
+                                <ControlProvider>
+                                    <OnScreenSlideController>
+                                        <OnScreenViewer />
+                                    </OnScreenSlideController>
+                                </ControlProvider>
+                            }
+                        />
                     </ResizablePanel>
                 </ResizablePanelGroup>
             </GlobalKeyboardProvider>

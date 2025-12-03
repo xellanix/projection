@@ -19,6 +19,7 @@ import { useControl } from "@/context/ControlContext";
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
 import { usePreview } from "@/context/PreviewContext";
 import { cn, mod } from "@/lib/utils";
+import { useSidebarControl } from "@/stores/control.store";
 import { useProjectionStore } from "@/stores/projection.store";
 import type { ProjectionItem, ProjectionMasterWithId } from "@/types";
 import type { UniqueIdentifier } from "@dnd-kit/core";
@@ -36,7 +37,7 @@ const createItemName = (c: ProjectionItem) => {
 };
 
 export const ProjectionQueue = memo(function ProjectionQueue() {
-    const [setCurrentProjection, setCurrentIndex] = useControl(
+    const [setCurrentProjection, setCurrentIndex] = useSidebarControl(
         useShallow((s) => [s.setCurrentProjection, s.setCurrentIndex]),
     );
     const [projections, setProjectionsWithIds] = useProjectionStore(
@@ -185,7 +186,7 @@ const QueueCollapsibleItem = memo(function QueueCollapsibleItem({
     title: string;
     handleClick: (i: number, j: number) => () => void;
 }) {
-    const [isActive] = useControl(
+    const [isActive] = useSidebarControl(
         useShallow((s) => [s.currentProjection === i]),
     );
 
@@ -203,6 +204,7 @@ const QueueCollapsibleItem = memo(function QueueCollapsibleItem({
                 <Button
                     variant={"ghost"}
                     size={"icon-sm"}
+                    tabIndex={-1}
                     className="hover:text-foreground in-[.active-projection]:hover:text-brand-foreground active:text-foreground in-[.active-projection]:active:text-brand-foreground rounded-md hover:bg-transparent active:bg-transparent"
                 >
                     <HugeiconsIcon

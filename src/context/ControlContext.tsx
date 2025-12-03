@@ -1,13 +1,19 @@
 "use client";
 
-import { createControlStore, type ControlStore } from "@/stores/control.store";
+import {
+    createControlStore,
+    useSidebarControl,
+    type ControlStore,
+} from "@/stores/control.store";
 import React, {
     createContext,
     useContext,
+    useEffect,
     useRef,
     type ReactNode,
 } from "react";
 import { useStore } from "zustand";
+import { useShallow } from "zustand/react/shallow";
 
 type ControlStoreApi = ReturnType<typeof createControlStore>;
 
@@ -38,4 +44,25 @@ export const useControl = <T,>(selector: (store: ControlStore) => T): T => {
     }
 
     return useStore(store, selector);
+};
+
+export const SidebarControlSync = () => {
+    const [currentProjection, currentIndex] = useSidebarControl(
+        useShallow((s) => [s.currentProjection, s.currentIndex]),
+    );
+    const [setCurrentProjection, setCurrentIndex] = useControl(
+        useShallow((s) => [s.setCurrentProjection, s.setCurrentIndex]),
+    );
+
+    useEffect(() => {
+        setCurrentProjection(currentProjection);
+        setCurrentIndex(currentIndex);
+    }, [
+        currentIndex,
+        setCurrentIndex,
+        currentProjection,
+        setCurrentProjection,
+    ]);
+
+    return null;
 };

@@ -48,7 +48,7 @@ const MessageToggle = memo(function MessageToggle({
                             icon={Chat01Icon}
                             strokeWidth={2}
                         />
-                        <span className="@max-lg/screen:hidden">Message</span>
+                        <span className="@max-[22rem]/slide-manip:hidden">Message</span>
                     </Toggle>
                 </div>
             </TooltipTrigger>

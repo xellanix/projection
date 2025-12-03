@@ -15,7 +15,7 @@ export const Sidebar = memo(function Sidebar() {
                 <SettingsButton />
             </div>
 
-            <div className="h-7 px-4 mt-2">
+            <div className="mt-2 h-7 px-4">
                 <ContentResizer className="h-full w-full">
                     <BrandIcon />
                 </ContentResizer>

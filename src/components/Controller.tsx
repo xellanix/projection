@@ -19,11 +19,6 @@ import {
     IconToggleButton,
 } from "@/components/Buttons";
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
-import {
-    ResizableHandle,
-    ResizablePanel,
-    ResizablePanelGroup,
-} from "@/components/ui/resizable";
 import { ProjectionContentQueue } from "@/components/ProjectionQueue";
 import { useSocketStore } from "@/stores/socket.store";
 import { useShallow } from "zustand/react/shallow";
@@ -31,7 +26,6 @@ import { Separator } from "@/components/ui/separator";
 import { mod } from "@/lib/utils";
 import { useControl } from "@/context/ControlContext";
 import { usePreview } from "@/context/PreviewContext";
-import { Sidebar } from "@/components/Sidebar";
 import { LiveMessageButton } from "@/components/LiveMessageButton";
 import { useSettingsStore } from "@/stores/settings.store";
 
@@ -124,14 +118,17 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
     );
 
     return (
-        <ButtonGroup aria-label="Slide Manipulations">
+        <ButtonGroup
+            aria-label="Slide Manipulations"
+            className="@container/slide-manip flex-1 basis-48 justify-end"
+        >
             <ButtonGroup className="[&>*:not(:first-child)>*]:rounded-l-none [&>*:not(:first-child)>*]:border-l-0 [&>*:not(:last-child)>*]:rounded-r-none">
                 <IconToggleButton
                     label="Transparent Screen"
                     icon={TransparentIcon}
                     iconStrokeWidth={2}
                     text="Transparent"
-                    textClassName="@max-2xl/screen:hidden"
+                    textClassName="@max-[31rem]/slide-manip:hidden"
                     accelerator={{ key: "T" }}
                     pressed={isTransparent}
                     onPressed={specialScreen("transparent")}
@@ -141,7 +138,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
                     icon={Copy01Icon}
                     iconStrokeWidth={0}
                     text="Black"
-                    textClassName="@max-2xl/screen:hidden"
+                    textClassName="@max-md/slide-manip:hidden"
                     accelerator={{ key: "B" }}
                     pressed={isBlack}
                     onPressed={specialScreen("black")}
@@ -151,7 +148,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
                     icon={Copy02Icon}
                     iconStrokeWidth={0}
                     text="Clear"
-                    textClassName="@max-2xl/screen:hidden"
+                    textClassName="@max-sm/slide-manip:hidden"
                     accelerator={{ key: "C" }}
                     pressed={isClear}
                     onPressed={specialScreen("clear")}
@@ -167,7 +164,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
                     label="Full Screen"
                     icon={FullScreenIcon}
                     text="Full Screen"
-                    textClassName="@max-md/screen:hidden"
+                    textClassName="@max-[19rem]/slide-manip:hidden"
                     accelerator={{ shift: true, key: "F" }}
                     onClick={openFullscreenView}
                 />
@@ -247,13 +244,13 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
             <span className="text-xl font-semibold">On Screen</span>
 
             <div
-                className="relative h-64 min-h-64 w-full @max-sm:min-h-48"
+                className="relative h-64 min-h-64 w-full max-md:min-h-32 md:@max-sm:min-h-48"
                 data-slot="viewer"
             >
                 {children}
             </div>
 
-            <div className="flex w-full flex-row justify-between gap-4">
+            <div className="flex w-full flex-row justify-between gap-4 @max-[22rem]:flex-wrap *:@max-[22rem]:justify-center *:first:@max-[22rem]:flex-1 *:first:@max-[22rem]:basis-40">
                 <SlideController />
 
                 <OnScreenManipulator />
@@ -278,7 +275,7 @@ const PreviewManipulator = memo(function PreviewManipulator({
             label="Project to Screen"
             icon={Video02Icon}
             text={"Project"}
-            textClassName="@max-2xs/preview:hidden"
+            textClassName="@max-[8rem]/slide-manip:hidden"
             onClick={projectToScreen}
             accelerator={{ key: "Enter" }}
             moreLabel="Projections"
@@ -331,47 +328,32 @@ export const PreviewSlideController = memo(function PreviewSlideController() {
     }, [projectToScreen, stopProjection, register, unregister]);
 
     return (
-        <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel
-                minSize={10}
-                defaultSize={20}
-                className="bg-sidebar text-sidebar-foreground"
+        <div className="@container/preview relative flex h-full flex-col items-center gap-4">
+            <span className="text-xl font-semibold">Preview</span>
+
+            <div
+                className="relative h-64 min-h-64 w-full max-md:min-h-32 md:@max-sm:min-h-48"
+                data-slot="viewer"
             >
-                <Sidebar />
-            </ResizablePanel>
-            <ResizableHandle />
-            <ResizablePanel
-                defaultSize={40}
-                className="@container/preview py-4 pl-4"
-            >
-                <div className="relative flex h-full flex-col items-center gap-4">
-                    <span className="text-xl font-semibold">Preview</span>
+                <Viewer
+                    currentProjection={currentProjection}
+                    currentIndex={currentIndex}
+                />
+            </div>
 
-                    <div
-                        className="relative h-64 min-h-64 w-full @max-sm:min-h-48"
-                        data-slot="viewer"
-                    >
-                        <Viewer
-                            currentProjection={currentProjection}
-                            currentIndex={currentIndex}
-                        />
-                    </div>
+            <div className="flex w-full flex-row justify-between gap-4 *:last:@container/slide-manip *:last:flex-1 *:last:basis-18 *:last:justify-end @max-[14rem]:flex-wrap *:@max-[14rem]:!justify-center *:first:@max-[14rem]:flex-1 *:first:@max-[14rem]:basis-40">
+                <SlideController />
 
-                    <div className="flex w-full flex-row justify-between gap-4">
-                        <SlideController />
+                <PreviewManipulator
+                    projectToScreen={projectToScreen}
+                    stopProjection={stopProjection}
+                />
+            </div>
 
-                        <PreviewManipulator
-                            projectToScreen={projectToScreen}
-                            stopProjection={stopProjection}
-                        />
-                    </div>
+            <Separator orientation="horizontal" />
 
-                    <Separator orientation="horizontal" />
-
-                    <ProjectionContentQueue />
-                </div>
-            </ResizablePanel>
-        </ResizablePanelGroup>
+            <ProjectionContentQueue />
+        </div>
     );
 });
 
