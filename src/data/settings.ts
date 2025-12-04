@@ -5,6 +5,10 @@ export const defaultSettings: AppSettings = {
     __internal: {
         id: uuidv4(),
     },
+    cover: {
+        type: "image",
+        content: "",
+    },
     remap: {
         screenResolution: {
             width: 1920,

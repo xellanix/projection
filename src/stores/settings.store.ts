@@ -31,6 +31,7 @@ interface SettingsActions {
 
     setActivePage: (page: string) => void;
 
+    setCover: (partial: Partial<AppSettings["cover"]>) => void;
     setRemap: (partial: Partial<AppSettings["remap"]>) => void;
 }
 
@@ -43,6 +44,7 @@ export const useSettingsStore = create<SettingsStore>()(
                 black: false,
                 clear: false,
                 transparent: false,
+                cover: false,
                 stopped: false,
             },
             message: {
@@ -82,6 +84,11 @@ export const useSettingsStore = create<SettingsStore>()(
             });
         },
 
+        setCover: (partial) => {
+            set((s) => {
+                Object.assign(s.global.cover, partial);
+            });
+        },
         setRemap: (partial) => {
             set((s) => {
                 Object.assign(s.global.remap, partial);

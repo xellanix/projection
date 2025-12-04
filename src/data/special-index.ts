@@ -3,4 +3,5 @@ export const SPECIAL_INDEX = {
     CLEAR: -2,
     TRANSPARENT: -3,
     STOPPED: -4,
+    COVER: -5,
 } as const;

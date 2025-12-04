@@ -10,6 +10,7 @@ import {
     FullScreenIcon,
     Video02Icon,
     VideoOffIcon,
+    Image02Icon,
 } from "@hugeicons-pro/core-stroke-rounded";
 import { Copy01Icon, Copy02Icon } from "@hugeicons-pro/core-solid-rounded";
 import {
@@ -97,11 +98,12 @@ export const SlideController = memo(function SlideController() {
 
 const OnScreenManipulator = memo(function OnScreenManipulator() {
     const socket = useSocketStore((s) => s.socket);
-    const [isBlack, isClear, isTransparent] = useSettingsStore(
+    const [isBlack, isClear, isTransparent, isCover] = useSettingsStore(
         useShallow((s) => [
             s.local.screen.black,
             s.local.screen.clear,
             s.local.screen.transparent,
+            s.local.screen.cover,
         ]),
     );
 
@@ -120,15 +122,25 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
     return (
         <ButtonGroup
             aria-label="Slide Manipulations"
-            className="@container/slide-manip flex-1 basis-48 justify-end"
+            className="@container/slide-manip"
         >
             <ButtonGroup className="[&>*:not(:first-child)>*]:rounded-l-none [&>*:not(:first-child)>*]:border-l-0 [&>*:not(:last-child)>*]:rounded-r-none">
+                <IconToggleButton
+                    label="Cover Screen"
+                    icon={Image02Icon}
+                    iconStrokeWidth={2}
+                    text="Cover"
+                    textClassName="@max-[36rem]/slide-manip:hidden"
+                    accelerator={{ key: "V" }}
+                    pressed={isCover}
+                    onPressed={specialScreen("cover")}
+                />
                 <IconToggleButton
                     label="Transparent Screen"
                     icon={TransparentIcon}
                     iconStrokeWidth={2}
                     text="Transparent"
-                    textClassName="@max-[31rem]/slide-manip:hidden"
+                    textClassName="@max-[33rem]/slide-manip:hidden"
                     accelerator={{ key: "T" }}
                     pressed={isTransparent}
                     onPressed={specialScreen("transparent")}
@@ -148,7 +160,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
                     icon={Copy02Icon}
                     iconStrokeWidth={0}
                     text="Clear"
-                    textClassName="@max-sm/slide-manip:hidden"
+                    textClassName="@max-[25rem]/slide-manip:hidden"
                     accelerator={{ key: "C" }}
                     pressed={isClear}
                     onPressed={specialScreen("clear")}
@@ -250,7 +262,7 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
                 {children}
             </div>
 
-            <div className="flex w-full flex-row justify-between gap-4 @max-[22rem]:flex-wrap *:@max-[22rem]:justify-center *:first:@max-[22rem]:flex-1 *:first:@max-[22rem]:basis-40">
+            <div className="flex w-full flex-row justify-between gap-4 @max-[24rem]:flex-col *:@max-[24rem]:w-full *:@max-[24rem]:justify-center *:last:@[24rem]:flex-1 *:last:@[24rem]:basis-48 *:last:@[24rem]:justify-end">
                 <SlideController />
 
                 <OnScreenManipulator />
@@ -341,7 +353,7 @@ export const PreviewSlideController = memo(function PreviewSlideController() {
                 />
             </div>
 
-            <div className="flex w-full flex-row justify-between gap-4 *:last:@container/slide-manip *:last:flex-1 *:last:basis-18 *:last:justify-end @max-[14rem]:flex-wrap *:@max-[14rem]:!justify-center *:first:@max-[14rem]:flex-1 *:first:@max-[14rem]:basis-40">
+            <div className="flex w-full flex-row justify-between gap-4 *:last:@container/slide-manip @max-[14rem]:flex-col *:@max-[14rem]:w-full *:@max-[14rem]:!justify-center *:last:@[14rem]:flex-1 *:last:@[14rem]:basis-18 *:last:@[14rem]:justify-end">
                 <SlideController />
 
                 <PreviewManipulator

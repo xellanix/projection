@@ -21,6 +21,7 @@ const specialScreen: SettingsLocalScreenState = {
     black: false,
     clear: false,
     transparent: false,
+    cover: false,
     stopped: false,
 };
 const message = {
@@ -37,6 +38,7 @@ let settings = ps.readJsonFile(ps.settingsFP, defaultSettings);
 const getPreferredIndex = () => {
     if (specialScreen.stopped) return SPECIAL_INDEX.STOPPED;
     else if (specialScreen.transparent) return SPECIAL_INDEX.TRANSPARENT;
+    else if (specialScreen.cover) return SPECIAL_INDEX.COVER;
     else if (specialScreen.black) return SPECIAL_INDEX.BLACK;
     else if (specialScreen.clear) return SPECIAL_INDEX.CLEAR;
 
@@ -131,10 +133,7 @@ app.prepare().then(() => {
         // "client:caster:specialScreen:set"
         socket.on(
             "client:caster:specialScreen:set",
-            (
-                type: "black" | "clear" | "transparent" | "stopped",
-                active: boolean,
-            ) => {
+            (type: keyof SettingsLocalScreenState, active: boolean) => {
                 const lastIndex = getPreferredIndex();
                 specialScreen[type] = active;
 

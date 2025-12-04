@@ -37,6 +37,7 @@ import { useShallow } from "zustand/react/shallow";
 import { v4 as uuidv4 } from "uuid";
 import { SettingsSync } from "@/components/stores/SettingsSync";
 import { toast } from "sonner";
+import { CoverSetting } from "@/components/CoverSetting";
 
 type NavigationItem = {
     id: string;
@@ -48,6 +49,12 @@ type NavigationItem = {
 const navs: NavigationItem[] = [
     {
         id: "1",
+        title: "Cover Screen",
+        icon: MaximizeScreenIcon,
+        content: <CoverSetting />,
+    },
+    {
+        id: "2",
         title: "Screen Remapping",
         icon: MaximizeScreenIcon,
         content: <RemapSetting />,

@@ -4,6 +4,7 @@ export type SettingsLocalScreenState = {
     black: boolean;
     clear: boolean;
     transparent: boolean;
+    cover: boolean;
     stopped: boolean;
 };
 export type SettingsLocalMessageState = {
@@ -11,6 +12,10 @@ export type SettingsLocalMessageState = {
     isOpen: boolean;
 };
 
+export type SettingsGlobalCoverState = {
+    type: "image";
+    content: string;
+};
 export type SettingsGlobalRemapState = {
     screenResolution: Size;
     contentResolution: Size;
@@ -20,5 +25,6 @@ export type AppSettings = {
     __internal: {
         id: string;
     };
+    cover: SettingsGlobalCoverState;
     remap: SettingsGlobalRemapState;
 };

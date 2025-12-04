@@ -54,6 +54,18 @@ function ClearScreen() {
     return <></>;
 }
 
+function CoverScreen() {
+    const coverContent = useSettingsStore((s) => s.temp.cover.content);
+    
+    return (
+        <img
+            src={coverContent}
+            alt="Cover Screen"
+            className="size-full object-contain"
+        />
+    );
+}
+
 const ScreenContent = memo(function ScreenContent({
     currentProjection,
     currentIndex,
@@ -64,6 +76,8 @@ const ScreenContent = memo(function ScreenContent({
     switch (currentIndex) {
         case SPECIAL_INDEX.TRANSPARENT:
             return <ClearScreen />;
+        case SPECIAL_INDEX.COVER:
+            return <CoverScreen />;
         case SPECIAL_INDEX.BLACK:
             return <BlackScreen />;
         case SPECIAL_INDEX.CLEAR:
