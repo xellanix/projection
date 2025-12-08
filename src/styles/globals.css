@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Geologica:slnt,wght,CRSV@-12..0,100..900,1&family=Figtree:ital,wght@0,300..900;1,300..900&display=swap");
+@import "./fonts.css";
 
 @import "tailwindcss";
 @import "tw-animate-css";
