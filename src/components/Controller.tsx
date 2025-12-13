@@ -2,7 +2,7 @@
 
 import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group";
 import { Viewer } from "@/components/Viewer";
-import React, { memo, useCallback, useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
     Copy02Icon as TransparentIcon,
     ArrowLeft01Icon,
@@ -187,17 +187,26 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
 
 const IndexSender = memo(function IndexSender({
     isLoaded,
+    updateRef,
 }: {
     isLoaded: boolean;
+    updateRef?: React.RefObject<boolean>;
 }) {
     const [currentProjection, currentIndex] = useControl(
         useShallow((s) => [s.currentProjection, s.currentIndex]),
     );
-    const socket = useSocketStore((s) => s.socket);
+    const [socket, socketId] = useSocketStore(
+        useShallow((s) => [s.socket, s.socketId]),
+    );
 
     // Update the server with the current index
     useEffect(() => {
         if (!isLoaded) return;
+        if (updateRef && !updateRef.current) {
+            updateRef.current = true;
+            return;
+        }
+
         socket?.emit(
             "client:caster:index:update",
             currentProjection,
@@ -215,14 +224,20 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
     children,
 }: OnScreenSlideControllerProps) {
     const setCurrent = useControl((s) => s.setCurrent);
-    const socket = useSocketStore((s) => s.socket);
+    const [socket, socketId] = useSocketStore(useShallow((s) => [s.socket, s.socketId]));
     const [isLoaded, setIsLoaded] = useState(false);
     const setScreen = useSettingsStore((s) => s.setScreen);
+    const updateRef = useRef<boolean>(true);
 
     // Init the index and listen for updates from the server
     useEffect(() => {
         if (!socket) return;
-        const updateIndex = setCurrent;
+        const updateIndex = (projection: number, index: number, _: number, id: string) => {
+            if (id === socketId) {
+                updateRef.current = false;
+            }
+            setCurrent(projection, index);
+        };
         const sync = (specialScreen: Record<string, boolean>) => {
             setScreen(specialScreen);
         };
@@ -235,7 +250,7 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
                 _: number,
                 specialScreen: Record<string, boolean>,
             ) => {
-                updateIndex(projectionIndex, index);
+                setCurrent(projectionIndex, index);
                 setScreen(specialScreen);
                 setIsLoaded(true);
             },
@@ -247,11 +262,11 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
             socket.off("server:screen:index:update", updateIndex);
             socket.off("server:caster:specialScreen:sync", sync);
         };
-    }, [setCurrent, setScreen, socket]);
+    }, [setCurrent, setScreen, socket, socketId]);
 
     return (
         <div className="relative flex h-full flex-col items-center gap-4">
-            <IndexSender isLoaded={isLoaded} />
+            <IndexSender isLoaded={isLoaded} updateRef={updateRef} />
 
             <span className="text-xl font-semibold">On Screen</span>
 

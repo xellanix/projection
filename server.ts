@@ -127,6 +127,7 @@ app.prepare().then(() => {
                     projectionIndex,
                     index,
                     getPreferredIndex(),
+                    socket.id,
                 );
             },
         );
