@@ -24,7 +24,7 @@ import { ProjectionContentQueue } from "@/components/ProjectionQueue";
 import { useSocketStore } from "@/stores/socket.store";
 import { useShallow } from "zustand/react/shallow";
 import { Separator } from "@/components/ui/separator";
-import { mod } from "@/lib/utils";
+import { cn, mod } from "@/lib/utils";
 import { useControl } from "@/context/ControlContext";
 import { usePreview } from "@/context/PreviewContext";
 import { LiveMessageButton } from "@/components/LiveMessageButton";
@@ -217,6 +217,24 @@ const IndexSender = memo(function IndexSender({
     return null;
 });
 
+const SocketStatus = memo(function SocketStatus() {
+    const isConnected = useSocketStore((s) => s.socketId !== null);
+
+    return (
+        <div
+            className={cn(
+                "relative flex size-3 *:inline-flex *:rounded-full",
+                isConnected
+                    ? "*:bg-(--success-foreground)"
+                    : "*:bg-(--error-foreground)",
+            )}
+        >
+            <div className="absolute h-full w-full animate-ping opacity-75" />
+            <div className="relative size-3" />
+        </div>
+    );
+});
+
 interface OnScreenSlideControllerProps {
     children: React.ReactNode;
 }
@@ -224,7 +242,9 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
     children,
 }: OnScreenSlideControllerProps) {
     const setCurrent = useControl((s) => s.setCurrent);
-    const [socket, socketId] = useSocketStore(useShallow((s) => [s.socket, s.socketId]));
+    const [socket, socketId] = useSocketStore(
+        useShallow((s) => [s.socket, s.socketId]),
+    );
     const [isLoaded, setIsLoaded] = useState(false);
     const setScreen = useSettingsStore((s) => s.setScreen);
     const updateRef = useRef<boolean>(true);
@@ -232,7 +252,12 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
     // Init the index and listen for updates from the server
     useEffect(() => {
         if (!socket) return;
-        const updateIndex = (projection: number, index: number, _: number, id: string) => {
+        const updateIndex = (
+            projection: number,
+            index: number,
+            _: number,
+            id: string,
+        ) => {
             if (id === socketId) {
                 updateRef.current = false;
             }
@@ -268,7 +293,10 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
         <div className="relative flex h-full flex-col items-center gap-4">
             <IndexSender isLoaded={isLoaded} updateRef={updateRef} />
 
-            <span className="text-xl font-semibold">On Screen</span>
+            <div className="flex flex-row items-center gap-2">
+                <SocketStatus />
+                <span className="text-xl font-semibold">On Screen</span>
+            </div>
 
             <div
                 className="relative h-64 min-h-64 w-full max-md:min-h-32 md:@max-sm:min-h-48"

@@ -48,8 +48,9 @@ const getPreferredIndex = () => {
 // Removes a controller from the list
 const removeController = (id: string) => {
     const index = controllerIds.indexOf(id);
-    if (index !== -1) controllerIds.splice(index, 1);
+    if (index === -1) return;
 
+    controllerIds.splice(index, 1);
     console.log("Unregistered controller:", id);
 };
 
@@ -242,12 +243,12 @@ app.prepare().then(() => {
         });
 
         socket.on("disconnect", () => {
+            console.log("❌ Client disconnected:", socket.id);
             removeController(socket.id);
             socket.broadcast.emit(
                 "server:socket:hasAny",
                 controllerIds.length > 0,
             );
-            console.log("❌ Client disconnected:", socket.id);
         });
     });
 
