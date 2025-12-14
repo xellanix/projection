@@ -45,6 +45,25 @@ const getPreferredIndex = () => {
     return currentIndex;
 };
 
+// Updates the current projection and index for the on-screen display
+const screenIndexUpdater = (
+    projectionIndex: number,
+    index: number,
+    isProject?: boolean,
+) => {
+    if (
+        projectionIndex === currentProjection &&
+        currentIndex === index &&
+        ((isProject && !specialScreen.stopped) || !isProject)
+    )
+        return;
+
+    currentProjection = projectionIndex;
+    currentIndex = index;
+
+    if (isProject) specialScreen.stopped = false;
+};
+
 // Removes a controller from the list
 const removeController = (id: string) => {
     const index = controllerIds.indexOf(id);
@@ -110,19 +129,29 @@ app.prepare().then(() => {
         // "client:caster:index:update"
         socket.on(
             "client:caster:index:update",
-            (projectionIndex: number, index: number, isProject?: boolean) => {
-                if (
-                    projectionIndex === currentProjection &&
-                    currentIndex === index &&
-                    ((isProject && !specialScreen.stopped) || !isProject)
-                )
-                    return;
+            (projectionIndex: number, index: number) => {
+                screenIndexUpdater(projectionIndex, index);
 
-                currentProjection = projectionIndex;
-                currentIndex = index;
+                io.emit(
+                    "server:screen:index:update",
+                    projectionIndex,
+                    index,
+                    getPreferredIndex(),
+                    socket.id,
+                );
+            },
+        );
+        // "client:caster:index:project"
+        socket.on(
+            "client:caster:index:project",
+            (projectionIndex: number, index: number, isProject: boolean) => {
+                screenIndexUpdater(projectionIndex, index, isProject);
 
-                if (isProject) specialScreen.stopped = false;
-
+                socket.emit(
+                    "server:screen:index:project",
+                    projectionIndex,
+                    index,
+                );
                 io.emit(
                     "server:screen:index:update",
                     projectionIndex,
