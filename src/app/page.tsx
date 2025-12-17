@@ -4,11 +4,9 @@ import {
     PreviewSlideController,
 } from "@/components/Controller";
 import { ControlPanel, SidebarPanel } from "@/components/ControlPanel";
+import { PreviewQueueReorder } from "@/components/ProjectionQueue";
 import { Sidebar } from "@/components/Sidebar";
-import {
-    ResizablePanel,
-    ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { OnScreenViewer } from "@/components/Viewer";
 import { ControlProvider, SidebarControlSync } from "@/context/ControlContext";
 import { GlobalKeyboardProvider } from "@/context/GlobalKeyboardContext";
@@ -22,6 +20,7 @@ export default function HomePage() {
             <GlobalKeyboardProvider>
                 <ResizablePanelGroup direction="horizontal">
                     <SidebarPanel>
+                        <PreviewQueueReorder />
                         <Sidebar />
                     </SidebarPanel>
 

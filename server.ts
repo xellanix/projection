@@ -50,18 +50,20 @@ const screenIndexUpdater = (
     projectionIndex: number,
     index: number,
     isProject?: boolean,
-) => {
+): boolean => {
     if (
         projectionIndex === currentProjection &&
         currentIndex === index &&
         ((isProject && !specialScreen.stopped) || !isProject)
     )
-        return;
+        return false;
 
     currentProjection = projectionIndex;
     currentIndex = index;
 
     if (isProject) specialScreen.stopped = false;
+
+    return true;
 };
 
 // Removes a controller from the list
@@ -130,7 +132,7 @@ app.prepare().then(() => {
         socket.on(
             "client:caster:index:update",
             (projectionIndex: number, index: number) => {
-                screenIndexUpdater(projectionIndex, index);
+                if (!screenIndexUpdater(projectionIndex, index)) return;
 
                 io.emit(
                     "server:screen:index:update",
@@ -145,7 +147,8 @@ app.prepare().then(() => {
         socket.on(
             "client:caster:index:project",
             (projectionIndex: number, index: number, isProject: boolean) => {
-                screenIndexUpdater(projectionIndex, index, isProject);
+                if (!screenIndexUpdater(projectionIndex, index, isProject))
+                    return;
 
                 socket.emit(
                     "server:screen:index:project",
@@ -233,6 +236,11 @@ app.prepare().then(() => {
                 );
             },
         );
+
+        // "client:queue:reorder"
+        socket.on("client:queue:reorder", (from: number, to: number) => {
+            socket.broadcast.emit("server:queue:reorder", from, to);
+        });
 
         // "client:video:bg:init:request"
         // "client:video:fg:init:request"

@@ -21,6 +21,7 @@ import { usePreview } from "@/context/PreviewContext";
 import { cn, mod } from "@/lib/utils";
 import { useSidebarControl } from "@/stores/control.store";
 import { useProjectionStore } from "@/stores/projection.store";
+import { useSocketStore } from "@/stores/socket.store";
 import type { ProjectionItem, ProjectionMasterWithId } from "@/types";
 import type { UniqueIdentifier } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -36,6 +37,54 @@ const createItemName = (c: ProjectionItem) => {
     return c.name || (c.type !== "Component" && c.content) || "Untitled";
 };
 
+export const PreviewQueueReorder = memo(function PreviewQueueReorder() {
+    const setCP = useSidebarControl((s) => s.setCurrentProjection);
+
+    const reorder = useCallback(
+        (activeIndex: number, overIndex: number) => {
+            setCP((p) => {
+                if (p === activeIndex) return overIndex;
+                else if (p < activeIndex) {
+                    if (overIndex <= p) return p + 1;
+                    else return p;
+                } else {
+                    if (overIndex >= p) return p - 1;
+                    else return p;
+                }
+            });
+        },
+        [setCP],
+    );
+
+    return <QueueReorder reorderFunc={reorder} />;
+});
+
+export const QueueReorder = memo(function QueueReorder({
+    reorderFunc,
+}: {
+    reorderFunc?: (from: number, to: number) => void;
+}) {
+    const setP = useProjectionStore((s) => s.setProjectionsWithIds);
+    const socket = useSocketStore((s) => s.socket);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const reorder = (activeIndex: number, overIndex: number) => {
+            setP((p) => arrayMove(p, activeIndex, overIndex));
+            reorderFunc?.(activeIndex, overIndex);
+        };
+
+        socket.on("server:queue:reorder", reorder);
+
+        return () => {
+            socket.off("server:queue:reorder", reorder);
+        };
+    }, [socket, setP, reorderFunc]);
+
+    return null;
+});
+
 export const ProjectionQueue = memo(function ProjectionQueue() {
     const [setCurrentProjection, setCurrentIndex] = useSidebarControl(
         useShallow((s) => [s.setCurrentProjection, s.setCurrentIndex]),
@@ -43,6 +92,7 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
     const [projections, setProjectionsWithIds] = useProjectionStore(
         useShallow((s) => [s.projections, s.setProjectionsWithIds]),
     );
+    const socket = useSocketStore((s) => s.socket);
 
     const handleClick = useCallback(
         (projectionIndex: React.SetStateAction<number>, index: number) =>
@@ -58,21 +108,25 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
             setProjectionsWithIds((p) =>
                 arrayMove(p, ev.activeIndex, ev.overIndex),
             );
+            socket?.emit("client:queue:reorder", ev.activeIndex, ev.overIndex);
+
+            const updateServer = (p: number) => {
+                socket?.emit("client:caster:index:project", p, 0, false);
+                return p;
+            };
+
             setCurrentProjection((p) => {
-                if (p === ev.activeIndex) {
-                    return ev.overIndex;
-                } else if (p < ev.activeIndex) {
-                    if (ev.overIndex <= p) {
-                        return p + 1;
-                    } else return p;
+                if (p === ev.activeIndex) return updateServer(ev.overIndex);
+                else if (p < ev.activeIndex) {
+                    if (ev.overIndex <= p) return updateServer(p + 1);
+                    else return p;
                 } else {
-                    if (ev.overIndex >= p) {
-                        return p - 1;
-                    } else return p;
+                    if (ev.overIndex >= p) return updateServer(p - 1);
+                    else return p;
                 }
             });
         },
-        [setCurrentProjection, setProjectionsWithIds],
+        [setCurrentProjection, setProjectionsWithIds, socket],
     );
 
     const overlay = useCallback(

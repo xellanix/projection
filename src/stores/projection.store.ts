@@ -6,6 +6,7 @@ import type {
 } from "@/types";
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
+import { useTransitionStore } from "@/stores/transition.store";
 
 type Setter<T> = React.SetStateAction<T>;
 
@@ -97,6 +98,8 @@ export const useProjectionStore = create<ProjectionStore>((set, get) => ({
                 typeof projections === "function"
                     ? projections(s.projections)
                     : projections;
+
+            useTransitionStore.getState().syncWithProjections(p);
             return {
                 ...backgroundMiner(p),
                 projections: generateIds(p),
@@ -110,6 +113,8 @@ export const useProjectionStore = create<ProjectionStore>((set, get) => ({
                 typeof projections === "function"
                     ? projections(s.projections)
                     : projections;
+
+            useTransitionStore.getState().syncWithProjections(p);
             return {
                 ...backgroundMiner(p),
                 projections: p,
