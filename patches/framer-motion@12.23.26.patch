@@ -1,0 +1,39 @@
+diff --git a/dist/es/components/AnimatePresence/index.mjs b/dist/es/components/AnimatePresence/index.mjs
+index 2704002398f57b9898fe896c05eb74b457db8a2c..cb65774d042a077c5376f611faf5bbab5972e5ec 100644
+--- a/dist/es/components/AnimatePresence/index.mjs
++++ b/dist/es/components/AnimatePresence/index.mjs
+@@ -101,9 +101,21 @@ const AnimatePresence = ({ children, custom, initial = true, onExitComplete, pre
+         for (let i = 0; i < renderedChildren.length; i++) {
+             const child = renderedChildren[i];
+             const key = getChildKey(child);
+-            if (!presentKeys.includes(key)) {
++            const isPresent = propagate && !isParentPresent
++                ? false
++                : presentChildren === renderedChildren ||
++                    presentKeys.includes(key);
++            if (!isPresent) {
++                /**
++                 * Only allow exit animation if it was a single child.
++                 * Otherwise, it disappears instantly.
++                 * This is the "Stack Breaker" rule.
++                 */
++                if (renderedChildren.length !== 1) break;
++                
+                 nextChildren.splice(i, 0, child);
+                 exitingChildren.push(child);
++                break;
+             }
+         }
+         /**
+@@ -150,9 +162,10 @@ const AnimatePresence = ({ children, custom, initial = true, onExitComplete, pre
+                     if (!isExitComplete)
+                         isEveryExitComplete = false;
+                 });
++                // Remove this specific child immediately, without waiting for others.
++                setRenderedChildren(pendingPresentChildren.current);
+                 if (isEveryExitComplete) {
+                     forceRender?.();
+-                    setRenderedChildren(pendingPresentChildren.current);
+                     propagate && safeToRemove?.();
+                     onExitComplete && onExitComplete();
+                 }
