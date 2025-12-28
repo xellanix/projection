@@ -30,7 +30,7 @@ import {
     DragDropVerticalIcon,
 } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { memo, useCallback, useEffect, useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 const createItemName = (c: ProjectionItem) => {
@@ -349,7 +349,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
 
     return (
         <div className="flex h-full w-full flex-col overflow-hidden">
-            <ScrollArea className="h-full w-full">
+            <ScrollArea className="h-full w-full *:scroll-pt-20">
                 <div className="flex h-full flex-col gap-2">
                     {groupedKeys.map((g, i) => (
                         <ContentQueueGroup
@@ -402,9 +402,19 @@ const ContentQueueItem = memo(function ContentQueueItem({
         useShallow((s) => [s.currentIndex === c.index, s.setCurrentIndex]),
     );
     const { isPreview } = usePreview();
+    const element = useRef<HTMLButtonElement>(null);
+
+    if (isActive) {
+        element.current?.scrollIntoView({
+            block: "start",
+            inline: "nearest",
+            behavior: "smooth",
+        });
+    }
 
     return (
         <Button
+            ref={element}
             className={cn(
                 "relative justify-start overflow-hidden rounded-md text-left text-ellipsis",
                 "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-[1] before:w-0.75 before:rounded-full before:transition-all before:duration-133 before:ease-out",
