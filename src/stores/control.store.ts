@@ -2,8 +2,10 @@ import { useProjectionStore } from "@/stores/projection.store";
 import { useSocketStore } from "@/stores/socket.store";
 import { createStore, create } from "zustand";
 
+type Activator = "client" | "server";
+
 type Setter<T> = React.SetStateAction<T>;
-type ReactDispatch<T> = React.Dispatch<Setter<T>>;
+type Dispatcher<T> = (value: Setter<T>, activator?: Activator) => void;
 
 interface BaseControlState {
     currentProjection: number;
@@ -11,14 +13,19 @@ interface BaseControlState {
 }
 
 interface ControlState extends BaseControlState {
+    activator: Activator;
     maxProjection: number;
     maxIndex: number;
 }
 
 interface BaseControlActions {
-    setCurrentIndex: ReactDispatch<number>;
-    setCurrentProjection: ReactDispatch<number>;
-    setCurrent: (projection: Setter<number>, index: Setter<number>) => void;
+    setCurrentIndex: Dispatcher<number>;
+    setCurrentProjection: Dispatcher<number>;
+    setCurrent: (
+        projection: Setter<number>,
+        index: Setter<number>,
+        activator?: Activator,
+    ) => void;
 }
 
 interface ControlActions extends BaseControlActions {
@@ -28,14 +35,14 @@ interface ControlActions extends BaseControlActions {
     initMaxIndex: () => void;
     initMaxProjection: () => void;
 
-    incrementIndex: () => void;
-    incrementProjection: () => void;
+    incrementIndex: (activator?: Activator) => void;
+    incrementProjection: (activator?: Activator) => void;
 
-    decrementIndex: () => void;
-    decrementProjection: () => void;
+    decrementIndex: (activator?: Activator) => void;
+    decrementProjection: (activator?: Activator) => void;
 
-    moveIndex: (delta: number) => () => void;
-    moveProjection: (delta: number) => () => void;
+    moveIndex: (delta: number, activator?: Activator) => () => void;
+    moveProjection: (delta: number, activator?: Activator) => () => void;
 
     emit: <T extends [unknown, ...unknown[]]>(
         event: string,
@@ -65,15 +72,21 @@ export const createControlStore = () =>
         currentIndex: 0,
         maxProjection: useProjectionStore.getState().projections.length - 1,
         maxIndex: 0,
+        activator: "client",
 
-        setCurrentIndex: (i: Setter<number>) =>
+        setCurrentIndex: (i: Setter<number>, activator: Activator = "client") =>
             set((s) => ({
+                activator,
                 currentIndex: _setIndex(i, s.currentIndex, s.maxIndex),
             })),
-        setCurrentProjection: (i: Setter<number>) =>
+        setCurrentProjection: (
+            i: Setter<number>,
+            activator: Activator = "client",
+        ) =>
             set((s) => {
                 const final = _setProjection(i, s);
                 return {
+                    activator,
                     currentProjection: final,
                     maxIndex:
                         useProjectionStore
@@ -81,11 +94,16 @@ export const createControlStore = () =>
                             .getProjectionLength(final) - 1,
                 };
             }),
-        setCurrent: (projection: Setter<number>, index: Setter<number>) =>
+        setCurrent: (
+            projection: Setter<number>,
+            index: Setter<number>,
+            activator: Activator = "client",
+        ) =>
             set((s) => {
                 const currentProjection = _setProjection(projection, s);
                 const maxIndex = _maxIndex(currentProjection);
                 return {
+                    activator,
                     currentIndex: _setIndex(index, s.currentIndex, maxIndex),
                     currentProjection,
                     maxIndex,
@@ -103,41 +121,51 @@ export const createControlStore = () =>
                     useProjectionStore.getState().projections.length - 1,
             }),
 
-        incrementIndex: () =>
+        incrementIndex: (activator: Activator = "client") =>
             set((s) => ({
+                activator,
                 currentIndex: loop(s.currentIndex + 1, s.maxIndex),
             })),
-        incrementProjection: () =>
+        incrementProjection: (activator: Activator = "client") =>
             set((s) => ({
+                activator,
                 currentProjection: loop(
                     s.currentProjection + 1,
                     s.maxProjection,
                 ),
             })),
 
-        decrementIndex: () =>
+        decrementIndex: (activator: Activator = "client") =>
             set((s) => ({
+                activator,
                 currentIndex: loop(s.currentIndex - 1, s.maxIndex),
             })),
-        decrementProjection: () =>
+        decrementProjection: (activator: Activator = "client") =>
             set((s) => ({
+                activator,
                 currentProjection: loop(
                     s.currentProjection - 1,
                     s.maxProjection,
                 ),
             })),
 
-        moveIndex: (delta: number) => () =>
-            set((s) => ({
-                currentIndex: loop(s.currentIndex + delta, s.maxIndex),
-            })),
-        moveProjection: (delta: number) => () =>
-            set((s) => ({
-                currentProjection: loop(
-                    s.currentProjection + delta,
-                    s.maxProjection,
-                ),
-            })),
+        moveIndex:
+            (delta: number, activator: Activator = "client") =>
+            () =>
+                set((s) => ({
+                    activator,
+                    currentIndex: loop(s.currentIndex + delta, s.maxIndex),
+                })),
+        moveProjection:
+            (delta: number, activator: Activator = "client") =>
+            () =>
+                set((s) => ({
+                    activator,
+                    currentProjection: loop(
+                        s.currentProjection + delta,
+                        s.maxProjection,
+                    ),
+                })),
 
         emit: <T extends [unknown, ...unknown[]]>(
             event: string,

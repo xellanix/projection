@@ -25,7 +25,7 @@ import { useSocketStore } from "@/stores/socket.store";
 import { useShallow } from "zustand/react/shallow";
 import { Separator } from "@/components/ui/separator";
 import { cn, mod } from "@/lib/utils";
-import { useControl } from "@/context/ControlContext";
+import { useControl, useControlApi } from "@/context/ControlContext";
 import { usePreview } from "@/context/PreviewContext";
 import { LiveMessageButton } from "@/components/LiveMessageButton";
 import { useSettingsStore } from "@/stores/settings.store";
@@ -190,21 +190,30 @@ const IndexSender = memo(function IndexSender({
 }: {
     isLoaded: boolean;
 }) {
-    const [currentProjection, currentIndex] = useControl(
-        useShallow((s) => [s.currentProjection, s.currentIndex]),
-    );
+    const control = useControlApi();
     const socket = useSocketStore((s) => s.socket);
 
     // Update the server with the current index
     useEffect(() => {
         if (!isLoaded) return;
 
-        socket?.emit(
-            "client:caster:index:update",
-            currentProjection,
-            currentIndex,
-        );
-    }, [currentIndex, socket, isLoaded, currentProjection]);
+        const unsubscribe = control.subscribe((s, prev) => {
+            if (
+                (s.currentIndex === prev.currentIndex &&
+                    s.currentProjection === prev.currentProjection) ||
+                s.activator === "server"
+            )
+                return;
+
+            socket?.emit(
+                "client:caster:index:update",
+                s.currentProjection,
+                s.currentIndex,
+            );
+        });
+
+        return unsubscribe;
+    }, [socket, isLoaded, control]);
 
     return null;
 });
@@ -243,14 +252,8 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
     // Init the index and listen for updates from the server
     useEffect(() => {
         if (!socket) return;
-        const updateIndex = (
-            projection: number,
-            index: number,
-            _: number,
-            id: string,
-        ) => {
-            if (id === socketId) return;
-            setCurrent(projection, index);
+        const updateIndex = (projection: number, index: number) => {
+            setCurrent(projection, index, "server");
         };
         const sync = (specialScreen: Record<string, boolean>) => {
             setScreen(specialScreen);
@@ -264,18 +267,18 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
                 _: number,
                 specialScreen: Record<string, boolean>,
             ) => {
-                setCurrent(projectionIndex, index);
+                setCurrent(projectionIndex, index, "server");
                 setScreen(specialScreen);
                 setIsLoaded(true);
             },
         );
         socket.on("server:screen:index:update", updateIndex);
-        socket.on("server:screen:index:project", setCurrent);
+        socket.on("server:screen:index:project", updateIndex);
         socket.on("server:caster:specialScreen:sync", sync);
 
         return () => {
             socket.off("server:screen:index:update", updateIndex);
-            socket.off("server:screen:index:project", setCurrent);
+            socket.off("server:screen:index:project", updateIndex);
             socket.off("server:caster:specialScreen:sync", sync);
         };
     }, [setCurrent, setScreen, socket, socketId]);

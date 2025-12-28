@@ -40,11 +40,20 @@ export const useControl = <T,>(selector: (store: ControlStore) => T): T => {
     const store = useContext(ControlContext);
 
     if (!store) {
-        throw new Error("useCounter must be used within a CounterProvider");
+        throw new Error("useControl must be used within a CounterProvider");
     }
 
     return useStore(store, selector);
 };
+export const useControlApi = (): ControlStoreApi => {
+    const store = useContext(ControlContext);
+
+    if (!store) {
+        throw new Error("useControlApi must be used within a CounterProvider");
+    }
+
+    return store;
+}
 
 export const SidebarControlSync = () => {
     const [currentProjection, currentIndex] = useSidebarControl(
