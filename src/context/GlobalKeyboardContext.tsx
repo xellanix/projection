@@ -63,6 +63,13 @@ export const GlobalKeyboardProvider = ({
             if (e.repeat) return;
 
             switch (e.code) {
+                case "KeyA": {
+                    if (!e.shiftKey) return;
+
+                    e.preventDefault();
+                    shortcuts.current["Shift+A"]?.();
+                    break;
+                }
                 case "KeyB": {
                     if (e.shiftKey) return;
 

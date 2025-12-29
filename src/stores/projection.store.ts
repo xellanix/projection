@@ -33,6 +33,8 @@ interface ProjectionActions {
     setProjectionsWithIds: (
         projections: Setter<ProjectionMasterWithId[]>,
     ) => void;
+
+    addProjection: (projection: ProjectionMaster) => void;
 }
 
 type ProjectionStore = ProjectionState & ProjectionActions;
@@ -70,11 +72,15 @@ const backgroundMiner = (
     return { backgrounds, maps: backgroundsMap };
 };
 
-const generateIds = (projections: ProjectionMaster[]) => {
-    return projections.map<ProjectionMasterWithId>((p) => ({
-        ...p,
+export const generateId = (projection: ProjectionMaster) => {
+    return {
+        ...projection,
         id: uuidv4(),
-    }));
+    } as ProjectionMasterWithId;
+};
+
+const generateIds = (projections: ProjectionMaster[]) => {
+    return projections.map<ProjectionMasterWithId>(generateId);
 };
 
 export const useProjectionStore = create<ProjectionStore>((set, get) => ({
@@ -114,6 +120,17 @@ export const useProjectionStore = create<ProjectionStore>((set, get) => ({
                     ? projections(s.projections)
                     : projections;
 
+            useTransitionStore.getState().syncWithProjections(p);
+            return {
+                ...backgroundMiner(p),
+                projections: p,
+            };
+        });
+    },
+
+    addProjection: (projection) => {
+        set((s) => {
+            const p = [...s.projections, { ...projection, id: uuidv4() }];
             useTransitionStore.getState().syncWithProjections(p);
             return {
                 ...backgroundMiner(p),

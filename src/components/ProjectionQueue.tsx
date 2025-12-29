@@ -20,18 +20,21 @@ import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
 import { usePreview } from "@/context/PreviewContext";
 import { cn, mod } from "@/lib/utils";
 import { useSidebarControl } from "@/stores/control.store";
-import { useProjectionStore } from "@/stores/projection.store";
+import { generateId, useProjectionStore } from "@/stores/projection.store";
 import { useSocketStore } from "@/stores/socket.store";
 import type { ProjectionItem, ProjectionMasterWithId } from "@/types";
 import type { UniqueIdentifier } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import {
+    Add01Icon,
     ArrowRight01Icon,
     DragDropVerticalIcon,
 } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
+import { useFilePicker } from "use-file-picker";
+import { jsonToProjection } from "@/lib/json-to-projection";
 
 const createItemName = (c: ProjectionItem) => {
     return c.name || (c.type !== "Component" && c.content) || "Untitled";
@@ -83,6 +86,98 @@ export const QueueReorder = memo(function QueueReorder({
     }, [socket, setP, reorderFunc]);
 
     return null;
+});
+
+export const ProjectionMutator = memo(function ProjectionMutator() {
+    const socket = useSocketStore((s) => s.socket);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const init = (data: (string | number)[]) => {
+            const length = data.length;
+            const result = new Array<ProjectionMasterWithId>(length);
+
+            for (let i = 0; i < length; i++) {
+                const indice = data[i]!;
+
+                if (typeof indice === "string") {
+                    const res = jsonToProjection(indice);
+                    if (res === null) continue;
+                    result[i] = generateId(res);
+                    continue;
+                }
+
+                result[i] =
+                    useProjectionStore.getInitialState().projections[indice]!;
+            }
+
+            useProjectionStore.getState().setProjectionsWithIds(result);
+        };
+
+        const add = (data: string) => {
+            const res = jsonToProjection(data);
+            if (res === null) return;
+            useProjectionStore.getState().addProjection(res);
+        };
+
+        socket.emit(
+            "client:queue:init",
+            useProjectionStore.getInitialState().projections.length,
+        );
+        socket.on("server:queue:init", init);
+        socket.on("server:queue:add", add);
+
+        return () => {
+            socket.off("server:queue:init", init);
+            socket.off("server:queue:add", add);
+        };
+    }, [socket]);
+
+    return null;
+});
+
+const AddButton = memo(function AddButton() {
+    const { openFilePicker, filesContent, loading } = useFilePicker({
+        accept: ".json",
+    });
+    const socket = useSocketStore((s) => s.socket);
+
+    const [register, unregister] = useGlobalKeyboard();
+    useEffect(() => {
+        register("Shift+A", openFilePicker);
+
+        return () => {
+            unregister("Shift+A");
+        };
+    }, [register, unregister, openFilePicker]);
+
+    useEffect(() => {
+        if (loading || !socket) return;
+
+        for (const file of filesContent) {
+            const res = jsonToProjection(file.content);
+            if (res === null) continue;
+            useProjectionStore.getState().addProjection(res);
+            socket.emit("client:queue:add", file.content);
+        }
+    }, [loading, socket]);
+
+    return (
+        <Button
+            variant={"ghost"}
+            size={"icon-sm"}
+            className="hover:bg-sidebar-accent active:bg-sidebar-accent hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground rounded-md"
+            onClick={openFilePicker}
+            disabled={loading}
+        >
+            <HugeiconsIcon
+                icon={Add01Icon}
+                strokeWidth={2.5}
+                className="transition-transform duration-133 ease-out group-data-[state=open]/collapsible:rotate-90"
+            />
+        </Button>
+    );
 });
 
 export const ProjectionQueue = memo(function ProjectionQueue() {
@@ -169,7 +264,10 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
 
     return (
         <>
-            <span className="px-4 text-lg font-semibold">Queue</span>
+            <div className="flex flex-row items-center justify-between gap-2 px-4">
+                <span className="text-lg font-semibold">Queue</span>
+                <AddButton />
+            </div>
 
             <div className="flex-1 overflow-hidden">
                 <Sortable

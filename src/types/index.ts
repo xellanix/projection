@@ -1,40 +1,15 @@
-export type ProjectionTransition = "none" | "fade";
+import type {
+    ProjectionItemSchema,
+    ProjectionMasterSchema,
+    TransitionSchema,
+} from "@/schemas/projection";
+import type { infer as zInfer } from "zod";
 
-type BackgroundUnion = "transparent" | (string & {});
+export type BackgroundUnion = "transparent" | (string & {});
 
-type ProjectionItemBase = {
-    name?: string;
-    group?: string;
-    bg?: BackgroundUnion;
-    transition?: ProjectionTransition;
-};
-type ProjectionItemPrimitive = ProjectionItemBase & {
-    type: "Image" | "Video";
-    content: string;
-};
-type ProjectionItemText = ProjectionItemBase & {
-    type: "Text";
-    content: string;
-    options?: {
-        className?: string;
-        style?: React.CSSProperties;
-    };
-};
-type ProjectionItemComponent = ProjectionItemBase & {
-    type: "Component";
-    content: React.ReactNode;
-};
-export type ProjectionItem =
-    | ProjectionItemPrimitive
-    | ProjectionItemText
-    | ProjectionItemComponent;
-
-export type ProjectionMaster = {
-    title: string;
-    bg: BackgroundUnion;
-    contents: ProjectionItem[];
-    transition?: ProjectionTransition;
-};
+export type ProjectionTransition = zInfer<typeof TransitionSchema>;
+export type ProjectionItem = zInfer<typeof ProjectionItemSchema>;
+export type ProjectionMaster = zInfer<typeof ProjectionMasterSchema>;
 
 export type ProjectionMasterWithId = ProjectionMaster & {
     id: string;

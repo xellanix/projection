@@ -5,6 +5,7 @@ import {
     useSidebarControl,
     type ControlStore,
 } from "@/stores/control.store";
+import { useProjectionStore } from "@/stores/projection.store";
 import React, {
     createContext,
     useContext,
@@ -40,7 +41,7 @@ export const useControl = <T,>(selector: (store: ControlStore) => T): T => {
     const store = useContext(ControlContext);
 
     if (!store) {
-        throw new Error("useControl must be used within a CounterProvider");
+        throw new Error("useControl must be used within a ControlProvider");
     }
 
     return useStore(store, selector);
@@ -49,29 +50,44 @@ export const useControlApi = (): ControlStoreApi => {
     const store = useContext(ControlContext);
 
     if (!store) {
-        throw new Error("useControlApi must be used within a CounterProvider");
+        throw new Error("useControlApi must be used within a ControlProvider");
     }
 
     return store;
-}
+};
 
 export const SidebarControlSync = () => {
-    const [currentProjection, currentIndex] = useSidebarControl(
-        useShallow((s) => [s.currentProjection, s.currentIndex]),
-    );
     const [setCurrentProjection, setCurrentIndex] = useControl(
         useShallow((s) => [s.setCurrentProjection, s.setCurrentIndex]),
     );
 
     useEffect(() => {
-        setCurrentProjection(currentProjection);
-        setCurrentIndex(currentIndex);
-    }, [
-        currentIndex,
-        setCurrentIndex,
-        currentProjection,
-        setCurrentProjection,
-    ]);
+        useSidebarControl.subscribe((s, prev) => {
+            if (s.currentProjection !== prev.currentProjection) {
+                setCurrentProjection(s.currentProjection);
+            }
+            if (s.currentIndex !== prev.currentIndex) {
+                setCurrentIndex(s.currentIndex);
+            }
+        });
+    }, [setCurrentIndex, setCurrentProjection]);
+
+    return null;
+};
+
+export const MaxProjectionSync = () => {
+    const setMaxProjection = useControl((s) => s.setMaxProjection);
+
+    useEffect(() => {
+        const unsub = useProjectionStore.subscribe((s, prev) => {
+            const current = s.projections.length;
+            if (current !== prev.projections.length) {
+                setMaxProjection(current - 1);
+            }
+        });
+
+        return unsub;
+    }, [setMaxProjection]);
 
     return null;
 };

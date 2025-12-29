@@ -4,11 +4,11 @@ import {
     PreviewSlideController,
 } from "@/components/Controller";
 import { ControlPanel, SidebarPanel } from "@/components/ControlPanel";
-import { PreviewQueueReorder } from "@/components/ProjectionQueue";
+import { PreviewQueueReorder, ProjectionMutator } from "@/components/ProjectionQueue";
 import { Sidebar } from "@/components/Sidebar";
 import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { OnScreenViewer } from "@/components/Viewer";
-import { ControlProvider, SidebarControlSync } from "@/context/ControlContext";
+import { ControlProvider, MaxProjectionSync, SidebarControlSync } from "@/context/ControlContext";
 import { GlobalKeyboardProvider } from "@/context/GlobalKeyboardContext";
 import { PreviewProvider } from "@/context/PreviewContext";
 
@@ -16,6 +16,7 @@ export default function HomePage() {
     return (
         <main className="flex h-dvh w-dvw flex-row">
             <ControllerRegister />
+            <ProjectionMutator />
 
             <GlobalKeyboardProvider>
                 <ResizablePanelGroup direction="horizontal">
@@ -30,12 +31,14 @@ export default function HomePage() {
                                 <PreviewProvider>
                                     <ControlProvider>
                                         <SidebarControlSync />
+                                        <MaxProjectionSync />
                                         <PreviewSlideController />
                                     </ControlProvider>
                                 </PreviewProvider>
                             }
                             onScreen={
                                 <ControlProvider>
+                                    <MaxProjectionSync />
                                     <OnScreenSlideController>
                                         <OnScreenViewer />
                                     </OnScreenSlideController>

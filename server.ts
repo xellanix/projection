@@ -17,6 +17,7 @@ const handle = app.getRequestHandler();
 
 let currentIndex = 0;
 let currentProjection = 0;
+let projections: (number | string)[] = [];
 const specialScreen: SettingsLocalScreenState = {
     black: false,
     clear: false,
@@ -237,9 +238,26 @@ app.prepare().then(() => {
             },
         );
 
+        // "client:queue:init"
+        socket.on("client:queue:init", (initLength: number) => {
+            if (projections.length === 0) {
+                projections = new Array<number>(initLength);
+                for (let i = 0; i < initLength; i++) projections[i] = i;
+            }
+            socket.emit("server:queue:init", projections);
+        });
         // "client:queue:reorder"
         socket.on("client:queue:reorder", (from: number, to: number) => {
+            if (from !== to) {
+                const item = projections.splice(from, 1)[0]!;
+                projections.splice(to, 0, item);
+            }
             socket.broadcast.emit("server:queue:reorder", from, to);
+        });
+        // "client:queue:add"
+        socket.on("client:queue:add", (data: string) => {
+            projections.push(data);
+            socket.broadcast.emit("server:queue:add", data);
         });
 
         // "client:video:bg:init:request"

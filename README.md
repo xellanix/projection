@@ -176,6 +176,12 @@ Access the control view at **[http://localhost:3000](http://localhost:3000)**.
 
 ### Keyboard Shortcuts
 
+#### General
+
+| Action        | Key / Shortcut | Description                       |
+| :------------ | :------------- | :-------------------------------- |
+| **Add Queue** | `Shift` + `A`  | Add queue(s) from `.json` file(s) |
+
 #### Navigation
 
 | Action                    | Key / Shortcut    | Scope     |

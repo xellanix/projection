@@ -57,8 +57,9 @@
     "socket.io-client": "^4.8.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
+    "use-file-picker": "2.1.4",
     "uuid": "^13.0.0",
-    "zod": "^3.24.2",
+    "zod": "4.2.1",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
