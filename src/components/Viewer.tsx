@@ -56,7 +56,7 @@ function ClearScreen() {
 
 function CoverScreen() {
     const coverContent = useSettingsStore((s) => s.temp.cover.content);
-    
+
     return (
         <img
             src={coverContent}
@@ -95,10 +95,12 @@ const ScreenContent = memo(function ScreenContent({
 interface ViewerProps {
     currentProjection: number;
     currentIndex: number;
+    rawIndex?: number;
 }
 export const Viewer = memo(function Viewer({
     currentProjection = 0,
     currentIndex = 0,
+    rawIndex,
 }: ViewerProps) {
     const transition = useTransitionStore(
         useShallow((s) => s.getTransition(currentProjection, currentIndex)),
@@ -108,7 +110,11 @@ export const Viewer = memo(function Viewer({
         <>
             <SlideBackgroundComposer
                 currentProjection={currentProjection}
-                currentIndex={currentIndex}
+                currentIndex={
+                    currentIndex === SPECIAL_INDEX.CLEAR
+                        ? SPECIAL_INDEX.CLEAR
+                        : (rawIndex ?? currentIndex)
+                }
             >
                 <div className="animate-in fade-in absolute size-full duration-1000">
                     <ContentResizer className="size-full">
@@ -148,6 +154,7 @@ export const OnScreenViewer = memo(function OnScreenViewer() {
     const socket = useSocketStore((s) => s.socket);
     const [currentProjection, setCurrentProjection] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [rawIndex, setRawIndex] = useState(0);
     const [remaining, setRemaining] = useState(3);
     const [progress, setProgress] = useState(0);
     const setMessage = useSettingsStore((s) => s.setMessage);
@@ -162,6 +169,8 @@ export const OnScreenViewer = memo(function OnScreenViewer() {
         ) => {
             setCurrentProjection(currentProjection);
             setCurrentIndex(viewIndex);
+            if (viewIndex === _) return;
+            setRawIndex(_);
         };
         const viewerManipulated = (index: number) => setCurrentIndex(index);
         const initMessage = (
@@ -199,6 +208,7 @@ export const OnScreenViewer = memo(function OnScreenViewer() {
             <Viewer
                 currentProjection={currentProjection}
                 currentIndex={currentIndex}
+                rawIndex={rawIndex}
             />
             <LiveMessage remaining={remaining} progress={progress} />
         </>
