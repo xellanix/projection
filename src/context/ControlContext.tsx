@@ -65,6 +65,7 @@ export const SidebarControlSync = () => {
         useSidebarControl.subscribe((s, prev) => {
             if (s.currentProjection !== prev.currentProjection) {
                 setCurrentProjection(s.currentProjection);
+                setCurrentIndex(s.currentIndex);
             }
             if (s.currentIndex !== prev.currentIndex) {
                 setCurrentIndex(s.currentIndex);
