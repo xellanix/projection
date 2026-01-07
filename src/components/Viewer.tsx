@@ -111,8 +111,9 @@ export const Viewer = memo(function Viewer({
             <SlideBackgroundComposer
                 currentProjection={currentProjection}
                 currentIndex={
-                    currentIndex === SPECIAL_INDEX.CLEAR
-                        ? SPECIAL_INDEX.CLEAR
+                    currentIndex === SPECIAL_INDEX.CLEAR ||
+                    currentIndex === SPECIAL_INDEX.TRANSPARENT
+                        ? currentIndex
                         : (rawIndex ?? currentIndex)
                 }
             >
