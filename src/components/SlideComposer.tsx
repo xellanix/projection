@@ -83,6 +83,7 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
                                     autoPlay
                                     loop
                                     background
+                                    className="object-cover"
                                 ></VideoPlayer>
                             )}
                         </div>
