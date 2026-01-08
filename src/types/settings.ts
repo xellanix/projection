@@ -13,8 +13,9 @@ export type SettingsLocalMessageState = {
 };
 
 export type SettingsGlobalCoverState = {
-    type: "image";
+    type: "image" | "video";
     content: string;
+    scaleStrategy: "fit" | "fill";
 };
 export type SettingsGlobalRemapState = {
     screenResolution: Size;

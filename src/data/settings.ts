@@ -8,6 +8,7 @@ export const defaultSettings: AppSettings = {
     cover: {
         type: "image",
         content: "",
+        scaleStrategy: "fit",
     },
     remap: {
         screenResolution: {

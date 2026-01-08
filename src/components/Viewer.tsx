@@ -33,6 +33,7 @@ import { useShallow } from "zustand/react/shallow";
 import { LiveMessage } from "@/components/LiveMessage";
 import { useSettingsStore } from "@/stores/settings.store";
 import { SPECIAL_INDEX } from "@/data/special-index";
+import { VideoPlayer } from "@/components/VideoPlayer";
 
 function BlackScreen() {
     const contentResolution = useSettingsStore(
@@ -55,15 +56,38 @@ function ClearScreen() {
 }
 
 function CoverScreen() {
-    const coverContent = useSettingsStore((s) => s.temp.cover.content);
-
-    return (
-        <img
-            src={coverContent}
-            alt="Cover Screen"
-            className="size-full object-contain"
-        />
+    const [type, content, scaleStrategy] = useSettingsStore(
+        useShallow((s) => [
+            s.global.cover.type,
+            s.global.cover.content,
+            s.global.cover.scaleStrategy === "fit"
+                ? "object-contain"
+                : "object-cover",
+        ]),
     );
+
+    if (type === "image") {
+        return (
+            <img
+                src={content}
+                alt="Cover Screen"
+                className={"size-full " + scaleStrategy}
+            />
+        );
+    } else if (type === "video") {
+        return (
+            <VideoPlayer
+                src={content}
+                muted
+                loop
+                autoPlay
+                preload="auto"
+                className={scaleStrategy}
+            />
+        );
+    }
+
+    return null;
 }
 
 const ScreenContent = memo(function ScreenContent({

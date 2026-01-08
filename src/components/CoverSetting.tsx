@@ -4,6 +4,7 @@ import {
     FrameHeader,
 } from "@/components/SettingsDialog";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import {
     Item,
     ItemActions,
@@ -13,7 +14,8 @@ import {
     ItemTitle,
 } from "@/components/ui/item";
 import { useSettingsStore } from "@/stores/settings.store";
-import { memo } from "react";
+import { memo, useCallback } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 export const CoverSetting = memo(function CoverSetting() {
     /* const changeCurrent = () => {
@@ -48,27 +50,89 @@ export const CoverSetting = memo(function CoverSetting() {
                         <CoverUpload />
                     </ItemActions>
                 </Item>
+                <Item variant={"outline"}>
+                    <ItemContent>
+                        <ItemTitle>Scaling Strategy</ItemTitle>
+                        <ItemDescription>
+                            The scaling strategy for the cover screen onto the
+                            projection.
+                        </ItemDescription>
+                    </ItemContent>
+                    <ScaleAction />
+                </Item>
             </ItemGroup>
         </FrameContainer>
     );
 });
 
 const Preview = memo(function Preview() {
-    const coverContent = useSettingsStore(
-        ({ temp: { cover } }) => cover.content,
+    const [type, content, cn] = useSettingsStore(
+        useShallow((s) => [
+            s.temp.cover.type,
+            s.temp.cover.content,
+            "size-full " +
+                (s.temp.cover.scaleStrategy === "fit"
+                    ? "object-contain"
+                    : "object-cover"),
+        ]),
     );
 
     return (
         <ItemContent className="relative h-36 items-center justify-center overflow-hidden">
-            <img
-                src={coverContent}
-                alt="Cover Screen"
-                className="size-full object-contain"
-            />
+            {type === "image" ? (
+                <img src={content} alt="Cover Screen" className={cn} />
+            ) : type === "video" ? (
+                <video
+                    src={content}
+                    muted
+                    loop
+                    autoPlay
+                    preload="auto"
+                    className={cn}
+                />
+            ) : null}
         </ItemContent>
     );
 });
 
 const CoverUpload = memo(function CoverUpload() {
     return <Button variant={"outline"}>Open</Button>;
+});
+
+const ScaleAction = memo(function ScaleAction() {
+    const [strategy, set] = useSettingsStore(
+        useShallow((s) => [s.temp.cover.scaleStrategy, s.set]),
+    );
+
+    const onChange = useCallback(
+        (v: string) =>
+            set((s) => {
+                s.temp.cover.scaleStrategy = v as typeof strategy;
+            }),
+        [set],
+    );
+
+    return (
+        <ItemActions>
+            <Combobox
+                data={[
+                    {
+                        value: "fit",
+                        label: "Fit",
+                    },
+                    {
+                        value: "fill",
+                        label: "Fill",
+                    },
+                ]}
+                dataKey={(i) => i.value}
+                dataValue={(i) => i.label}
+                defaultValue={strategy}
+                value={strategy}
+                onChange={onChange}
+                placeholder="Select strategy"
+                className={{ button: "w-36", content: "w-36" }}
+            />
+        </ItemActions>
+    );
 });
