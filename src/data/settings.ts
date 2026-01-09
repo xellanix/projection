@@ -5,6 +5,9 @@ export const defaultSettings: AppSettings = {
     __internal: {
         id: uuidv4(),
     },
+    backdrop: {
+        color: "#000000",
+    },
     cover: {
         type: "image",
         content: "",

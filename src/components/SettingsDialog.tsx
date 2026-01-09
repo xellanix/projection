@@ -1,6 +1,5 @@
 "use client";
 
-import { RemapSetting } from "@/components/RemapSetting";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -37,7 +36,10 @@ import { useShallow } from "zustand/react/shallow";
 import { v4 as uuidv4 } from "uuid";
 import { SettingsSync } from "@/components/stores/SettingsSync";
 import { toast } from "sonner";
+
+import { BackdropSetting } from "@/components/BackdropSetting";
 import { CoverSetting } from "@/components/CoverSetting";
+import { RemapSetting } from "@/components/RemapSetting";
 
 type NavigationItem = {
     id: string;
@@ -49,12 +51,18 @@ type NavigationItem = {
 const navs: NavigationItem[] = [
     {
         id: "1",
+        title: "Backdrop",
+        icon: MaximizeScreenIcon,
+        content: <BackdropSetting />,
+    },
+    {
+        id: "2",
         title: "Cover Screen",
         icon: MaximizeScreenIcon,
         content: <CoverSetting />,
     },
     {
-        id: "2",
+        id: "3",
         title: "Screen Remapping",
         icon: MaximizeScreenIcon,
         content: <RemapSetting />,

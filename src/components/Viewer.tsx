@@ -51,6 +51,25 @@ function BlackScreen() {
     );
 }
 
+function Backcover() {
+    const [contentResolution, color] = useSettingsStore(
+        useShallow((s) => [
+            s.global.remap.contentResolution,
+            s.global.backdrop.color,
+        ]),
+    );
+
+    return (
+        <div
+            style={{
+                width: `${contentResolution.width}px`,
+                height: `${contentResolution.height}px`,
+                backgroundColor: color,
+            }}
+        />
+    );
+}
+
 function ClearScreen() {
     return <></>;
 }
@@ -143,7 +162,7 @@ export const Viewer = memo(function Viewer({
             >
                 <div className="animate-in fade-in absolute size-full duration-1000">
                     <ContentResizer className="size-full">
-                        <BlackScreen />
+                        <Backcover />
                     </ContentResizer>
                 </div>
             </SlideBackgroundComposer>

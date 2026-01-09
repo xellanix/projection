@@ -12,6 +12,9 @@ export type SettingsLocalMessageState = {
     isOpen: boolean;
 };
 
+export type SettingsGlobalBackdropState = {
+    color: string;
+};
 export type SettingsGlobalCoverState = {
     type: "image" | "video";
     content: string;
@@ -26,6 +29,7 @@ export type AppSettings = {
     __internal: {
         id: string;
     };
+    backdrop: SettingsGlobalBackdropState;
     cover: SettingsGlobalCoverState;
     remap: SettingsGlobalRemapState;
 };
