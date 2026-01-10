@@ -135,6 +135,17 @@ const ScreenContent = memo(function ScreenContent({
     }
 });
 
+const bgIndex = (index: number, raw?: number) => {
+    if (raw === undefined) return index;
+
+    switch (index) {
+        case SPECIAL_INDEX.BLACK:
+        case SPECIAL_INDEX.COVER:
+            return raw;
+        default:
+            return index;
+    }
+};
 interface ViewerProps {
     currentProjection: number;
     currentIndex: number;
@@ -153,12 +164,7 @@ export const Viewer = memo(function Viewer({
         <>
             <SlideBackgroundComposer
                 currentProjection={currentProjection}
-                currentIndex={
-                    currentIndex === SPECIAL_INDEX.CLEAR ||
-                    currentIndex === SPECIAL_INDEX.TRANSPARENT
-                        ? currentIndex
-                        : (rawIndex ?? currentIndex)
-                }
+                currentIndex={bgIndex(currentIndex, rawIndex)}
             >
                 <div className="animate-in fade-in absolute size-full duration-1000">
                     <ContentResizer className="size-full">
