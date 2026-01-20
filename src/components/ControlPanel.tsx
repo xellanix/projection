@@ -38,10 +38,8 @@ export const SidebarPanel = memo(function SidebarPanel({
 
                 if (trigger) {
                     if (window.innerWidth <= 480) return;
-                    console.info("triggered 1");
                     sidePanel.current.resize(40);
                 } else {
-                    console.info("triggered 3");
                     sidePanel.current.resize(20);
                     sidePanel.current.expand();
                 }
@@ -54,12 +52,10 @@ export const SidebarPanel = memo(function SidebarPanel({
                 if (!sidePanel.current) return;
 
                 if (trigger) {
-                    console.info("triggered 2");
                     sidePanel.current.resize(100);
                     sidePanel.current.collapse();
                 } else {
                     if (window.innerWidth > 640) return;
-                    console.info("triggered 4");
                     sidePanel.current.resize(40);
                     sidePanel.current.expand();
                 }
