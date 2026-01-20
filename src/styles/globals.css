@@ -92,7 +92,8 @@
     --xellanix-800: color-mix(in oklab, #10497c 100%, transparent);
     --xellanix-900: color-mix(in oklab, #133e67 100%, transparent);
     --xellanix-950: color-mix(in oklab, #0d2744 100%, transparent);
-
+    
+    font-size: 16px;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;

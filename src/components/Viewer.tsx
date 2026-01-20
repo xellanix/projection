@@ -265,6 +265,28 @@ export const OnScreenViewer = memo(function OnScreenViewer() {
     );
 });
 
+export const ViewerContainer = memo(function ViewerContainer({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    const contentResolution = useSettingsStore(
+        (s) => s.global.remap.contentResolution,
+    );
+
+    return (
+        <div
+            className="relative w-full"
+            style={{
+                aspectRatio: `${contentResolution.width}/${contentResolution.height}`,
+            }}
+            data-slot="viewer"
+        >
+            {children}
+        </div>
+    );
+});
+
 interface EmptySignalProps {
     variant?: "no-source" | "source-stopped";
 }

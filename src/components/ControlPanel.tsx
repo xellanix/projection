@@ -6,21 +6,20 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useBreakpoint, useBreakpointHandler } from "@/hooks/use-breakpoint";
 import {
     ArrowLeft01Icon,
     ArrowRight01Icon,
 } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
 import React, { memo, useEffect, useRef, useState } from "react";
-import type { ImperativePanelHandle } from "react-resizable-panels";
+import { type ImperativePanelHandle } from "react-resizable-panels";
 
 export const SidebarPanel = memo(function SidebarPanel({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const isMobile = useIsMobile();
     const sidePanel = useRef<ImperativePanelHandle>(null);
     const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
@@ -32,14 +31,46 @@ export const SidebarPanel = memo(function SidebarPanel({
     };
 
     useEffect(() => {
-        if (isMobile) {
-            sidePanel.current?.resize(85);
-            sidePanel.current?.collapse();
-        } else {
-            sidePanel.current?.resize(20);
-            sidePanel.current?.expand();
-        }
-    }, [isMobile]);
+        const breakpoint1 = useBreakpointHandler(
+            `screen and (width <= 640px)`,
+            (trigger) => {
+                if (!sidePanel.current) return;
+
+                if (trigger) {
+                    if (window.innerWidth <= 480) return;
+                    console.info("triggered 1");
+                    sidePanel.current.resize(40);
+                } else {
+                    console.info("triggered 3");
+                    sidePanel.current.resize(20);
+                    sidePanel.current.expand();
+                }
+            },
+        );
+
+        const breakpoint2 = useBreakpointHandler(
+            `screen and (width <= 480px)`,
+            (trigger) => {
+                if (!sidePanel.current) return;
+
+                if (trigger) {
+                    console.info("triggered 2");
+                    sidePanel.current.resize(100);
+                    sidePanel.current.collapse();
+                } else {
+                    if (window.innerWidth > 640) return;
+                    console.info("triggered 4");
+                    sidePanel.current.resize(40);
+                    sidePanel.current.expand();
+                }
+            },
+        );
+
+        return () => {
+            breakpoint1();
+            breakpoint2();
+        };
+    }, []);
 
     return (
         <>
@@ -48,19 +79,19 @@ export const SidebarPanel = memo(function SidebarPanel({
                 minSize={10}
                 defaultSize={20}
                 collapsible
-                className="bg-sidebar text-sidebar-foreground relative"
+                className="peer/sidebar bg-sidebar text-sidebar-foreground relative"
                 onCollapse={() => setIsExpanded(false)}
                 onExpand={() => setIsExpanded(true)}
             >
                 {children}
             </ResizablePanel>
-            <div className="relative flex h-full flex-row">
+            <div className="relative flex h-full flex-row peer-data-[panel-size=100.0]/sidebar:mr-4">
                 <ResizableHandle />
                 <Button
                     variant={"outline"}
                     size={"icon-sm"}
                     tabIndex={-1}
-                    className="bg-sidebar hover:bg-sidebar-accent active:bg-sidebar-accent hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground absolute top-4 left-full z-10 rounded-l-none border-l-0 !px-2 py-0"
+                    className="bg-sidebar hover:bg-sidebar-accent active:bg-sidebar-accent hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground absolute top-2 left-full z-10 rounded-l-none border-l-0 !px-2 py-0 lg:top-4"
                     aria-label="Collapse"
                     onClick={onToggle}
                 >
@@ -84,7 +115,7 @@ export const ControlPanel = memo(function ControlPanel({
     preview,
     onScreen,
 }: ControlPanelProps) {
-    const isMobile = useIsMobile();
+    const isMobile = useBreakpoint(640);
     const onScreenPanel = useRef<ImperativePanelHandle>(null);
 
     useEffect(() => {
@@ -95,7 +126,7 @@ export const ControlPanel = memo(function ControlPanel({
     return (
         <ResizablePanelGroup
             direction={isMobile ? "vertical" : "horizontal"}
-            className="gap-4"
+            className="gap-2 lg:gap-4"
         >
             <ResizablePanel defaultSize={40} className="@container/preview">
                 {preview}

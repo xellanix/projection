@@ -1,8 +1,8 @@
 "use client";
 
 import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group";
-import { Viewer } from "@/components/Viewer";
-import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import { Viewer, ViewerContainer } from "@/components/Viewer";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import {
     Copy02Icon as TransparentIcon,
     ArrowLeft01Icon,
@@ -224,14 +224,14 @@ const SocketStatus = memo(function SocketStatus() {
     return (
         <div
             className={cn(
-                "relative flex size-3 *:inline-flex *:rounded-full",
+                "relative flex aspect-square h-[calc(100%-1rem)] *:inline-flex *:rounded-full",
                 isConnected
                     ? "*:bg-(--success-foreground)"
                     : "*:bg-(--error-foreground)",
             )}
         >
             <div className="absolute h-full w-full animate-ping opacity-75" />
-            <div className="relative size-3" />
+            <div className="relative size-full" />
         </div>
     );
 });
@@ -284,22 +284,19 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
     }, [setCurrent, setScreen, socket, socketId]);
 
     return (
-        <div className="relative flex h-full flex-col items-center gap-4">
+        <div className="relative flex h-full flex-col items-center gap-2 lg:gap-4">
             <IndexSender isLoaded={isLoaded} />
 
             <div className="flex flex-row items-center gap-2">
                 <SocketStatus />
-                <span className="text-xl font-semibold">On Screen</span>
+                <span className="text-base font-semibold lg:text-xl">
+                    On Screen
+                </span>
             </div>
 
-            <div
-                className="relative h-64 min-h-64 w-full max-md:min-h-32 md:@max-sm:min-h-48"
-                data-slot="viewer"
-            >
-                {children}
-            </div>
+            <ViewerContainer>{children}</ViewerContainer>
 
-            <div className="flex w-full flex-row justify-between gap-4 @max-[24rem]:flex-col *:@max-[24rem]:w-full *:@max-[24rem]:justify-center *:last:@[24rem]:flex-1 *:last:@[24rem]:basis-48 *:last:@[24rem]:justify-end">
+            <div className="flex w-full flex-row justify-between gap-2 lg:gap-4 @max-[24rem]:flex-col *:@max-[24rem]:w-full *:@max-[24rem]:justify-center *:last:@[24rem]:flex-1 *:last:@[24rem]:basis-48 *:last:@[24rem]:justify-end">
                 <SlideController />
 
                 <OnScreenManipulator />
@@ -377,20 +374,17 @@ export const PreviewSlideController = memo(function PreviewSlideController() {
     }, [projectToScreen, stopProjection, register, unregister]);
 
     return (
-        <div className="@container/preview relative flex h-full flex-col items-center gap-4">
-            <span className="text-xl font-semibold">Preview</span>
+        <div className="@container/preview relative flex h-full flex-col items-center gap-2 lg:gap-4">
+            <span className="text-base font-semibold lg:text-xl">Preview</span>
 
-            <div
-                className="relative h-64 min-h-64 w-full max-md:min-h-32 md:@max-sm:min-h-48"
-                data-slot="viewer"
-            >
+            <ViewerContainer>
                 <Viewer
                     currentProjection={currentProjection}
                     currentIndex={currentIndex}
                 />
-            </div>
+            </ViewerContainer>
 
-            <div className="flex w-full flex-row justify-between gap-4 *:last:@container/slide-manip @max-[14rem]:flex-col *:@max-[14rem]:w-full *:@max-[14rem]:!justify-center *:last:@[14rem]:flex-1 *:last:@[14rem]:basis-18 *:last:@[14rem]:justify-end">
+            <div className="flex w-full flex-row justify-between gap-2 *:last:@container/slide-manip lg:gap-4 @max-[14rem]:flex-col *:@max-[14rem]:w-full *:@max-[14rem]:!justify-center *:last:@[14rem]:flex-1 *:last:@[14rem]:basis-18 *:last:@[14rem]:justify-end">
                 <SlideController />
 
                 <PreviewManipulator

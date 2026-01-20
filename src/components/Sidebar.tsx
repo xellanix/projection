@@ -7,15 +7,15 @@ import { memo } from "react";
 
 export const Sidebar = memo(function Sidebar() {
     return (
-        <div className="flex h-full flex-col gap-2 py-4">
+        <div className="flex h-full flex-col gap-2 py-4 max-lg:pt-2">
             <ProjectionQueue />
 
-            <div className="flex flex-col px-4">
+            <div className="flex flex-col px-2 lg:px-4">
                 <EcoModeButton />
                 <SettingsButton />
             </div>
 
-            <div className="mt-2 h-7 px-4">
+            <div className="mt-2 h-7 px-2 lg:px-4">
                 <ContentResizer className="h-full w-full">
                     <BrandIcon />
                 </ContentResizer>

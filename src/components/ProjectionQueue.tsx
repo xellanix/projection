@@ -264,7 +264,7 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
 
     return (
         <>
-            <div className="flex flex-row items-center justify-between gap-2 px-4">
+            <div className="flex flex-row items-center justify-between gap-2 px-4 max-lg:pr-2">
                 <span className="text-lg font-semibold">Queue</span>
                 <AddButton />
             </div>
@@ -275,7 +275,7 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
                     onMove={onMoved}
                     getItemValue={(i) => i.id}
                 >
-                    <ScrollArea className="h-full w-full px-4 [&>div>div]:!flex [&>div>div]:!flex-col">
+                    <ScrollArea className="h-full w-full px-2 lg:px-4 [&>div>div]:!flex [&>div>div]:!flex-col">
                         <SortableContent>
                             {projections.map((p, i) => (
                                 <QueueItem
