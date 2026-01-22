@@ -399,23 +399,30 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
     const getContents = useProjectionStore((s) => s.getContents);
 
     const [grouped, groupedKeys] = useMemo(() => {
-        let index = 0;
-        const keys = new Set<string>();
-        return [
-            getContents(currentProjection).reduce(
-                (acc, { group, ...rest }) => {
-                    const key = group ?? "Contents";
-                    keys.add(key);
-                    acc[key] = [
-                        ...(acc[key] ?? []),
-                        { ...rest, index: index++ },
-                    ];
-                    return acc;
-                },
-                {} as Record<string, (ProjectionItem & { index: number })[]>,
-            ),
-            Array.from(keys),
-        ];
+        const contents = getContents(currentProjection);
+
+        type GroupItem = ProjectionItem & { index: number };
+        const groups: Record<string, GroupItem[]> = {};
+        const keys: string[] = [];
+
+        let globalIndex = 0;
+
+        for (const item of contents) {
+            const { group, ...rest } = item;
+            const key = group ?? "Contents";
+
+            if (!groups[key]) {
+                groups[key] = [];
+                keys.push(key);
+            }
+
+            groups[key].push({
+                ...rest,
+                index: globalIndex++,
+            });
+        }
+
+        return [groups, keys];
     }, [getContents, currentProjection]);
 
     const goToGroup = useCallback(
