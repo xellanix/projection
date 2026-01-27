@@ -29,7 +29,11 @@ import {
 } from "@/components/ui/sidebar";
 import { cn, updateObjectFromSource } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settings.store";
-import { MaximizeScreenIcon } from "@hugeicons-pro/core-stroke-rounded";
+import {
+    Image02Icon,
+    LayerIcon,
+    MaximizeScreenIcon,
+} from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import { memo, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -52,13 +56,13 @@ const navs: NavigationItem[] = [
     {
         id: "1",
         title: "Backdrop",
-        icon: MaximizeScreenIcon,
+        icon: LayerIcon,
         content: <BackdropSetting />,
     },
     {
         id: "2",
         title: "Cover Screen",
-        icon: MaximizeScreenIcon,
+        icon: Image02Icon,
         content: <CoverSetting />,
     },
     {
@@ -71,7 +75,7 @@ const navs: NavigationItem[] = [
 
 export const SettingsDialog = memo(function SettingsDialog() {
     return (
-        <DialogContent className="overflow-hidden p-0 md:h-[80dvh] md:max-h-[80dvh] md:max-w-[80dvw] lg:max-w-[90dvw]">
+        <DialogContent className="overflow-hidden p-0 max-md:size-full max-md:!max-w-full md:h-[80dvh] md:max-h-[80dvh] md:max-w-[80dvw] lg:max-w-[90dvw]">
             <SettingsSync />
             <div className="flex flex-col overflow-hidden">
                 <DialogTitle className="absolute opacity-0 select-none">
