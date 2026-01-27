@@ -166,7 +166,7 @@ Use the included **Xellanix Projection Utilities** app located at `windows > uti
 
 ## 🎮 Controls & Interface
 
-Access the control view at **[http://localhost:3000](http://localhost:3000)**.
+Access the control view at **[http://localhost:12526](http://localhost:12526)**.
 
 ### Interface Overview
 
@@ -227,6 +227,6 @@ Control your presentation from a tablet or phone.
 1.  Ensure the app is running locally.
 2.  Run the tunnel command:
     ```bash
-    cloudflared tunnel --url http://localhost:3000
+    cloudflared tunnel --url http://localhost:12526
     ```
 3.  Use the generated URL on any device to access the control interface.

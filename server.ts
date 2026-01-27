@@ -11,7 +11,7 @@ import { SPECIAL_INDEX } from "@/data/special-index";
 // --- Server Setup ---
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "0.0.0.0";
-const port = 3000;
+const port = 12526;
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
