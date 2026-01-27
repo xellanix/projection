@@ -64,10 +64,9 @@ export const GlobalKeyboardProvider = ({
 
             switch (e.code) {
                 case "KeyA": {
-                    if (!e.shiftKey) return;
-
                     e.preventDefault();
-                    shortcuts.current["Shift+A"]?.();
+                    if (e.shiftKey) shortcuts.current["Shift+A"]?.();
+                    else shortcuts.current["A"]?.();
                     break;
                 }
                 case "KeyB": {
@@ -82,6 +81,13 @@ export const GlobalKeyboardProvider = ({
 
                     e.preventDefault();
                     shortcuts.current["C"]?.();
+                    break;
+                }
+                case "KeyD": {
+                    if (e.shiftKey) return;
+
+                    e.preventDefault();
+                    shortcuts.current["D"]?.();
                     break;
                 }
                 case "KeyF": {
@@ -174,7 +180,7 @@ export const GlobalKeyboardProvider = ({
 
                     if (e.shiftKey) shortcuts.current["Shift+Enter"]?.();
                     else shortcuts.current["Enter"]?.();
-                    
+
                     break;
                 }
                 default:

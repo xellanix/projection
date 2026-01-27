@@ -4,6 +4,7 @@ import {
     PreviewSlideController,
 } from "@/components/Controller";
 import { ControlPanel, SidebarPanel } from "@/components/ControlPanel";
+import { LoopQueueSync } from "@/components/LoopQueue";
 import {
     PreviewQueueReorder,
     ProjectionMutator,
@@ -50,6 +51,7 @@ export default function HomePage() {
                             onScreen={
                                 <ControlProvider>
                                     <MaxProjectionSync />
+                                    <LoopQueueSync />
                                     <OnScreenSlideController>
                                         <OnScreenViewer />
                                     </OnScreenSlideController>

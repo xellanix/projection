@@ -29,6 +29,7 @@ import { useControl, useControlApi } from "@/context/ControlContext";
 import { usePreview } from "@/context/PreviewContext";
 import { LiveMessageButton } from "@/components/LiveMessageButton";
 import { useSettingsStore } from "@/stores/settings.store";
+import { LoopQueue } from "@/components/LoopQueue";
 
 const NavButton = memo(function NavButton({
     type,
@@ -270,6 +271,7 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
                 setCurrent(projectionIndex, index, "server");
                 setScreen(specialScreen);
                 setIsLoaded(true);
+                socket.emit("client:loop:init");
             },
         );
         socket.on("server:screen:index:update", updateIndex);
@@ -301,6 +303,7 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
 
                 <OnScreenManipulator />
             </div>
+            <LoopQueue />
 
             <Separator orientation="horizontal" />
 

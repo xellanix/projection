@@ -2,7 +2,7 @@ import { useProjectionStore } from "@/stores/projection.store";
 import { useSocketStore } from "@/stores/socket.store";
 import { createStore, create } from "zustand";
 
-type Activator = "client" | "server";
+type Activator = "client" | "server" | (string & {});
 
 type Setter<T> = React.SetStateAction<T>;
 type Dispatcher<T> = (value: Setter<T>, activator?: Activator) => void;

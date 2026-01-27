@@ -85,3 +85,26 @@ export function updateObjectFromSource<T extends object, U extends object>(
         }
     }
 }
+
+/**
+ * Checks if two arrays are equal.
+ *
+ * @param prev The previous array.
+ * @param next The next array.
+ *
+ * @returns `true` if the arrays are equal, `false` otherwise.
+ */
+export function compareArrays<T>(
+    prev: T[],
+    next: T[],
+    isValueEqual?: (a: T, b: T) => boolean,
+) {
+    if (prev === next) return true;
+    if (prev.length !== next.length) return false;
+
+    const func = isValueEqual ?? ((a: T, b: T) => a === b);
+    for (let i = 0; i < prev.length; i++) {
+        if (!func(prev[i]!, next[i]!)) return false;
+    }
+    return true;
+}

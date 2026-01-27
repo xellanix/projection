@@ -29,6 +29,7 @@ const message = {
     message: "",
     isOpen: false,
 };
+let loopQueueIndex = -1;
 const controllerIds: string[] = [];
 let settings = ps.readJsonFile(ps.settingsFP, defaultSettings);
 
@@ -151,6 +152,7 @@ app.prepare().then(() => {
                 if (!screenIndexUpdater(projectionIndex, index, isProject))
                     return;
 
+                loopQueueIndex = -1;
                 socket.emit(
                     "server:screen:index:project",
                     projectionIndex,
@@ -214,7 +216,6 @@ app.prepare().then(() => {
                 specialScreen,
             );
         });
-
         // "client:screen:message:init:request"
         socket.on("client:screen:message:init:request", () => {
             io.to(controllerIds[0]!).emit("server:screen:message:init:request");
@@ -258,6 +259,16 @@ app.prepare().then(() => {
         socket.on("client:queue:add", (data: string) => {
             projections.push(data);
             socket.broadcast.emit("server:queue:add", data);
+        });
+
+        // "client:loop:init"
+        socket.on("client:loop:init", () => {
+            socket.emit("server:loop:init", loopQueueIndex);
+        });
+        // "client:loop:update"
+        socket.on("client:loop:update", (queueIndex: number) => {
+            loopQueueIndex = queueIndex;
+            socket.broadcast.emit("server:loop:update", queueIndex);
         });
 
         // "client:video:bg:init:request"

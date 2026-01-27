@@ -61,9 +61,15 @@ export const ProjectionItemSchema = union([
     ProjectionItemComponentSchema,
 ]);
 
+export const ProjectionLoopQueueSchema = object({
+    group: number().optional(),
+    item: number().optional(),
+});
+
 export const ProjectionMasterSchema = object({
     title: string(),
     bg: string() as ZodType<BackgroundUnion>,
     contents: array(ProjectionItemSchema),
     transition: TransitionSchema.optional(),
+    loopQueue: array(ProjectionLoopQueueSchema).optional(),
 });

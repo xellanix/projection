@@ -35,6 +35,7 @@ import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useFilePicker } from "use-file-picker";
 import { jsonToProjection } from "@/lib/json-to-projection";
+import { useGroupStore } from "@/stores/group.store";
 
 const createItemName = (c: ProjectionItem) => {
     return c.name || (c.type !== "Component" && c.content) || "Untitled";
@@ -397,6 +398,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
         useShallow((s) => [s.currentProjection, s.setCurrentIndex]),
     );
     const getContents = useProjectionStore((s) => s.getContents);
+    const { isPreview } = usePreview();
 
     const [grouped, groupedKeys] = useMemo(() => {
         const contents = getContents(currentProjection);
@@ -407,6 +409,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
 
         let globalIndex = 0;
 
+        const globalIndices: number[] = [];
         for (const item of contents) {
             const { group, ...rest } = item;
             const key = group ?? "Contents";
@@ -414,6 +417,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
             if (!groups[key]) {
                 groups[key] = [];
                 keys.push(key);
+                !isPreview && globalIndices.push(globalIndex);
             }
 
             groups[key].push({
@@ -421,9 +425,10 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
                 index: globalIndex++,
             });
         }
+        !isPreview && useGroupStore.getState().init(globalIndices);
 
         return [groups, keys];
-    }, [getContents, currentProjection]);
+    }, [getContents, currentProjection, isPreview]);
 
     const goToGroup = useCallback(
         (index: number) => () => {
@@ -435,7 +440,6 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
         [grouped, groupedKeys, setCurrentIndex],
     );
 
-    const { isPreview } = usePreview();
     const [register, unregister] = useGlobalKeyboard();
     useEffect(() => {
         if (isPreview) return;

@@ -1,5 +1,6 @@
 import type {
     ProjectionItemSchema,
+    ProjectionLoopQueueSchema,
     ProjectionMasterSchema,
     TransitionSchema,
 } from "@/schemas/projection";
@@ -9,6 +10,7 @@ export type BackgroundUnion = "transparent" | (string & {});
 
 export type ProjectionTransition = zInfer<typeof TransitionSchema>;
 export type ProjectionItem = zInfer<typeof ProjectionItemSchema>;
+export type ProjectionLoopQueue = zInfer<typeof ProjectionLoopQueueSchema>;
 export type ProjectionMaster = zInfer<typeof ProjectionMasterSchema>;
 
 export type ProjectionMasterWithId = ProjectionMaster & {
