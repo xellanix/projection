@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import {
     Sidebar,
     SidebarContent,
+    SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
     SidebarMenu,
@@ -31,6 +32,7 @@ import { cn, updateObjectFromSource } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settings.store";
 import {
     Image02Icon,
+    InformationCircleIcon,
     LayerIcon,
     MaximizeScreenIcon,
 } from "@hugeicons-pro/core-stroke-rounded";
@@ -44,6 +46,7 @@ import { toast } from "sonner";
 import { BackdropSetting } from "@/components/BackdropSetting";
 import { CoverSetting } from "@/components/CoverSetting";
 import { RemapSetting } from "@/components/RemapSetting";
+import { AboutSetting } from "@/components/AboutSetting";
 
 type NavigationItem = {
     id: string;
@@ -70,6 +73,15 @@ const navs: NavigationItem[] = [
         title: "Screen Remapping",
         icon: MaximizeScreenIcon,
         content: <RemapSetting />,
+    },
+];
+
+const footers: NavigationItem[] = [
+    {
+        id: "f-about",
+        title: "About",
+        icon: InformationCircleIcon,
+        content: <AboutSetting />,
     },
 ];
 
@@ -125,7 +137,7 @@ const DialogFooter2 = memo(function DialogFooter2() {
 
 const DialogSidebar = memo(function DialogSidebar() {
     return (
-        <Sidebar>
+        <Sidebar className="h-full">
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupContent>
@@ -137,6 +149,13 @@ const DialogSidebar = memo(function DialogSidebar() {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
+            <SidebarFooter>
+                <SidebarMenu>
+                    {footers.map((nav) => (
+                        <DialogSidebarButton key={nav.id} nav={nav} />
+                    ))}
+                </SidebarMenu>
+            </SidebarFooter>
         </Sidebar>
     );
 });
@@ -188,21 +207,22 @@ const SidebarFrame = memo(function SidebarFrame() {
 });
 
 const SidebarFrameBreadcrumb = memo(function SidebarFrameBreadcrumb() {
-    const currentPage = useSettingsStore((s) =>
-        navs.findIndex((n) => n.id === s.temp.activePage),
-    );
+    const activePage = useSettingsStore((s) => s.temp.activePage);
 
     const breadcrumbs = useMemo(() => {
+        const arr = activePage.startsWith("f-") ? footers : navs;
+        const currentPage = arr.findIndex((n) => n.id === activePage);
+
         if (currentPage === -1) {
             return ["Settings"];
         }
 
-        return ["Settings", navs[currentPage]?.title ?? "Undefined"];
-    }, [currentPage]);
+        return ["Settings", arr[currentPage]?.title ?? "Undefined"];
+    }, [activePage]);
 
     return (
         <Breadcrumb>
-            <BreadcrumbList>
+            <BreadcrumbList className="sm:gap-1.5 md:gap-2.5">
                 {breadcrumbs.map((breadcrumb, index) => (
                     <BreadcrumbPair
                         key={index}
@@ -217,11 +237,15 @@ const SidebarFrameBreadcrumb = memo(function SidebarFrameBreadcrumb() {
 });
 
 const SidebarFrameContent = memo(function SidebarFrameContent() {
-    const currentPage = useSettingsStore((s) =>
-        navs.findIndex((n) => n.id === s.temp.activePage),
+    const content = useSettingsStore(
+        useShallow((s) => {
+            const activePage = s.temp.activePage;
+            const arr = activePage.startsWith("f-") ? footers : navs;
+            return arr.find((n) => n.id === activePage)?.content;
+        }),
     );
 
-    return navs[currentPage]?.content;
+    return content;
 });
 
 export const FrameContainer = memo(function FrameContainer({
@@ -229,7 +253,7 @@ export const FrameContainer = memo(function FrameContainer({
 }: {
     children: React.ReactNode;
 }) {
-    return <div className="flex flex-col gap-4 pt-4">{children}</div>;
+    return <div className="flex flex-col gap-4 py-4">{children}</div>;
 });
 
 export const FrameHeader = memo(function FrameHeader({
