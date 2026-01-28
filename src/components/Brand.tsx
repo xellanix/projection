@@ -1,14 +1,5 @@
 import { type SVGProps } from "react";
 
-export function BrandIcon() {
-    return (
-        <div className="flex w-34 items-center justify-center gap-2">
-            <img src="./xellanix.svg" alt="Xellanix icon" className="size-7" />
-            <h2 className="text-foreground text-xl font-bold">Projection</h2>
-        </div>
-    );
-}
-
 export function BrandHorizontal(props: SVGProps<SVGSVGElement>) {
     return (
         <svg

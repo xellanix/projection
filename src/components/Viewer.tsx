@@ -23,7 +23,7 @@ import {
     ModernTvIssueIcon,
     VideoOffIcon,
 } from "@hugeicons-pro/core-stroke-rounded";
-import { BrandIcon } from "@/components/Brand";
+import { BrandHorizontal } from "@/components/Brand";
 import { Spinner } from "@/components/ui/spinner";
 import {
     transitionVariants,
@@ -349,11 +349,7 @@ const EmptySignal = memo(function EmptySignal({
                             </EmptyContent>
                         )}
                         <div className="flex w-full flex-1 flex-col items-center justify-center">
-                            <div className="h-12 w-full max-w-32">
-                                <ContentResizer className="h-full w-full">
-                                    <BrandIcon />
-                                </ContentResizer>
-                            </div>
+                            <BrandHorizontal className="aspect-[131/28] h-auto w-full max-w-32" />
                         </div>
                     </Empty>
                 </div>

@@ -1,5 +1,4 @@
-import { BrandIcon } from "@/components/Brand";
-import { ContentResizer } from "@/components/ContentResizer";
+import { BrandHorizontal } from "@/components/Brand";
 import { ProjectionQueue } from "@/components/ProjectionQueue";
 import { SettingsButton } from "@/components/SettingsButton";
 import { EcoModeButton } from "@/components/stores/EcoMode";
@@ -15,10 +14,8 @@ export const Sidebar = memo(function Sidebar() {
                 <SettingsButton />
             </div>
 
-            <div className="mt-2 h-7 px-2 lg:px-4">
-                <ContentResizer className="h-full w-full">
-                    <BrandIcon />
-                </ContentResizer>
+            <div className="mx-3 mt-2 flex flex-col items-center px-2 lg:px-4">
+                <BrandHorizontal className="aspect-[131/28] h-auto w-full max-w-33" />
             </div>
         </div>
     );
