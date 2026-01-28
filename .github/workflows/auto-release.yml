@@ -45,11 +45,11 @@ jobs:
           
           if [ -z "$PREV_TAG" ]; then
             echo "No previous tag found. Logging all commits."
-            LOGS=$(git log --pretty=format:"- %s (%h)")
+            LOGS=$(git log --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))")
           else
             echo "Generating logs from $PREV_TAG to HEAD"
             # Log commits excluding the current bump commit
-            LOGS=$(git log "$PREV_TAG..HEAD^" --pretty=format:"- %s (%h)")
+            LOGS=$(git log "$PREV_TAG..HEAD^" --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))")
           fi
           
           # Handle multiline output for GITHUB_OUTPUT
