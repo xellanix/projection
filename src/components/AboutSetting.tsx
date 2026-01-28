@@ -120,6 +120,8 @@ export const AboutSetting = memo(function AboutSetting() {
                             Commit{" "}
                             <a
                                 href={`https://github.com/xellanix/projection/commit/${version.commit}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="inline-flex items-center gap-0.5 !no-underline"
                             >
                                 {version.commit.slice(0, 7)}
