@@ -1,0 +1,73 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: "contains(github.event.head_commit.message, 'bump version to')"
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract Version and Validate
+        id: check
+        run: |
+          # Get the commit message
+          MSG="${{ github.event.head_commit.message }}"
+          
+          # Regex to match "chore(app): bump version to x.x.x" and capture the version
+          if [[ "$MSG" =~ chore\(app\):\ bump\ version\ to\ ([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            VERSION="${BASH_REMATCH[1]}"
+            echo "MATCH: Found version $VERSION"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "match=true" >> $GITHUB_OUTPUT
+          else
+            echo "NO MATCH: Skipping release."
+            echo "match=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate Changelog
+        if: steps.check.outputs.match == 'true'
+        id: changelog
+        run: |
+          # Find the previous tag (suppress error if no tags exist)
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [ -z "$PREV_TAG" ]; then
+            echo "No previous tag found. Logging all commits."
+            LOGS=$(git log --pretty=format:"- %s (%h)")
+          else
+            echo "Generating logs from $PREV_TAG to HEAD"
+            # Log commits excluding the current bump commit
+            LOGS=$(git log "$PREV_TAG..HEAD^" --pretty=format:"- %s (%h)")
+          fi
+          
+          # Handle multiline output for GITHUB_OUTPUT
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "logs<<$EOF" >> $GITHUB_OUTPUT
+          echo "$LOGS" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        if: steps.check.outputs.match == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.check.outputs.version }}
+        run: |
+          echo "Creating release v$VERSION..."
+          
+          # Create release using GitHub CLI
+          gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            --notes "${{ steps.changelog.outputs.logs }}" \
+            --target "${{ github.sha }}"
