@@ -1,0 +1,14 @@
+diff --git a/dist/es/render/utils/animation-state.mjs b/dist/es/render/utils/animation-state.mjs
+index fdddec2791ef91d392ba6d8e720661ddc3e55162..0c466c855d9139d0a45b6218a5c4d20939594b44 100644
+--- a/dist/es/render/utils/animation-state.mjs
++++ b/dist/es/render/utils/animation-state.mjs
+@@ -305,7 +305,8 @@ function createAnimationState(visualElement) {
+      */
+     function setActive(type, isActive) {
+         // If the active state hasn't changed, we can safely do nothing here
+-        if (state[type].isActive === isActive)
++        // But for exit, we allow re-triggering the animation
++        if (state[type].isActive === isActive && type !== "exit")
+             return Promise.resolve();
+         // Propagate active change to children
+         visualElement.variantChildren?.forEach((child) => child.animationState?.setActive(type, isActive));

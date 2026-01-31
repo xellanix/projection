@@ -89,6 +89,8 @@
     "initVersion": "7.39.3"
   },
   "patchedDependencies": {
-    "framer-motion@12.23.26": "patches/framer-motion@12.23.26.patch"
+    "framer-motion@12.23.26": "patches/framer-motion@12.23.26.patch",
+    "framer-motion@12.29.2": "patches/framer-motion@12.29.2.patch",
+    "motion-dom@12.29.2": "patches/motion-dom@12.29.2.patch"
   }
 }
