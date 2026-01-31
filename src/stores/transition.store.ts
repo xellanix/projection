@@ -1,6 +1,7 @@
 import { _projections } from "@/data/__temp/slides";
+import { transitionDuration, transitions } from "@/data/transitions";
 import type { ProjectionMaster, ProjectionTransition } from "@/types";
-import type { Variant, Variants } from "motion/react";
+import type { Variants } from "motion/react";
 import { create } from "zustand";
 
 // Record<number, Record<number, number>> -> Record<projectionIndex, Record<contentIndex, transitionIndex>>
@@ -64,32 +65,13 @@ export const useTransitionStore = create<TransitionStore>((set, get) => ({
 }));
 
 // Motion variants
-const variants = (duration: number): Variants => {
-    const enterExit: Variant = (type: ProjectionTransition) => {
-        switch (type) {
-            case "fade":
-                return {
-                    opacity: 0,
-                    transition: { duration },
-                };
-            case "none":
-            default:
-                return {
-                    opacity: 1,
-                    transition: { duration: 0 },
-                };
-        }
-    };
-
-    return {
-        enter: enterExit,
-        center: {
-            opacity: 1,
-            transition: { duration },
-        },
-        exit: enterExit,
-    };
-};
-const transitionDuration = 0.3;
+const variants = (duration: number): Variants => ({
+    center: (type: ProjectionTransition) => transitions[type].center(duration),
+    enter: (type: ProjectionTransition) => transitions[type].enter(duration),
+    exit: (type: ProjectionTransition) => {
+        const t = transitions[type];
+        return t.exit ? t.exit(duration) : t.enter(duration);
+    },
+});
 export const transitionVariants = variants(transitionDuration);
 export const bgTransitionVariants = variants(Math.max(transitionDuration, 1));
