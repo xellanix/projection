@@ -377,7 +377,7 @@ export const PreviewSlideController = memo(function PreviewSlideController() {
     }, [projectToScreen, stopProjection, register, unregister]);
 
     return (
-        <div className="@container/preview relative flex h-full flex-col items-center gap-2 lg:gap-4">
+        <div className="relative flex h-full flex-col items-center gap-2 lg:gap-4">
             <span className="text-base font-semibold lg:text-xl">Preview</span>
 
             <ViewerContainer>
