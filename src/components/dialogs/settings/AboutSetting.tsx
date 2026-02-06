@@ -15,6 +15,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import version from "@/data/version.json";
 import { releaseTime } from "@/lib/date";
+import { openWeb } from "@/lib/utils";
 import {
     Alert02Icon,
     ArrowUpRight01Icon,
@@ -100,10 +101,6 @@ const deps: Dependency[] = [
     },
 ];
 
-const openWeb = (url: string) => {
-    window.open(url, "_blank", "noopener,noreferrer");
-};
-
 export const AboutSetting = memo(function AboutSetting() {
     return (
         <FrameContainer>
@@ -153,7 +150,7 @@ export const AboutSetting = memo(function AboutSetting() {
                     <ItemActions>
                         <Button
                             variant={"outline"}
-                            aria-label="Show License"
+                            aria-label="View License"
                             onClick={() =>
                                 openWeb(
                                     "https://github.com/xellanix/projection/blob/main/LICENSE",

@@ -108,3 +108,12 @@ export function compareArrays<T>(
     }
     return true;
 }
+
+/**
+ * Opens a URL in a new tab.
+ *
+ * @param url The URL to open.
+ */
+export function openWeb(url: string) {
+    window.open(url, "_blank", "noopener,noreferrer");
+}
