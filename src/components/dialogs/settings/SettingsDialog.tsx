@@ -43,10 +43,10 @@ import { v4 as uuidv4 } from "uuid";
 import { SettingsSync } from "@/components/stores/SettingsSync";
 import { toast } from "sonner";
 
-import { BackdropSetting } from "@/components/BackdropSetting";
-import { CoverSetting } from "@/components/CoverSetting";
-import { RemapSetting } from "@/components/RemapSetting";
-import { AboutSetting } from "@/components/AboutSetting";
+import { BackdropSetting } from "@/components/dialogs/settings/BackdropSetting";
+import { CoverSetting } from "@/components/dialogs/settings/CoverSetting";
+import { RemapSetting } from "@/components/dialogs/settings/RemapSetting";
+import { AboutSetting } from "@/components/dialogs/settings/AboutSetting";
 
 type NavigationItem = {
     id: string;

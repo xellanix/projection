@@ -1,6 +1,6 @@
 "use client";
 
-import { SettingsDialog } from "@/components/SettingsDialog";
+import { SettingsDialog } from "@/components/dialogs/settings/SettingsDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Settings02Icon } from "@hugeicons-pro/core-stroke-rounded";
