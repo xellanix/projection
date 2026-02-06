@@ -27,7 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn, mod } from "@/lib/utils";
 import { useControl, useControlApi } from "@/context/ControlContext";
 import { usePreview } from "@/context/PreviewContext";
-import { LiveMessageButton } from "@/components/LiveMessageButton";
+import { LiveMessageButton } from "@/components/live-message/LiveMessageButton";
 import { useSettingsStore } from "@/stores/settings.store";
 import { LoopQueue } from "@/components/LoopQueue";
 

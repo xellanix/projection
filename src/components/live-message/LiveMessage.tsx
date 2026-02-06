@@ -1,5 +1,5 @@
 import { ContentResizer } from "@/components/ContentResizer";
-import { Marquee, type MarqueeHandle } from "@/components/Marquee";
+import { Marquee, type MarqueeHandle } from "@/components/live-message/Marquee";
 import { useSettingsStore } from "@/stores/settings.store";
 import { useSocketStore } from "@/stores/socket.store";
 import { AnimatePresence } from "motion/react";

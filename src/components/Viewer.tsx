@@ -30,7 +30,7 @@ import {
     useTransitionStore,
 } from "@/stores/transition.store";
 import { useShallow } from "zustand/react/shallow";
-import { LiveMessage } from "@/components/LiveMessage";
+import { LiveMessage } from "@/components/live-message/LiveMessage";
 import { useSettingsStore } from "@/stores/settings.store";
 import { SPECIAL_INDEX } from "@/data/special-index";
 import { VideoPlayer } from "@/components/VideoPlayer";
