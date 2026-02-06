@@ -18,7 +18,7 @@ import {
     IconDropdownMenuItem,
     IconSplitButton,
     IconToggleButton,
-} from "@/components/Buttons";
+} from "@/components/core/Buttons";
 import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
 import { ProjectionContentQueue } from "@/components/ProjectionQueue";
 import { useSocketStore } from "@/stores/socket.store";

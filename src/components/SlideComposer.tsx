@@ -1,7 +1,7 @@
 "use client";
 
-import { ContentResizer } from "@/components/ContentResizer";
-import { VideoPlayer } from "@/components/VideoPlayer";
+import { ContentResizer } from "@/components/core/ContentResizer";
+import { VideoPlayer } from "@/components/core/VideoPlayer";
 import { SPECIAL_INDEX } from "@/data/special-index";
 import { isTransparent } from "@/lib/background";
 import { cn } from "@/lib/utils";

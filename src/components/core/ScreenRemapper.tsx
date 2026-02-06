@@ -1,6 +1,6 @@
 "use client";
 
-import { ContentResizer } from "@/components/ContentResizer";
+import { ContentResizer } from "@/components/core/ContentResizer";
 import { useSettingsStore } from "@/stores/settings.store";
 import type { Size } from "@/types";
 import { memo, useCallback, useLayoutEffect, useState } from "react";

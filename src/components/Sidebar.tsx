@@ -1,4 +1,4 @@
-import { BrandHorizontal } from "@/components/Brand";
+import { BrandHorizontal } from "@/components/core/Brand";
 import { ProjectionQueue } from "@/components/ProjectionQueue";
 import { SettingsButton } from "@/components/SettingsButton";
 import { EcoModeButton } from "@/components/stores/EcoMode";

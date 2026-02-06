@@ -8,7 +8,7 @@ import {
     SlideBackgroundComposer,
     SlideComposer,
 } from "@/components/SlideComposer";
-import { ContentResizer } from "@/components/ContentResizer";
+import { ContentResizer } from "@/components/core/ContentResizer";
 import { useSocketStore } from "@/stores/socket.store";
 import {
     Empty,
@@ -23,7 +23,7 @@ import {
     ModernTvIssueIcon,
     VideoOffIcon,
 } from "@hugeicons-pro/core-stroke-rounded";
-import { BrandHorizontal } from "@/components/Brand";
+import { BrandHorizontal } from "@/components/core/Brand";
 import { Spinner } from "@/components/ui/spinner";
 import {
     transitionVariants,
@@ -33,7 +33,7 @@ import { useShallow } from "zustand/react/shallow";
 import { LiveMessage } from "@/components/live-message/LiveMessage";
 import { useSettingsStore } from "@/stores/settings.store";
 import { SPECIAL_INDEX } from "@/data/special-index";
-import { VideoPlayer } from "@/components/VideoPlayer";
+import { VideoPlayer } from "@/components/core/VideoPlayer";
 
 function BlackScreen() {
     const contentResolution = useSettingsStore(
