@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
 
@@ -51,7 +51,7 @@ function BlackScreen() {
     );
 }
 
-function Backcover() {
+export function Backcover() {
     const [contentResolution, color] = useSettingsStore(
         useShallow((s) => [
             s.global.remap.contentResolution,
@@ -109,31 +109,88 @@ function CoverScreen() {
     return null;
 }
 
-const ScreenContent = memo(function ScreenContent({
-    currentProjection,
-    currentIndex,
-}: {
-    currentProjection: number;
-    currentIndex: number;
-}) {
-    switch (currentIndex) {
-        case SPECIAL_INDEX.TRANSPARENT:
-            return <ClearScreen />;
-        case SPECIAL_INDEX.COVER:
-            return <CoverScreen />;
-        case SPECIAL_INDEX.BLACK:
-            return <BlackScreen />;
-        case SPECIAL_INDEX.CLEAR:
-            return <ClearScreen />;
-        default:
-            return (
-                <SlideComposer
-                    currentProjection={currentProjection}
-                    currentIndex={currentIndex}
-                />
-            );
-    }
-});
+const ScreenContent = memo(
+    function ScreenContent({
+        currentProjection,
+        currentIndex,
+    }: {
+        currentProjection: number;
+        currentIndex: number;
+    }) {
+        switch (currentIndex) {
+            case SPECIAL_INDEX.TRANSPARENT:
+            case SPECIAL_INDEX.CLEAR:
+                return <ClearScreen />;
+            case SPECIAL_INDEX.COVER:
+                return <CoverScreen />;
+            case SPECIAL_INDEX.BLACK:
+                return <BlackScreen />;
+            default:
+                return (
+                    <SlideComposer
+                        currentProjection={currentProjection}
+                        currentIndex={currentIndex}
+                    />
+                );
+        }
+    },
+    (prev, next) => {
+        // If the previous or next index is transparent or clear, skip re-render.
+        if (
+            (prev.currentIndex === SPECIAL_INDEX.CLEAR &&
+                next.currentIndex === SPECIAL_INDEX.TRANSPARENT) ||
+            (prev.currentIndex === SPECIAL_INDEX.TRANSPARENT &&
+                next.currentIndex === SPECIAL_INDEX.CLEAR)
+        )
+            return true;
+
+        // If the index changes, the structural output changes, so we must re-render.
+        if (prev.currentIndex !== next.currentIndex) return false;
+
+        // If the index is special, but not stopped, the component ignores prop projection.
+        // We return 'true' (props are equal) to skip re-render even if projection changed.
+        if (
+            next.currentIndex !== SPECIAL_INDEX.STOPPED &&
+            next.currentIndex < 0
+        )
+            return true;
+
+        // Default case: The output depends on projection, so we check if it changed.
+        return prev.currentProjection === next.currentProjection;
+    },
+);
+
+const ForegroundAnimator = memo(
+    function ForegroundAnimator({
+        motionKey,
+        transition,
+        children,
+    }: {
+        motionKey: string | number;
+        transition: string;
+        children: React.ReactNode;
+    }) {
+        return (
+            <AnimatePresence custom={transition}>
+                <motion.div
+                    key={motionKey}
+                    className="absolute h-full w-full"
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    custom={transition}
+                    variants={transitionVariants}
+                    data-slot="foreground"
+                >
+                    <ContentResizer className="h-full w-full">
+                        {children}
+                    </ContentResizer>
+                </motion.div>
+            </AnimatePresence>
+        );
+    },
+    (prev, next) => prev.motionKey === next.motionKey,
+);
 
 const bgIndex = (index: number, raw?: number) => {
     if (raw === undefined) return index;
@@ -146,6 +203,9 @@ const bgIndex = (index: number, raw?: number) => {
             return index;
     }
 };
+const buildFKey = (projection: number, index: number) => {
+    return index < 0 ? index : `${projection}-${index}`;
+};
 interface ViewerProps {
     currentProjection: number;
     currentIndex: number;
@@ -156,46 +216,27 @@ export const Viewer = memo(function Viewer({
     currentIndex = 0,
     rawIndex,
 }: ViewerProps) {
-    const transition = useTransitionStore(
-        useShallow((s) => s.getTransition(currentProjection, currentIndex)),
-    );
+    const motionKey = buildFKey(currentProjection, currentIndex);
+    const transition = useMemo(() => {
+        return useTransitionStore
+            .getState()
+            .getTransition(currentProjection, currentIndex);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [motionKey]);
 
     return (
         <>
             <SlideBackgroundComposer
                 currentProjection={currentProjection}
                 currentIndex={bgIndex(currentIndex, rawIndex)}
-            >
-                <div className="animate-in fade-in absolute size-full duration-1000">
-                    <ContentResizer className="size-full">
-                        <Backcover />
-                    </ContentResizer>
-                </div>
-            </SlideBackgroundComposer>
+            />
 
-            <AnimatePresence custom={transition}>
-                <motion.div
-                    key={
-                        currentIndex < 0
-                            ? currentIndex
-                            : `${currentProjection}-${currentIndex}`
-                    }
-                    className="absolute h-full w-full"
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    custom={transition}
-                    variants={transitionVariants}
-                    data-slot="foreground"
-                >
-                    <ContentResizer className="h-full w-full">
-                        <ScreenContent
-                            currentProjection={currentProjection}
-                            currentIndex={currentIndex}
-                        />
-                    </ContentResizer>
-                </motion.div>
-            </AnimatePresence>
+            <ForegroundAnimator motionKey={motionKey} transition={transition}>
+                <ScreenContent
+                    currentProjection={currentProjection}
+                    currentIndex={currentIndex}
+                />
+            </ForegroundAnimator>
         </>
     );
 });

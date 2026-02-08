@@ -1,12 +1,14 @@
 "use client";
 
 import { ContentResizer } from "@/components/core/ContentResizer";
+import { RemapperContainer } from "@/components/core/ScreenRemapper";
 import { VideoPlayer } from "@/components/core/VideoPlayer";
+import { Backcover } from "@/components/Viewer";
 import { SPECIAL_INDEX } from "@/data/special-index";
+import { useRetain } from "@/hooks/use-retain";
 import { isTransparent } from "@/lib/background";
 import { cn } from "@/lib/utils";
 import { useProjectionStore } from "@/stores/projection.store";
-import { useSettingsStore } from "@/stores/settings.store";
 import {
     bgTransitionVariants,
     useTransitionStore,
@@ -14,7 +16,63 @@ import {
 import type { ProjectionItem } from "@/types";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
+
+const BackcoverSwitcher = memo(function BackcoverSwitcher({
+    isShowBg,
+}: {
+    isShowBg: boolean;
+}) {
+    return (
+        isShowBg && (
+            <div className="animate-in fade-in absolute size-full duration-1000">
+                <ContentResizer className="size-full">
+                    <Backcover />
+                </ContentResizer>
+            </div>
+        )
+    );
+});
+
+const BackgroundAnimator = memo(function BackgroundAnimator({
+    transition,
+    isShowBg,
+    background,
+}: {
+    transition: string;
+    isShowBg: boolean;
+    background: string;
+}) {
+    return (
+        <AnimatePresence custom={transition}>
+            <motion.div
+                key={background}
+                className="absolute h-full w-full"
+                initial="enter"
+                animate="center"
+                exit="exit"
+                custom={transition}
+                variants={bgTransitionVariants}
+                data-slot="background"
+            >
+                <ContentResizer className="h-full w-full">
+                    <RemapperContainer>
+                        {isShowBg && (
+                            <VideoPlayer
+                                src={background}
+                                muted
+                                autoPlay
+                                loop
+                                background
+                                className="object-cover"
+                            />
+                        )}
+                    </RemapperContainer>
+                </ContentResizer>
+            </motion.div>
+        </AnimatePresence>
+    );
+});
 
 interface SlideComposerProps {
     currentProjection: number;
@@ -23,73 +81,37 @@ interface SlideComposerProps {
 export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
     currentProjection,
     currentIndex,
-    children,
-}: SlideComposerProps & { children: React.ReactNode }) {
-    const contentResolution = useSettingsStore(
-        (s) => s.global.remap.contentResolution,
+}: SlideComposerProps) {
+    const background = useRetain(
+        () => {
+            if (currentIndex === SPECIAL_INDEX.TRANSPARENT)
+                return "transparent";
+            if (currentProjection < 0 || currentIndex < 0) return;
+
+            return useProjectionStore
+                .getState()
+                .getBackground(currentProjection, currentIndex)[0];
+        },
+        [currentProjection, currentIndex],
+        "",
     );
+    const isShowBg = !isTransparent(background);
 
-    const getBackground = useProjectionStore((s) => s.getBackground);
-    const [[background, index], setBg] = useState(
-        getBackground(currentProjection, currentIndex),
-    );
-
-    useEffect(() => {
-        if (currentProjection < 0 || currentIndex < 0) return;
-
-        setBg(getBackground(currentProjection, currentIndex));
-    }, [currentIndex, currentProjection, getBackground]);
-
-    const getTransition = useTransitionStore((s) => s.getTransition);
-    const transition = useMemo(
-        () => getTransition(currentProjection, currentIndex),
-        [currentProjection, currentIndex, getTransition],
-    );
-
-    const isShowBg = useMemo(() => {
-        const _ =
-            isTransparent(background) ||
-            currentIndex === SPECIAL_INDEX.TRANSPARENT;
-        return !_;
-    }, [background, currentIndex]);
+    const transition = useMemo(() => {
+        return useTransitionStore
+            .getState()
+            .getTransition(currentProjection, currentIndex);
+    }, [background]);
 
     return (
         <>
-            {isShowBg && children}
+            <BackcoverSwitcher isShowBg={isShowBg} />
 
-            <AnimatePresence custom={transition}>
-                <motion.div
-                    key={isShowBg ? index : SPECIAL_INDEX.TRANSPARENT}
-                    className="absolute h-full w-full"
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    custom={transition}
-                    variants={bgTransitionVariants}
-                    data-slot="background"
-                >
-                    <ContentResizer className="h-full w-full">
-                        <div
-                            className="flex flex-col items-center justify-center"
-                            style={{
-                                width: `${contentResolution.width}px`,
-                                height: `${contentResolution.height}px`,
-                            }}
-                        >
-                            {isShowBg && (
-                                <VideoPlayer
-                                    src={background}
-                                    muted
-                                    autoPlay
-                                    loop
-                                    background
-                                    className="object-cover"
-                                ></VideoPlayer>
-                            )}
-                        </div>
-                    </ContentResizer>
-                </motion.div>
-            </AnimatePresence>
+            <BackgroundAnimator
+                transition={transition}
+                isShowBg={isShowBg}
+                background={background}
+            />
         </>
     );
 });
@@ -98,10 +120,6 @@ export const SlideComposer = memo(function SlideComposer({
     currentProjection,
     currentIndex,
 }: SlideComposerProps) {
-    const contentResolution = useSettingsStore(
-        (s) => s.global.remap.contentResolution,
-    );
-
     const getContents = useProjectionStore((s) => s.getContents);
     const content = useMemo(
         () => getContents(currentProjection)[currentIndex] ?? null,
@@ -109,21 +127,14 @@ export const SlideComposer = memo(function SlideComposer({
     );
 
     return (
-        <div
-            className="flex flex-col items-center justify-center"
-            style={{
-                width: `${contentResolution.width}px`,
-                height: `${contentResolution.height}px`,
-            }}
-            data-slot="composer"
-        >
+        <RemapperContainer>
             <div
                 className="relative flex size-full flex-col items-center justify-center gap-4"
                 data-slot="composer-container"
             >
                 {content && <SlideComposerContent content={content} />}
             </div>
-        </div>
+        </RemapperContainer>
     );
 });
 

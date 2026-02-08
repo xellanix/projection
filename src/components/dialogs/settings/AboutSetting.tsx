@@ -47,7 +47,7 @@ const deps: Dependency[] = [
     },
     {
         name: "Motion",
-        version: "12.23.26",
+        version: "12.34.0-alpha.0",
         license: "MIT",
         website: "https://motion.dev/",
     },

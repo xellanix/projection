@@ -6,6 +6,43 @@ import type { Size } from "@/types";
 import { memo, useCallback, useLayoutEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+function RawRemapperContainerR({
+    contentRes,
+    children,
+}: {
+    contentRes: Size;
+    children: React.ReactNode;
+}) {
+    return (
+        <div
+            className="relative flex items-center justify-center overflow-hidden"
+            style={{
+                width: `${contentRes.width}px`,
+                height: `${contentRes.height}px`,
+            }}
+            data-slot="screen-remapper"
+        >
+            {children}
+        </div>
+    );
+}
+const RawRemapperContainer = memo(RawRemapperContainerR);
+RawRemapperContainer.displayName = "RawRemapperContainer";
+
+function RemapperContainerR({ children }: { children: React.ReactNode }) {
+    const contentRes = useSettingsStore(
+        (s) => s.global.remap.contentResolution,
+    );
+
+    return (
+        <RawRemapperContainer contentRes={contentRes}>
+            {children}
+        </RawRemapperContainer>
+    );
+}
+export const RemapperContainer = memo(RemapperContainerR);
+RemapperContainer.displayName = "RemapperContainer";
+
 interface ScreenRemapperProps {
     children: React.ReactNode;
 }
@@ -52,14 +89,7 @@ function ScreenRemapperR({ children }: ScreenRemapperProps) {
     return (
         <div className="absolute h-full w-full">
             <ContentResizer className="h-full w-full">
-                <div
-                    className="relative flex items-center justify-center overflow-hidden"
-                    style={{
-                        width: `${contentRes.width}px`,
-                        height: `${contentRes.height}px`,
-                    }}
-                    data-slot="screen-remapper"
-                >
+                <RawRemapperContainer contentRes={contentRes}>
                     <div
                         className="flex h-full w-full flex-col"
                         style={{
@@ -68,7 +98,7 @@ function ScreenRemapperR({ children }: ScreenRemapperProps) {
                     >
                         {children}
                     </div>
-                </div>
+                </RawRemapperContainer>
             </ContentResizer>
         </div>
     );
