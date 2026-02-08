@@ -53,7 +53,7 @@ const deps: Dependency[] = [
     },
     {
         name: "Next.js",
-        version: "16.0.10",
+        version: "16.1.6",
         license: "MIT",
         website: "https://nextjs.org/",
     },
@@ -65,7 +65,7 @@ const deps: Dependency[] = [
     },
     {
         name: "React",
-        version: "^19.2.3",
+        version: "19.2.4",
         license: "MIT",
         website: "https://react.dev/",
     },
