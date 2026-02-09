@@ -1,31 +1,22 @@
 import tseslint from "typescript-eslint";
-import { defineConfig } from "eslint/config";
-import nextPlugin from "@next/eslint-plugin-next";
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextConfig from "eslint-config-next/core-web-vitals";
 
-export default defineConfig(
-    {
-        ignores: [
-            "node_modules/**",
-            ".next/**",
-            "out/**",
-            "build/**",
-            "next-env.d.ts",
-            "src/components/ui",
-        ],
-    },
+export default defineConfig([
+    globalIgnores([
+        ".next/**",
+        "out/**",
+        "build/**",
+        "next-env.d.ts",
+        "src/components/ui/**",
+    ]),
+    ...nextConfig,
+    ...tseslint.configs.recommended,
+    ...tseslint.configs.recommendedTypeChecked,
+    ...tseslint.configs.stylisticTypeChecked,
     {
         files: ["**/*.ts", "**/*.tsx"],
-        plugins: {
-            // @ts-ignore
-            "@next/next": nextPlugin,
-        },
-        extends: [
-            ...tseslint.configs.recommended,
-            ...tseslint.configs.recommendedTypeChecked,
-            ...tseslint.configs.stylisticTypeChecked,
-        ],
         rules: {
-            ...nextPlugin.configs.recommended.rules,
             "@typescript-eslint/array-type": "off",
             "@typescript-eslint/consistent-type-definitions": "off",
             "@typescript-eslint/consistent-type-imports": [
@@ -45,6 +36,7 @@ export default defineConfig(
             ],
             "@next/next/no-img-element": "off",
             "@typescript-eslint/prefer-nullish-coalescing": "off",
+            "@typescript-eslint/no-unused-expressions": "off",
         },
     },
     {
@@ -53,8 +45,11 @@ export default defineConfig(
         },
         languageOptions: {
             parserOptions: {
-                projectService: true,
+                projectService: {
+                    allowDefaultProject: ["eslint.config.mjs"],
+                    defaultProject: "tsconfig.json",
+                },
             },
         },
     },
-);
+]);
