@@ -1,23 +1,31 @@
-import { FlatCompat } from "@eslint/eslintrc";
 import tseslint from "typescript-eslint";
+import { defineConfig } from "eslint/config";
+import nextPlugin from "@next/eslint-plugin-next";
 
-const compat = new FlatCompat({
-    baseDirectory: import.meta.dirname,
-});
-
-export default tseslint.config(
+export default defineConfig(
     {
-        ignores: [".next", "src/components/ui"],
+        ignores: [
+            "node_modules/**",
+            ".next/**",
+            "out/**",
+            "build/**",
+            "next-env.d.ts",
+            "src/components/ui",
+        ],
     },
-    ...compat.extends("next/core-web-vitals"),
     {
         files: ["**/*.ts", "**/*.tsx"],
+        plugins: {
+            // @ts-ignore
+            "@next/next": nextPlugin,
+        },
         extends: [
             ...tseslint.configs.recommended,
             ...tseslint.configs.recommendedTypeChecked,
             ...tseslint.configs.stylisticTypeChecked,
         ],
         rules: {
+            ...nextPlugin.configs.recommended.rules,
             "@typescript-eslint/array-type": "off",
             "@typescript-eslint/consistent-type-definitions": "off",
             "@typescript-eslint/consistent-type-imports": [
