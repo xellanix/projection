@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ProjectionMaster } from "@/types";
 import type { JSX } from "react";
 
@@ -22,7 +24,7 @@ type ConverterMap = {
     $string: (content: string) => string;
     [key: string]:
         | ((content: string) => ConverterReturn)
-        | { (content: BaseComponent<any>): JSX.Element };
+        | ((content: BaseComponent<any>) => JSX.Element);
 };
 type AllowedComponents = Parameters<ConverterMap[keyof ConverterMap]>[0];
 type ConverterReturn = React.ReactNode;

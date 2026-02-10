@@ -58,6 +58,7 @@ export function useRetain<T>(
 ): T | undefined {
     // Calculate the candidate value
     // If the factory returns undefined, it signals "Do not update".
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const candidate = useMemo(factory, deps);
 
     // The Cache (Holds the last non-undefined value)

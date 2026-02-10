@@ -101,6 +101,7 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
         return useTransitionStore
             .getState()
             .getTransition(currentProjection, currentIndex);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [background]);
 
     return (

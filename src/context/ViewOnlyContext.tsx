@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useRef } from "react";
+import { createContext, useContext } from "react";
 
 interface ViewOnly {
     isViewOnly: boolean;
@@ -12,11 +12,12 @@ const ViewOnlyContext = createContext<ViewOnly>({
 
 export const useViewOnly = () => useContext(ViewOnlyContext);
 
+const viewOnly: ViewOnly = {
+    isViewOnly: true,
+}
 export function ViewOnlyProvider({ children }: { children: React.ReactNode }) {
-    const preview = useRef<ViewOnly>({ isViewOnly: true });
-
     return (
-        <ViewOnlyContext.Provider value={preview.current}>
+        <ViewOnlyContext.Provider value={viewOnly}>
             {children}
         </ViewOnlyContext.Provider>
     );

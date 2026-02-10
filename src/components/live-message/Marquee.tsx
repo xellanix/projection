@@ -187,6 +187,7 @@ export const Marquee = memo(
                 loop,
             });
             // Update the ref on every render
+            // eslint-disable-next-line react-hooks/refs
             stateRef.current = {
                 durationMs,
                 shouldUseTwoCloneRender,

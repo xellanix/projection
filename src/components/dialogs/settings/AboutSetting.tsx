@@ -217,7 +217,7 @@ const UpdateActions = memo(function UpdateActions() {
             const res = await fetch(
                 `https://raw.githubusercontent.com/xellanix/projection/main/src/data/version.json`,
             );
-            setData(await res.json());
+            setData((await res.json()) as typeof version);
         } catch (error) {
             console.error(error);
         } finally {

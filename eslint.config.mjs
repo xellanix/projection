@@ -9,6 +9,10 @@ export default defineConfig([
         "build/**",
         "next-env.d.ts",
         "src/components/ui/**",
+        "**/__temp/**",
+        "windows/**",
+        "src/fonts/**",
+        "src/styles/**",
     ]),
     ...nextConfig,
     ...tseslint.configs.recommended,
@@ -37,6 +41,13 @@ export default defineConfig([
             "@next/next/no-img-element": "off",
             "@typescript-eslint/prefer-nullish-coalescing": "off",
             "@typescript-eslint/no-unused-expressions": "off",
+            "@typescript-eslint/no-inferrable-types": "off",
+        },
+    },
+    {
+        files: ["**/*.config.js"],
+        rules: {
+            "import/no-anonymous-default-export": "off",
         },
     },
     {

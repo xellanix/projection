@@ -6,11 +6,11 @@ import {
     type ControlStore,
 } from "@/stores/control.store";
 import { useProjectionStore } from "@/stores/projection.store";
-import React, {
+import {
     createContext,
     useContext,
     useEffect,
-    useRef,
+    useState,
     type ReactNode,
 } from "react";
 import { useStore } from "zustand";
@@ -24,14 +24,10 @@ interface ControlProviderProps {
     children: ReactNode;
 }
 export const ControlProvider = ({ children }: ControlProviderProps) => {
-    const storeRef = useRef<ControlStoreApi>(null);
-
-    if (!storeRef.current) {
-        storeRef.current = createControlStore();
-    }
+    const [store] = useState<ControlStoreApi>(() => createControlStore());
 
     return (
-        <ControlContext.Provider value={storeRef.current}>
+        <ControlContext.Provider value={store}>
             {children}
         </ControlContext.Provider>
     );

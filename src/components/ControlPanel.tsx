@@ -6,7 +6,7 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { useBreakpoint, useBreakpointHandler } from "@/hooks/use-breakpoint";
+import { useBreakpoint, addBreakpointHandler } from "@/hooks/use-breakpoint";
 import {
     ArrowLeft01Icon,
     ArrowRight01Icon,
@@ -31,7 +31,7 @@ export const SidebarPanel = memo(function SidebarPanel({
     };
 
     useEffect(() => {
-        const breakpoint1 = useBreakpointHandler(
+        const breakpoint1 = addBreakpointHandler(
             `screen and (width <= 640px)`,
             (trigger) => {
                 if (!sidePanel.current) return;
@@ -46,7 +46,7 @@ export const SidebarPanel = memo(function SidebarPanel({
             },
         );
 
-        const breakpoint2 = useBreakpointHandler(
+        const breakpoint2 = addBreakpointHandler(
             `screen and (width <= 480px)`,
             (trigger) => {
                 if (!sidePanel.current) return;

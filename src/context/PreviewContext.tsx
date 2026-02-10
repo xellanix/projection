@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useRef } from "react";
+import { createContext, useContext } from "react";
 
 interface Preview {
     isPreview: boolean;
@@ -12,11 +12,12 @@ const PreviewContext = createContext<Preview>({
 
 export const usePreview = () => useContext(PreviewContext);
 
+const preview: Preview = {
+    isPreview: true,
+};
 export function PreviewProvider({ children }: { children: React.ReactNode }) {
-    const preview = useRef<Preview>({ isPreview: true });
-
     return (
-        <PreviewContext.Provider value={preview.current}>
+        <PreviewContext.Provider value={preview}>
             {children}
         </PreviewContext.Provider>
     );

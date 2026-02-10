@@ -31,7 +31,15 @@ import {
     DragDropVerticalIcon,
 } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { memo, useCallback, useEffect, useMemo, useRef } from "react";
+import {
+    memo,
+    useCallback,
+    useEffect,
+    useEffectEvent,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+} from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useFilePicker } from "use-file-picker";
 import { jsonToProjection } from "@/lib/json-to-projection";
@@ -153,7 +161,7 @@ const AddButton = memo(function AddButton() {
         };
     }, [register, unregister, openFilePicker]);
 
-    useEffect(() => {
+    const onFilesChange = useEffectEvent(() => {
         if (loading || !socket) return;
 
         for (const file of filesContent) {
@@ -162,7 +170,8 @@ const AddButton = memo(function AddButton() {
             useProjectionStore.getState().addProjection(res);
             socket.emit("client:queue:add", file.content);
         }
-    }, [loading, socket]);
+    });
+    useEffect(() => onFilesChange(), [loading, socket]);
 
     return (
         <Button
@@ -513,13 +522,15 @@ const ContentQueueItem = memo(function ContentQueueItem({
     const { isPreview } = usePreview();
     const element = useRef<HTMLButtonElement>(null);
 
-    if (isActive) {
-        element.current?.scrollIntoView({
-            block: "start",
-            inline: "nearest",
-            behavior: "smooth",
-        });
-    }
+    useLayoutEffect(() => {
+        if (isActive && element.current) {
+            element.current.scrollIntoView({
+                block: "start",
+                inline: "nearest",
+                behavior: "smooth",
+            });
+        }
+    }, [isActive]);
 
     return (
         <Button

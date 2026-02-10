@@ -1,8 +1,7 @@
 import { ProjectionMasterSchema } from "@/schemas/projection";
-import type { ProjectionMaster } from "@/types";
 
 export const jsonToProjection = (json: string) => {
-    const p = JSON.parse(json);
+    const p: unknown = JSON.parse(json);
     const result = ProjectionMasterSchema.safeParse(p);
 
     if (!result.success) {
@@ -10,5 +9,5 @@ export const jsonToProjection = (json: string) => {
         return null;
     }
 
-    return result.data as ProjectionMaster;
+    return result.data;
 };

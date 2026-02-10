@@ -113,6 +113,14 @@ export const IconToggleButton = memo(function IconToggleButton({
     ...props
 }: IconToggleButtonProps) {
     const [pressed, setPressed] = useState(props.pressed ?? false);
+    const [prevSignal, setPrevSignal] = useState(props.pressed);
+    if (props.pressed !== undefined && props.pressed !== prevSignal) {
+        setPrevSignal(props.pressed);
+        setPressed(props.pressed);
+    }
+    if (props.pressed === undefined && prevSignal !== undefined) {
+        setPrevSignal(undefined);
+    }
 
     const togglePressed = useCallback(() => {
         setPressed((prev) => {
@@ -120,10 +128,6 @@ export const IconToggleButton = memo(function IconToggleButton({
             return !prev;
         });
     }, [onPressed]);
-
-    useEffect(() => {
-        setPressed(props.pressed ?? false);
-    }, [props.pressed]);
 
     const [register, unregister] = useGlobalKeyboard();
     useEffect(() => {

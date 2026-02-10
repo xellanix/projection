@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-    useState,
-    useLayoutEffect,
-    useRef,
-    useCallback,
-    memo,
-} from "react";
+import React, { useLayoutEffect, useRef, memo } from "react";
 
 interface ContentResizerProps {
     children: React.ReactNode;
@@ -19,44 +13,62 @@ export const ContentResizer = memo(function ContentResizer({
 }: ContentResizerProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
-    const [scale, setScale] = useState(0);
+    const prevScaleRef = useRef(0);
 
-    const handleResize = useCallback(() => {
+    useLayoutEffect(() => {
         const container = containerRef.current;
         const content = contentRef.current;
+        if (!container || !content) return;
 
-        if (container && content) {
-            const containerWidth = container.offsetWidth;
-            const containerHeight = container.offsetHeight;
-            const contentWidth = content.offsetWidth;
-            const contentHeight = content.offsetHeight;
+        const setScale = (newScale: number, cw: number, ch: number) => {
+            if (!Number.isFinite(newScale)) newScale = 0;
 
-            if (contentWidth === 0 || contentHeight === 0) {
-                setScale(0);
+            const prevScale = prevScaleRef.current;
+            if (newScale === prevScale) return;
+
+            const contentMaxDim = Math.max(cw, ch);
+            const renderedPixelDiff =
+                Math.abs(newScale - prevScale) * contentMaxDim;
+            if (renderedPixelDiff < 2) {
                 return;
             }
 
-            const scaleX = containerWidth / contentWidth;
-            const scaleY = containerHeight / contentHeight;
+            content.style.transform = `scale(${newScale})`;
+            prevScaleRef.current = newScale;
+        };
+
+        const handleResize = () => {
+            const pw = container.offsetWidth;
+            const ph = container.offsetHeight;
+            const cw = content.offsetWidth;
+            const ch = content.offsetHeight;
+
+            // prettier-ignore
+            if (
+                !cw || !ch || !pw || !ph ||
+                !Number.isFinite(cw) || !Number.isFinite(ch) ||
+                !Number.isFinite(pw) || !Number.isFinite(ph)
+            ) {
+                setScale(0, cw, ch);
+                return;
+            }
+
+            const scaleX = pw / cw;
+            const scaleY = ph / ch;
             const newScale = Math.min(scaleX, scaleY);
 
-            setScale(newScale);
-        }
-    }, []);
-
-    useLayoutEffect(() => {
-        // The ResizeObserver will handle all subsequent resizes.
-        const observer = new ResizeObserver(handleResize);
-        if (containerRef.current) observer.observe(containerRef.current);
-        if (contentRef.current) observer.observe(contentRef.current);
-
-        // Initial calculation
-        handleResize();
-
-        return () => {
-            observer.disconnect();
+            setScale(newScale, cw, ch);
         };
-    }, [handleResize]);
+
+        // The ResizeObserver will handle all subsequent resizes.
+        const observer = new ResizeObserver(() => {
+            requestAnimationFrame(handleResize);
+        });
+        observer.observe(container);
+        observer.observe(content);
+
+        return () => observer.disconnect();
+    }, []);
 
     return (
         <div
@@ -64,7 +76,10 @@ export const ContentResizer = memo(function ContentResizer({
             className={`relative flex items-center justify-center overflow-hidden ${className}`}
             data-slot="content-resizer"
         >
-            <div ref={contentRef} style={{ transform: `scale(${scale})` }}>
+            <div
+                ref={contentRef}
+                className="origin-center transform-[scale(0)]"
+            >
                 {children}
             </div>
         </div>

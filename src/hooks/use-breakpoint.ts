@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
-export function useBreakpointHandler(
+export function addBreakpointHandler(
     media: string,
     handler: (trigger: boolean) => void,
 ) {
@@ -13,12 +13,13 @@ export function useBreakpointHandler(
     return () => mql.removeEventListener("change", onChange);
 }
 
-export function useBreakpoint(maxWidth: number) {
+export function useBreakpoint(initialMaxWidth: number) {
+    const initial = useRef(initialMaxWidth);
     const [isMobile, setIsMobile] = useState<boolean | undefined>(undefined);
 
     useEffect(() => {
-        return useBreakpointHandler(
-            `(max-width: ${maxWidth - 1}px)`,
+        return addBreakpointHandler(
+            `(max-width: ${initial.current - 1}px)`,
             setIsMobile,
         );
     }, []);
