@@ -13,8 +13,8 @@
     "lint:fix": "eslint . --fix",
     "preview": "next build && next start",
     "start": "NODE_ENV=production bun run server.ts",
-    "cloudflared": "bunx wait-on http://localhost:3000 && cloudflared tunnel --url http://localhost:3000",
-    "start:windows": "concurrently \"bun run start\" \"bunx wait-on http://localhost:3000 && .\\windows\\projection.exe\"",
+    "cloudflared": "bunx wait-on http://localhost:12526 && cloudflared tunnel --url http://localhost:12526",
+    "start:windows": "concurrently \"bun run start\" \"bunx wait-on http://localhost:12526 && .\\windows\\projection.exe\"",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
