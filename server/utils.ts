@@ -1,6 +1,6 @@
-import type { IncomingMessage } from "http";
+import type { IncomingMessage } from "node:http";
 
-export function isTrulyLocal(req: IncomingMessage) {
+export function isTrulyLocal(req: IncomingMessage): boolean {
     const headers = req.headers;
     const ip = req.socket.remoteAddress;
 

@@ -6,8 +6,8 @@ import { io } from "socket.io-client";
 import { useShallow } from "zustand/react/shallow";
 
 export function SocketInitiator() {
-    const [ setSocket, setSocketId ] = useSocketStore(
-        useShallow((s) => [s.setSocket, s.setSocketId]),
+    const [setSocket, setSocketId, setLocal] = useSocketStore(
+        useShallow((s) => [s.setSocket, s.setSocketId, s.setLocal]),
     );
 
     useEffect(() => {
@@ -25,6 +25,8 @@ export function SocketInitiator() {
             console.log("✅ Connected to server");
         });
 
+        newSocket.on("server:socket:isLocal", setLocal);
+
         newSocket.on("connect_error", (err) => {
             console.error("Socket connection error:", err);
         });
@@ -37,7 +39,7 @@ export function SocketInitiator() {
         return () => {
             newSocket.disconnect();
         };
-    }, [setSocket, setSocketId]);
+    }, [setSocket, setSocketId, setLocal]);
 
     return null;
 }

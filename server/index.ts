@@ -3,9 +3,11 @@ import { createServer } from "node:http";
 import { parse } from "node:url";
 import next from "next";
 import { Server } from "socket.io";
+import * as ps from "./persistence";
+import { isTrulyLocal } from "./utils";
+
 import type { AppSettings, SettingsLocalScreenState } from "@/types/settings";
 import { defaultSettings } from "@/data/settings";
-import * as ps from "./persistence";
 import { SPECIAL_INDEX } from "@/data/special-index";
 
 // --- Server Setup ---
@@ -108,6 +110,8 @@ app.prepare().then(() => {
 
     io.on("connection", (socket) => {
         console.log("✅ Client connected:", socket.id);
+
+        socket.emit("server:socket:isLocal", isTrulyLocal(socket.request));
 
         // "client:socket:register"
         socket.on("client:socket:register", (id: string) => {
