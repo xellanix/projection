@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import { createServer } from "http";
-import { parse } from "url";
+import { createServer } from "node:http";
+import { parse } from "node:url";
 import next from "next";
 import { Server } from "socket.io";
 import type { AppSettings, SettingsLocalScreenState } from "@/types/settings";
 import { defaultSettings } from "@/data/settings";
-import * as ps from "./server.persistence";
+import * as ps from "./persistence";
 import { SPECIAL_INDEX } from "@/data/special-index";
 
 // --- Server Setup ---

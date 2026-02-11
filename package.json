@@ -6,13 +6,13 @@
   "scripts": {
     "build": "next build",
     "check": "eslint . && tsc --noEmit",
-    "dev": "bun run server.ts",
+    "dev": "bun server/index.ts",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "preview": "next build && next start",
-    "start": "NODE_ENV=production bun run server.ts",
+    "start": "NODE_ENV=production bun server/index.ts",
     "cloudflared": "bunx wait-on http://localhost:12526 && cloudflared tunnel --url http://localhost:12526",
     "start:windows": "concurrently \"bun run start\" \"bunx wait-on http://localhost:12526 && .\\windows\\projection.exe\"",
     "typecheck": "tsc --noEmit"
