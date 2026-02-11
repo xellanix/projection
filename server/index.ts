@@ -5,6 +5,7 @@ import next from "next";
 import { Server } from "socket.io";
 import * as ps from "./persistence";
 import { isTrulyLocal } from "./utils";
+import { TunnelManager } from "./tunnel-manager";
 
 import type { AppSettings, SettingsLocalScreenState } from "@/types/settings";
 import { defaultSettings } from "@/data/settings";
@@ -108,11 +109,13 @@ app.prepare().then(() => {
         },
     });
 
+    // Initialize our Native Manager
+    const tunnelMgr = TunnelManager.getInstance();
+
     io.on("connection", (socket) => {
         console.log("✅ Client connected:", socket.id);
 
         socket.emit("server:socket:isLocal", isTrulyLocal(socket.request));
-
         // "client:socket:register"
         socket.on("client:socket:register", (id: string) => {
             controllerIds.push(id);
@@ -133,6 +136,63 @@ app.prepare().then(() => {
             resetIfNoController();
             socket.emit("server:socket:hasAny", controllerIds.length > 0);
         });
+
+        if (isTrulyLocal(socket.request)) {
+            socket.join("local-user");
+
+            socket.emit("server:tunnel:status", tunnelMgr.status);
+            // "client:tunnel:status"
+            socket.on("client:tunnel:status", () => {
+                socket.emit("server:tunnel:status", tunnelMgr.status);
+            });
+            // "client:tunnel:toggle"
+            socket.on("client:tunnel:toggle", async (shouldStart: boolean) => {
+                try {
+                    // Check if the requested state matches current reality
+                    // If user asks to START, but we are ALREADY STARTED, do nothing.
+                    const current = tunnelMgr.status;
+                    if (shouldStart && current.active === true) return;
+                    if (!shouldStart && current.active === false) return;
+
+                    // Send "Loading" immediately to lock the UI
+                    io.to("local-user").emit("server:tunnel:status", {
+                        active: undefined,
+                        url: null,
+                    });
+
+                    let newStatus;
+                    if (shouldStart) {
+                        newStatus = await tunnelMgr.startTunnel(port);
+                    } else {
+                        newStatus = await tunnelMgr.stopTunnel();
+                    }
+
+                    // Success! Send result
+                    io.to("local-user").emit("server:tunnel:status", newStatus);
+                } catch (err) {
+                    if (!(err instanceof Error)) return;
+
+                    if (err.message?.startsWith("BUSY")) {
+                        console.warn(
+                            "Race condition prevented: User clicked too fast.",
+                        );
+                        io.to("local-user").emit(
+                            "server:tunnel:status",
+                            tunnelMgr.status,
+                        );
+                        return;
+                    }
+
+                    console.error("Tunnel Error:", err);
+                    // Revert UI to "Offline" or "Error" state
+                    io.to("local-user").emit("server:tunnel:status", {
+                        active: false,
+                        url: null,
+                        error: err.message,
+                    });
+                }
+            });
+        }
 
         // "client:caster:index:update"
         socket.on(
