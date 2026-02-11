@@ -21,39 +21,41 @@ export type NavigationItem = {
     isLocal?: boolean;
 };
 
-export const navs: NavigationItem[] = [
-    {
+export const NAVIGATION_LOOKUP: Record<string, NavigationItem> = {
+    "1": {
         id: "1",
         title: "Backdrop",
         icon: LayerIcon,
         content: <BackdropSetting />,
     },
-    {
+    "2": {
         id: "2",
         title: "Cover Screen",
         icon: Image02Icon,
         content: <CoverSetting />,
     },
-    {
+    "3": {
         id: "3",
         title: "Remote Control",
         icon: SmartphoneWifiIcon,
         content: <RemoteSetting />,
         isLocal: true,
     },
-    {
+    "4": {
         id: "4",
         title: "Screen Remapping",
         icon: MaximizeScreenIcon,
         content: <RemapSetting />,
     },
-];
+};
+export const NAVIGATION_LIST = Object.values(NAVIGATION_LOOKUP);
 
-export const footers: NavigationItem[] = [
-    {
+export const FOOTER_LOOKUP: Record<string, NavigationItem> = {
+    "f-about": {
         id: "f-about",
         title: "About",
         icon: InformationCircleIcon,
         content: <AboutSetting />,
     },
-];
+};
+export const FOOTER_LIST = Object.values(FOOTER_LOOKUP);

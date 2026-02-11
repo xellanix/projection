@@ -27,8 +27,10 @@ import { useShallow } from "zustand/react/shallow";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import {
-    navs,
-    footers,
+    NAVIGATION_LIST,
+    NAVIGATION_LOOKUP,
+    FOOTER_LIST,
+    FOOTER_LOOKUP,
     type NavigationItem,
 } from "@/components/dialogs/settings/registry";
 import { useSocketStore } from "@/stores/socket.store";
@@ -67,7 +69,9 @@ const DialogFooter2 = memo(function DialogFooter2() {
 const DialogSidebar = memo(function DialogSidebar() {
     const isLocal = useSocketStore((s) => s.isLocal);
 
-    const _navs = isLocal ? navs : navs.filter((n) => !n.isLocal);
+    const _navs = isLocal
+        ? NAVIGATION_LIST
+        : NAVIGATION_LIST.filter((n) => !n.isLocal);
 
     return (
         <Sidebar className="h-full">
@@ -84,7 +88,7 @@ const DialogSidebar = memo(function DialogSidebar() {
             </SidebarContent>
             <SidebarFooter>
                 <SidebarMenu>
-                    {footers.map((nav) => (
+                    {FOOTER_LIST.map((nav) => (
                         <DialogSidebarButton key={nav.id} nav={nav} />
                     ))}
                 </SidebarMenu>
@@ -123,14 +127,14 @@ const SidebarFrameBreadcrumb = memo(function SidebarFrameBreadcrumb() {
     const activePage = useSettingsStore((s) => s.temp.activePage);
 
     const breadcrumbs = useMemo(() => {
-        const arr = activePage.startsWith("f-") ? footers : navs;
-        const currentPage = arr.findIndex((n) => n.id === activePage);
+        const arr = activePage.startsWith("f-")
+            ? FOOTER_LOOKUP
+            : NAVIGATION_LOOKUP;
+        const item = arr[activePage];
 
-        if (currentPage === -1) {
-            return ["Settings"];
-        }
+        if (!item) return ["Settings"];
 
-        return ["Settings", arr[currentPage]?.title ?? "Undefined"];
+        return ["Settings", item.title || "Undefined"];
     }, [activePage]);
 
     return (
@@ -153,8 +157,11 @@ const SidebarFrameContent = memo(function SidebarFrameContent() {
     const content = useSettingsStore(
         useShallow((s) => {
             const activePage = s.temp.activePage;
-            const arr = activePage.startsWith("f-") ? footers : navs;
-            return arr.find((n) => n.id === activePage)?.content;
+
+            const arr = activePage.startsWith("f-")
+                ? FOOTER_LOOKUP
+                : NAVIGATION_LOOKUP;
+            return arr[activePage]?.content;
         }),
     );
 
