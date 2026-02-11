@@ -2,7 +2,7 @@ import {
     FrameContainer,
     FrameDescription,
     FrameHeader,
-} from "@/components/dialogs/settings/SettingsDialog";
+} from "@/components/SettingsFrame";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {

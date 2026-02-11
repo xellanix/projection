@@ -1,5 +1,5 @@
 import { BrandHorizontal } from "@/components/core/Brand";
-import { FrameContainer } from "@/components/dialogs/settings/SettingsDialog";
+import { FrameContainer } from "@/components/SettingsFrame";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {

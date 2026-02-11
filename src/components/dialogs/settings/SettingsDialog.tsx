@@ -49,27 +49,3 @@ function SidebarFrame() {
         </main>
     );
 }
-
-export const FrameContainer = memo(function FrameContainer({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
-    return <div className="flex flex-col gap-4 py-4">{children}</div>;
-});
-
-export const FrameHeader = memo(function FrameHeader({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
-    return <div className="flex flex-col gap-2">{children}</div>;
-});
-
-export const FrameDescription = memo(function FrameDescription({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
-    return <p className="text-muted-foreground text-sm">{children}</p>;
-});
