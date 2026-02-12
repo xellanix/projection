@@ -8,12 +8,15 @@ import type { WritableDraft } from "immer";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
+type Activator = "client" | "server" | (string & {});
+
 interface SettingsState {
     local: {
         screen: SettingsLocalScreenState;
         message: SettingsLocalMessageState;
     };
     global: AppSettings;
+    globalActivator: Activator;
     temp: {
         activePage: string;
     } & AppSettings;
@@ -53,6 +56,7 @@ export const useSettingsStore = create<SettingsStore>()(
             },
         },
         global: defaultSettings,
+        globalActivator: "client",
         temp: {
             ...defaultSettings,
             activePage: "1",
@@ -87,11 +91,13 @@ export const useSettingsStore = create<SettingsStore>()(
         setCover: (partial) => {
             set((s) => {
                 Object.assign(s.global.cover, partial);
+                s.globalActivator = "client";
             });
         },
         setRemap: (partial) => {
             set((s) => {
                 Object.assign(s.global.remap, partial);
+                s.globalActivator = "client";
             });
         },
     })),

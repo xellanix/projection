@@ -47,6 +47,7 @@ const DialogFooter2 = memo(function DialogFooter2() {
     const save = useCallback(() => {
         set((s) => {
             updateObjectFromSource(s.global, s.temp);
+            s.globalActivator = "client";
             s.global.__internal.id = uuidv4();
         });
         toast.success("Settings saved.");

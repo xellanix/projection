@@ -17,6 +17,7 @@ export const SettingsSync = memo(function SettingsSync() {
         const update = (_settings: AppSettings) => {
             set((s) => {
                 s.global = _settings;
+                s.globalActivator = "server";
                 Object.assign(s.temp, s.global);
             });
         };
@@ -36,12 +37,17 @@ export const SettingsSync = memo(function SettingsSync() {
 });
 
 const SettingSender = memo(function SettingSender() {
-    const settings = useSettingsStore((s) => s.global);
     const socket = useSocketStore(({ socket }) => socket);
 
     useEffect(() => {
-        socket?.emit("client:settings:update", settings);
-    }, [settings, socket]);
+        const unsubscribe = useSettingsStore.subscribe((s, prev) => {
+            if (s.globalActivator === "server" || s.global === prev.global)
+                return;
+            socket?.emit("client:settings:update", s.global);
+        });
+
+        return unsubscribe;
+    }, [socket]);
 
     return null;
 });

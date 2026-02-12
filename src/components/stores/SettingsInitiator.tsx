@@ -15,6 +15,7 @@ function SettingsInitiatorR() {
         const update = (_settings: AppSettings) => {
             set((s) => {
                 s.global = _settings;
+                s.globalActivator = "server";
                 Object.assign(s.temp, s.global);
             });
         };
