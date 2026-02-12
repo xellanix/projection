@@ -3,6 +3,14 @@ import {
     FrameDescription,
     FrameHeader,
 } from "@/components/SettingsFrame";
+import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from "@/components/ui/empty";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,8 +27,13 @@ import { openWeb } from "@/lib/utils";
 import { useRemoteStore } from "@/stores/remote.store";
 import { useSocketStore } from "@/stores/socket.store";
 import type { TunnelStatus } from "@/types/tunnel";
-import { Alert02Icon, Idea01Icon } from "@hugeicons-pro/core-stroke-rounded";
+import {
+    Alert02Icon,
+    HotspotOfflineIcon,
+    Idea01Icon,
+} from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
+import QRCode from "react-qr-code";
 import { memo, useCallback, useEffect, useState } from "react";
 
 const isValidUrl = (url?: string) => {
@@ -85,20 +98,11 @@ export const RemoteSetting = memo(function RemoteSetting() {
                 </Alert>
             </ItemGroup>
 
-            <ItemGroup className="*:not-first:rounded-t-none *:not-first:border-t-0 *:not-last:rounded-b-none">
-                <Item variant={"outline"}>
-                    <ItemContent>
-                        <RemoteLink />
-                        <ItemDescription>
-                            The generated remote control link.
-                        </ItemDescription>
-                    </ItemContent>
-                    <ItemActions>
-                        <OpenRemoteLink />
-                        <CopyRemoteLink />
-                    </ItemActions>
-                </Item>
-            </ItemGroup>
+            <Item variant={"outline"} className="p-0">
+                <Empty>
+                    <RemoteLink />
+                </Empty>
+            </Item>
         </FrameContainer>
     );
 });
@@ -150,11 +154,12 @@ const RemoteAction = memo(function RemoteAction() {
 });
 
 const RemoteLink = memo(function RemoteLink() {
-    const url = useRemoteStore(
-        (s) => s.url ?? "Remote Control Link Not Available",
-    );
+    const url = useRemoteStore((s) => s.url);
+    const isActive = isValidUrl(url);
 
-    return <ItemTitle>{url}</ItemTitle>;
+    if (!isActive) return <NoLink />;
+
+    return <RemoteLinkCard url={url ?? ""} />;
 });
 const OpenRemoteLink = memo(function RemoteLinkAction() {
     const open = useCallback(() => {
@@ -167,6 +172,7 @@ const OpenRemoteLink = memo(function RemoteLinkAction() {
     return (
         <Button
             variant={"outline"}
+            size={"sm"}
             aria-label="Open Generated Link"
             onClick={open}
         >
@@ -189,11 +195,55 @@ const CopyRemoteLink = memo(function RemoteLinkAction() {
     return (
         <Button
             variant={"outline"}
+            size={"sm"}
             aria-label="Copy Generated Link"
             onClick={copy}
             disabled={status !== 0}
         >
             {status === 0 ? "Copy" : "Copied!"}
         </Button>
+    );
+});
+
+const NoLink = memo(function NoLink() {
+    return (
+        <EmptyHeader className="max-w-3xl">
+            <EmptyMedia variant={"icon"}>
+                <HugeiconsIcon icon={HotspotOfflineIcon} />
+            </EmptyMedia>
+            <EmptyTitle>No Remote Control Link Available</EmptyTitle>
+            <EmptyDescription>
+                Enable the remote control on this page to generate the link.
+            </EmptyDescription>
+        </EmptyHeader>
+    );
+});
+const RemoteLinkCard = memo(function RemoteLinkCard({ url }: { url: string }) {
+    return (
+        <>
+            <EmptyHeader className="w-full max-w-3xl">
+                <EmptyDescription>Remote Control Link</EmptyDescription>
+                <div className="relative flex h-7 w-full flex-col justify-center">
+                    <EmptyTitle className="absolute w-full truncate">
+                        {url ?? ""}
+                    </EmptyTitle>
+                </div>
+                <div className="flex w-full flex-row items-center justify-center gap-2 py-2">
+                    <OpenRemoteLink />
+                    <CopyRemoteLink />
+                </div>
+            </EmptyHeader>
+            <EmptyContent className="@container/qr flex-col px-6">
+                <QRCode
+                    value={url ?? ""}
+                    className="text-brand h-auto max-h-[calc(100dvh-11rem)] w-full max-w-32 @xs/qr:max-w-40 @md/qr:max-w-48"
+                    size={256}
+                    viewBox={`0 0 256 256`}
+                    level="L"
+                    fgColor="currentColor"
+                    bgColor="transparent"
+                />
+            </EmptyContent>
+        </>
     );
 });
