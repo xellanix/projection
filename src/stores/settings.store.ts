@@ -33,9 +33,6 @@ interface SettingsActions {
     toggleMessage: (force?: boolean) => void;
 
     setActivePage: (page: string) => void;
-
-    setCover: (partial: Partial<AppSettings["cover"]>) => void;
-    setRemap: (partial: Partial<AppSettings["remap"]>) => void;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -85,19 +82,6 @@ export const useSettingsStore = create<SettingsStore>()(
         setActivePage: (page: string) => {
             set((s) => {
                 s.temp.activePage = page;
-            });
-        },
-
-        setCover: (partial) => {
-            set((s) => {
-                Object.assign(s.global.cover, partial);
-                s.globalActivator = "client";
-            });
-        },
-        setRemap: (partial) => {
-            set((s) => {
-                Object.assign(s.global.remap, partial);
-                s.globalActivator = "client";
             });
         },
     })),

@@ -18,13 +18,6 @@ import { memo, useCallback } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 export const CoverSetting = memo(function CoverSetting() {
-    /* const changeCurrent = () => {
-        useSettingsStore.getState().set(({ temp }) => {
-            temp.cover.type = "image";
-            temp.cover.content = "";
-        });
-    }; */
-
     return (
         <FrameContainer>
             <FrameHeader>
