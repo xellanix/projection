@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { spawn, type ChildProcess } from "node:child_process";
 import type { TunnelStatus } from "@/types/tunnel";
 
@@ -50,11 +49,7 @@ export class TunnelManager {
 
             return await new Promise<TunnelStatus>((resolve, reject) => {
                 // Spawn the binary directly
-                const child = spawn("cloudflared", [
-                    "tunnel",
-                    "--url",
-                    `http://localhost:${port}`,
-                ]);
+                const child = spawn("cloudflared", ["tunnel", "--url", `http://localhost:${port}`]);
                 this.tunnelProcess = child;
 
                 // Failsafe: If regex never matches, reject after 15s
@@ -67,9 +62,7 @@ export class TunnelManager {
                 child.stderr.on("data", (data) => {
                     const output = data.toString() as string;
                     // Regex to catch the "trycloudflare.com" URL
-                    const match = /https:\/\/[\w-]+\.trycloudflare\.com/.exec(
-                        output,
-                    );
+                    const match = /https:\/\/[\w-]+\.trycloudflare\.com/.exec(output);
 
                     if (match) {
                         clearTimeout(timeout);

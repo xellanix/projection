@@ -1,13 +1,12 @@
 import type { IncomingMessage } from "node:http";
 
-export function isTrulyLocal(req: IncomingMessage): boolean {
+export function isTrulyLocal(req: IncomingMessage, ip?: string): boolean {
     const headers = req.headers;
-    const ip = req.socket.remoteAddress;
+    const _ip = req?.socket?.remoteAddress ?? (ip || undefined);
 
     // Check IP: If it's not 127.0.0.1 (or IPv6 equiv), it's definitely remote.
     // This handles the "0.0.0.0" case.
-    const isLocalIP =
-        ip && ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(ip);
+    const isLocalIP = _ip && ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(_ip);
     if (!isLocalIP) return false;
 
     // Check Proxy Headers: If ANY of these exist, it's a Tunnel.
@@ -24,9 +23,7 @@ export function isTrulyLocal(req: IncomingMessage): boolean {
         "ngrok-skip-browser-warning", // Ngrok
     ];
 
-    const hasProxyHeader = proxyHeaders.some(
-        (header) => headers[header] !== undefined,
-    );
+    const hasProxyHeader = proxyHeaders.some((header) => headers[header] !== undefined);
 
     // It is only "True Local" if it has a Local IP AND No Proxy Headers
     return !hasProxyHeader;
