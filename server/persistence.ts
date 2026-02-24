@@ -16,7 +16,11 @@ export const readJsonFile = <T>(filePath: string, defaultValue: T): T => {
 
 export const wrtieJsonFile = <T>(filePath: string, value: T) => {
     const fp = path.join(process.cwd(), filePath);
+    const dirPath = path.dirname(fp);
     try {
+        if (!fs.existsSync(dirPath)) {
+            fs.mkdirSync(dirPath, { recursive: true });
+        }
         fs.writeFileSync(fp, JSON.stringify(value, null, 2));
     } catch (error) {
         console.error("Error writing to settings file:", error);
