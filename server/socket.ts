@@ -1,0 +1,311 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
+import { Server } from "socket.io";
+import { Server as Engine } from "@socket.io/bun-engine";
+
+import * as ps from "$/persistence";
+import { isTrulyLocal } from "$/utils";
+import { TunnelManager } from "$/tunnel-manager";
+import type { AppSettings, SettingsLocalScreenState } from "@/types/settings";
+import { defaultSettings } from "@/data/settings";
+import { SPECIAL_INDEX } from "@/data/special-index";
+
+const SERVER_PORT = 12526;
+
+let currentIndex = 0;
+let currentProjection = 0;
+let projections: (number | string)[] = [];
+const specialScreen: SettingsLocalScreenState = {
+    black: false,
+    clear: false,
+    transparent: false,
+    cover: false,
+    stopped: false,
+};
+const message = {
+    message: "",
+    isOpen: false,
+};
+let loopQueueIndex = -1;
+const controllerIds: string[] = [];
+let settings = ps.readJsonFile(ps.settingsFP, defaultSettings);
+
+// --- Utility Functions ---
+// Returns the index to be sent to the client
+// If the special screen is active, returns -1 or -2
+// Otherwise, returns the current index
+const getPreferredIndex = () => {
+    if (specialScreen.stopped) return SPECIAL_INDEX.STOPPED;
+    else if (specialScreen.transparent) return SPECIAL_INDEX.TRANSPARENT;
+    else if (specialScreen.cover) return SPECIAL_INDEX.COVER;
+    else if (specialScreen.black) return SPECIAL_INDEX.BLACK;
+    else if (specialScreen.clear) return SPECIAL_INDEX.CLEAR;
+
+    return currentIndex;
+};
+
+// Updates the current projection and index for the on-screen display
+const screenIndexUpdater = (
+    projectionIndex: number,
+    index: number,
+    isProject?: boolean,
+): boolean => {
+    if (
+        projectionIndex === currentProjection &&
+        currentIndex === index &&
+        ((isProject && !specialScreen.stopped) || !isProject)
+    )
+        return false;
+
+    currentProjection = projectionIndex;
+    currentIndex = index;
+
+    if (isProject) specialScreen.stopped = false;
+
+    return true;
+};
+
+// Removes a controller from the list
+const removeController = (id: string) => {
+    const index = controllerIds.indexOf(id);
+    if (index === -1) return;
+
+    controllerIds.splice(index, 1);
+    console.log("Unregistered controller:", id);
+};
+
+// Resets the temporary variables if there are no controllers
+const resetIfNoController = () => {
+    if (controllerIds.length > 0) return;
+
+    message.message = "";
+    message.isOpen = false;
+};
+
+const tunnelMgr = TunnelManager.getInstance();
+const io = new Server({ transports: ["websocket"] });
+const engine = new Engine({
+    path: "/api/socket_io/",
+    cors: {
+        origin: process.env.NODE_ENV === "production" ? false : "http://localhost:12527",
+    },
+});
+io.bind(engine);
+io.on("connection", (socket) => {
+    console.log("✅ Client connected:", socket.id);
+
+    const _isTrulyLocal = isTrulyLocal(
+        socket.request,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (socket.conn.transport as any).socket.remoteAddress,
+    );
+    socket.emit("server:socket:isLocal", _isTrulyLocal);
+    // "client:socket:register"
+    socket.on("client:socket:register", (id: string) => {
+        controllerIds.push(id);
+        socket.broadcast.emit("server:socket:hasAny", true);
+        console.log("Registered controller:", id);
+    });
+    // "client:socket:unregister"
+    socket.on("client:socket:unregister", (id: string) => {
+        removeController(id);
+        resetIfNoController();
+        socket.broadcast.emit("server:socket:hasAny", controllerIds.length > 0);
+    });
+    // "client:socket:hasAny"
+    socket.on("client:socket:hasAny", () => {
+        resetIfNoController();
+        socket.emit("server:socket:hasAny", controllerIds.length > 0);
+    });
+
+    if (_isTrulyLocal) {
+        socket.join("local-user");
+
+        socket.emit("server:tunnel:status", tunnelMgr.status);
+        // "client:tunnel:status"
+        socket.on("client:tunnel:status", () => {
+            socket.emit("server:tunnel:status", tunnelMgr.status);
+        });
+        // "client:tunnel:toggle"
+        socket.on("client:tunnel:toggle", async (shouldStart: boolean) => {
+            try {
+                // Check if the requested state matches current reality
+                // If user asks to START, but we are ALREADY STARTED, do nothing.
+                const current = tunnelMgr.status;
+                if (shouldStart && current.active === true) return;
+                if (!shouldStart && current.active === false) return;
+
+                // Send "Loading" immediately to lock the UI
+                io.to("local-user").emit("server:tunnel:status", {
+                    active: undefined,
+                    url: null,
+                });
+
+                let newStatus;
+                if (shouldStart) {
+                    newStatus = await tunnelMgr.startTunnel(SERVER_PORT);
+                } else {
+                    newStatus = await tunnelMgr.stopTunnel();
+                }
+
+                // Success! Send result
+                io.to("local-user").emit("server:tunnel:status", newStatus);
+            } catch (err) {
+                if (!(err instanceof Error)) return;
+
+                if (err.message?.startsWith("BUSY")) {
+                    console.warn("Race condition prevented: User clicked too fast.");
+                    io.to("local-user").emit("server:tunnel:status", tunnelMgr.status);
+                    return;
+                }
+
+                console.error("Tunnel Error:", err);
+                // Revert UI to "Offline" or "Error" state
+                io.to("local-user").emit("server:tunnel:status", {
+                    active: false,
+                    url: null,
+                    error: err.message,
+                });
+            }
+        });
+    }
+
+    // "client:caster:index:update"
+    socket.on("client:caster:index:update", (projectionIndex: number, index: number) => {
+        if (!screenIndexUpdater(projectionIndex, index)) return;
+
+        io.emit(
+            "server:screen:index:update",
+            projectionIndex,
+            index,
+            getPreferredIndex(),
+            socket.id,
+        );
+    });
+    // "client:caster:index:project"
+    socket.on(
+        "client:caster:index:project",
+        (projectionIndex: number, index: number, isProject: boolean) => {
+            if (!screenIndexUpdater(projectionIndex, index, isProject)) return;
+
+            loopQueueIndex = -1;
+            socket.emit("server:screen:index:project", projectionIndex, index);
+            io.emit(
+                "server:screen:index:update",
+                projectionIndex,
+                index,
+                getPreferredIndex(),
+                socket.id,
+            );
+        },
+    );
+    // "client:caster:specialScreen:set"
+    socket.on(
+        "client:caster:specialScreen:set",
+        (type: keyof SettingsLocalScreenState, active: boolean) => {
+            const lastIndex = getPreferredIndex();
+            specialScreen[type] = active;
+
+            io.emit("server:caster:specialScreen:sync", specialScreen);
+
+            const index = getPreferredIndex();
+            if (index === lastIndex) return;
+
+            io.emit("server:screen:specialScreen:set", index);
+        },
+    );
+    // "client:caster:message:toggle:request"
+    socket.on("client:caster:message:toggle:request", (message: string, force?: boolean) => {
+        io.to(controllerIds[0]!).emit(`server:caster:message:toggle:request`, message, force);
+    });
+    // "client:caster:message:toggle"
+    socket.on("client:caster:message:toggle", (_message: string, force?: boolean) => {
+        message.message = _message;
+        message.isOpen = force ?? !message.isOpen;
+        io.emit("server:screen:message:toggle", message.message, message.isOpen);
+    });
+
+    // "client:screen:index:init"
+    socket.on("client:screen:index:init", (callback) => {
+        callback(currentProjection, currentIndex, getPreferredIndex(), specialScreen);
+    });
+    // "client:screen:message:init:request"
+    socket.on("client:screen:message:init:request", () => {
+        io.to(controllerIds[0]!).emit("server:screen:message:init:request");
+    });
+    // "client:screen:message:init"
+    socket.on(
+        "client:screen:message:init",
+        (message: string, isOpen: boolean, remaining: number, progress: number) => {
+            io.emit("server:screen:message:init", message, isOpen, remaining, progress);
+        },
+    );
+
+    // "client:queue:init"
+    socket.on("client:queue:init", (initLength: number) => {
+        if (projections.length === 0) {
+            projections = new Array<number>(initLength);
+            for (let i = 0; i < initLength; i++) projections[i] = i;
+        }
+        socket.emit("server:queue:init", projections);
+    });
+    // "client:queue:reorder"
+    socket.on("client:queue:reorder", (from: number, to: number) => {
+        if (from !== to) {
+            const item = projections.splice(from, 1)[0]!;
+            projections.splice(to, 0, item);
+        }
+        socket.broadcast.emit("server:queue:reorder", from, to);
+    });
+    // "client:queue:add"
+    socket.on("client:queue:add", (data: string) => {
+        projections.push(data);
+        socket.broadcast.emit("server:queue:add", data);
+    });
+
+    // "client:loop:init"
+    socket.on("client:loop:init", () => {
+        socket.emit("server:loop:init", loopQueueIndex);
+    });
+    // "client:loop:update"
+    socket.on("client:loop:update", (queueIndex: number) => {
+        loopQueueIndex = queueIndex;
+        socket.broadcast.emit("server:loop:update", queueIndex);
+    });
+
+    // "client:video:bg:init:request"
+    // "client:video:fg:init:request"
+    const initRequest = (layer: "bg" | "fg") => () => {
+        const requestId = socket.id;
+        io.to(controllerIds[0]!).emit(`server:video:${layer}:init:request`, requestId);
+    };
+    socket.on("client:video:bg:init:request", initRequest("bg"));
+    socket.on("client:video:fg:init:request", initRequest("fg"));
+    // "client:video:bg:init:response"
+    // "client:video:fg:init:response"
+    const initResponse =
+        (layer: "bg" | "fg") => (requestId: string, isPlaying: boolean, currentTime: number) => {
+            io.to(requestId).emit(`server:video:${layer}:init:response`, isPlaying, currentTime);
+        };
+    socket.on("client:video:bg:init:response", initResponse("bg"));
+    socket.on("client:video:fg:init:response", initResponse("fg"));
+
+    // "client:settings:init"
+    socket.on("client:settings:init", () => {
+        settings = ps.readJsonFile(ps.settingsFP, defaultSettings);
+        socket.emit("server:settings:init", settings);
+    });
+    // "client:settings:update"
+    socket.on("client:settings:update", (s: AppSettings) => {
+        settings = s;
+        ps.writeJsonFile(ps.settingsFP, settings);
+        socket.broadcast.emit("server:settings:update", settings);
+    });
+
+    socket.on("disconnect", () => {
+        console.log("❌ Client disconnected:", socket.id);
+        removeController(socket.id);
+        socket.broadcast.emit("server:socket:hasAny", controllerIds.length > 0);
+    });
+});
+
+export { engine, SERVER_PORT };
