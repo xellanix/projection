@@ -42,14 +42,17 @@ jobs:
         run: |
           # Find the previous tag (suppress error if no tags exist)
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          # The Regex pattern for your version bump
+          BUMP_PATTERN="^chore\(app\): bump version to [0-9]+\.[0-9]+\.[0-9]+"
           
           if [ -z "$PREV_TAG" ]; then
             echo "No previous tag found. Logging all commits."
-            LOGS=$(git log --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))")
+            LOGS=$(git log --no-merges --invert-grep --extended-regexp --grep="$BUMP_PATTERN" --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))")
           else
             echo "Generating logs from $PREV_TAG to HEAD"
             # Log commits excluding the current bump commit
-            LOGS=$(git log "$PREV_TAG..HEAD^" --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))")
+            LOGS=$(git log "$PREV_TAG..HEAD" --no-merges --invert-grep --extended-regexp --grep="$BUMP_PATTERN" --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))")
           fi
           
           # Handle multiline output for GITHUB_OUTPUT
