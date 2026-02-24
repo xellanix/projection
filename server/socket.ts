@@ -297,7 +297,7 @@ io.on("connection", (socket) => {
     // "client:settings:update"
     socket.on("client:settings:update", (s: AppSettings) => {
         settings = s;
-        ps.wrtieJsonFile(ps.settingsFP, settings);
+        ps.writeJsonFile(ps.settingsFP, settings);
         socket.broadcast.emit("server:settings:update", settings);
     });
 

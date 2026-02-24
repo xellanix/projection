@@ -14,7 +14,7 @@ export const readJsonFile = <T>(filePath: string, defaultValue: T): T => {
     return defaultValue;
 };
 
-export const wrtieJsonFile = <T>(filePath: string, value: T) => {
+export const writeJsonFile = <T>(filePath: string, value: T) => {
     const fp = path.join(process.cwd(), filePath);
     const dirPath = path.dirname(fp);
     try {
