@@ -10,7 +10,7 @@
     "build": "bun run build:frontend && bun run build:server",
     "build:frontend": "tsc -b && bunx --bun vite build",
     "build:server": "bun run exe.ts",
-    "start": "NODE_ENV=production ./dist/server/my-app",
+    "start": "NODE_ENV=production ./dist/server/projection",
     "lint": "eslint .",
     "preview": "bunx --bun vite preview"
   },
