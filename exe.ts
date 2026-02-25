@@ -15,7 +15,7 @@ const result = await Bun.build({
             publisher: "Xellanix",
             version: version.version,
             description: "Xellanix Projection",
-            copyright: "Copyright (c) 2025, Xellanix",
+            copyright: "Copyright (c) 2025-2026, Xellanix",
         },
     },
     minify: true,
