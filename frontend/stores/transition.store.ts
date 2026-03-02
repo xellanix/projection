@@ -13,10 +13,7 @@ interface TransitionState {
 }
 
 interface TransitionActions {
-    getTransition: (
-        projectionIndex: number,
-        contentIndex: number,
-    ) => ProjectionTransition;
+    getTransition: (projectionIndex: number, contentIndex: number) => ProjectionTransition;
 
     syncWithProjections: (projections: ProjectionMaster[]) => void;
 }
@@ -38,10 +35,13 @@ const transitionMiner = (projections: ProjectionMaster[]): TransitionState => {
         for (let j = 0; j < projection.contents.length; j++) {
             const content = projection.contents[j]!;
 
+            const ct = content.transition;
+            if (ct && !transitions.includes(ct)) {
+                transitions.push(ct);
+            }
+
             transitionsMap[i] ??= {} as TransitionsMap[number];
-            transitionsMap[i]![j] = transitions.indexOf(
-                content.transition ?? t,
-            );
+            transitionsMap[i]![j] = transitions.indexOf(content.transition ?? t);
         }
     }
 
@@ -54,9 +54,7 @@ export const useTransitionStore = create<TransitionStore>((set, get) => ({
     getTransition: (projectionIndex: number, contentIndex: number) => {
         return contentIndex < 0
             ? "fade"
-            : (get().transitions[
-                  get().maps[projectionIndex]?.[contentIndex] ?? 0
-              ] ?? "none");
+            : (get().transitions[get().maps[projectionIndex]?.[contentIndex] ?? 0] ?? "none");
     },
 
     syncWithProjections: (projections: ProjectionMaster[]) => {
