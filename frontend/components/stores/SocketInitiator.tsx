@@ -11,7 +11,18 @@ export function SocketInitiator() {
     useEffect(() => {
         if (typeof window === "undefined") return;
 
-        const socketUrl = "http://localhost:12526";
+        const origin = window.location.origin;
+        let socketUrl = origin;
+
+        // If we are accessing the Vite dev server locally or it's running in DEV mode,
+        // point to the Bun backend port
+        if (
+            origin.includes("localhost:12527") ||
+            origin.includes("127.0.0.1:12527") ||
+            import.meta.env.DEV
+        ) {
+            socketUrl = "http://localhost:12526";
+        }
         const newSocket = io(socketUrl, {
             path: "/api/socket_io",
             transports: ["websocket"],
