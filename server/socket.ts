@@ -10,6 +10,8 @@ import { defaultSettings } from "@/data/settings";
 import { SPECIAL_INDEX } from "@/data/special-index";
 
 const SERVER_PORT = 12526;
+const FRONTEND_PORT = 12527;
+const isProd = process.env.NODE_ENV === "production";
 
 let currentIndex = 0;
 let currentProjection = 0;
@@ -86,7 +88,7 @@ const io = new Server({ transports: ["websocket"] });
 const engine = new Engine({
     path: "/api/socket_io/",
     cors: {
-        origin: process.env.NODE_ENV === "production" ? false : "http://localhost:12527",
+        origin: isProd ? false : `http://localhost:${FRONTEND_PORT}`,
     },
 });
 io.bind(engine);
