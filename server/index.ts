@@ -3,8 +3,18 @@ import { join } from "path";
 import { engine, SERVER_PORT } from "$/socket";
 
 const isProd = process.env.NODE_ENV === "production";
-const FRONTEND_DIST = join(import.meta.dir, "../dist/frontend");
+const FRONTEND_DIST = join(process.execPath, "../frontend");
 const { fetch, ...socketEngineHandler } = engine.handler();
+
+declare const VERSION: string;
+
+console.log("┌────────────────────────────────┐");
+console.log("│ Xellanix Projection            │");
+{
+    const len = 22 - VERSION.length;
+    console.log(`│ Version ${VERSION}${len > 0 ? " ".repeat(len) : ""} │`);
+}
+console.log("├────────────────────────────────┤");
 
 serve({
     port: SERVER_PORT,
@@ -30,6 +40,14 @@ serve({
 
         if (!(await requestedFile.exists())) {
             requestedFile = file(join(FRONTEND_DIST, "index.html"));
+
+            // Safety check: if index.html is completely missing, return a clean 404
+            if (!(await requestedFile.exists())) {
+                return new Response(
+                    "Frontend files not found. Ensure the 'frontend' folder is located in the same directory as this executable.",
+                    { status: 404, headers: { "Content-Type": "text/plain" } },
+                );
+            }
         }
 
         return new Response(requestedFile);
@@ -38,4 +56,6 @@ serve({
     ...socketEngineHandler,
 });
 
-console.log(`Server running on http://localhost:${SERVER_PORT} in ${isProd ? "PROD" : "DEV"} mode`);
+console.log(`│ Server: http://localhost:${SERVER_PORT} │`);
+console.log(`│ Mode  : ${isProd ? "production " : "development"}            │`);
+console.log("└────────────────────────────────┘");

@@ -1,3 +1,4 @@
+import { cp } from "node:fs/promises";
 import version from "./frontend/data/version.json";
 
 const result = await Bun.build({
@@ -28,7 +29,19 @@ const result = await Bun.build({
 });
 
 if (result.success) {
-    console.log("Build successful: ", result.outputs[0].path);
+    console.log("✅ Build successful: ", result.outputs[0].path);
+
+    const sourceDir = "./dist/frontend";
+    const destDir = "./dist/server/frontend";
+
+    try {
+        await cp(sourceDir, destDir, { recursive: true, force: true });
+        console.log("✅ Successfully copied frontend folder.");
+    } catch (err) {
+        console.error("❌ Failed to copy frontend folder: ", err);
+    }
+} else {
+    console.error("❌ Build failed: ", result.logs);
 }
 
 export {};
