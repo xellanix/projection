@@ -11,17 +11,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Toggle } from "@/components/ui/toggle";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useShortcut } from "@/hooks/use-shortcuts";
 import { useSettingsStore } from "@/stores/settings.store";
 import { useSocketStore } from "@/stores/socket.store";
 import { Chat01Icon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { memo, useCallback, useEffect, useState, type FormEvent } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 
 interface MessageToggleProps {
     label: string;
@@ -44,10 +40,7 @@ const MessageToggle = memo(function MessageToggle({
                         pressed={pressed}
                         onPressedChange={onPressed}
                     >
-                        <HugeiconsIcon
-                            icon={Chat01Icon}
-                            strokeWidth={2}
-                        />
+                        <HugeiconsIcon icon={Chat01Icon} strokeWidth={2} />
                         <span className="@max-[23rem]/slide-manip:hidden">Message</span>
                     </Toggle>
                 </div>
@@ -72,11 +65,7 @@ export const LiveMessageButton = memo(function LiveMessageButton() {
 
     const serverToggle = useCallback(
         (isOpen: boolean, message?: string) => {
-            socket?.emit(
-                "client:caster:message:toggle:request",
-                message ?? "",
-                isOpen,
-            );
+            socket?.emit("client:caster:message:toggle:request", message ?? "", isOpen);
         },
         [socket],
     );
@@ -92,7 +81,7 @@ export const LiveMessageButton = memo(function LiveMessageButton() {
 
         return () => {
             socket.off("server:caster:message:toggle:request", request);
-        }
+        };
     }, [socket]);
 
     const toggleMessage = useCallback(
@@ -100,23 +89,18 @@ export const LiveMessageButton = memo(function LiveMessageButton() {
         [opened, serverToggle],
     );
 
-    const handleSubmit = useCallback((ev: FormEvent<HTMLFormElement>) => {
-        ev.preventDefault();
-        const data = new FormData(ev.currentTarget);
+    const handleSubmit = useCallback<React.SubmitEventHandler<HTMLFormElement>>(
+        (ev) => {
+            ev.preventDefault();
+            const data = new FormData(ev.currentTarget);
 
-        serverToggle(true, data.get("message") as string);
-        setOpenAlert(false);
-    }, [serverToggle]);
+            serverToggle(true, data.get("message") as string);
+            setOpenAlert(false);
+        },
+        [serverToggle],
+    );
 
-    const [register, unregister] = useGlobalKeyboard();
-    useEffect(() => {
-        const key = "Shift+M";
-
-        register(key, toggleMessage);
-        return () => {
-            unregister(key);
-        };
-    }, [register, unregister, toggleMessage]);
+    useShortcut({ shift: true, key: "M" }, toggleMessage);
 
     return (
         <Dialog open={openAlert}>
@@ -136,18 +120,11 @@ export const LiveMessageButton = memo(function LiveMessageButton() {
                         <DialogTitle>Show Live Message</DialogTitle>
                     </DialogHeader>
                     <div className="flex flex-col gap-4">
-                        <Input
-                            name="message"
-                            type="text"
-                            placeholder="Message"
-                        />
+                        <Input name="message" type="text" placeholder="Message" />
                     </div>
                     <DialogFooter>
                         <DialogClose asChild>
-                            <Button
-                                variant={"outline"}
-                                onClick={() => setOpenAlert(false)}
-                            >
+                            <Button variant={"outline"} onClick={() => setOpenAlert(false)}>
                                 Cancel
                             </Button>
                         </DialogClose>

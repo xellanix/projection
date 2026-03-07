@@ -5,62 +5,50 @@ import {
 } from "@/components/Controller";
 import { ControlPanel, SidebarPanel } from "@/components/ControlPanel";
 import { LoopQueueSync } from "@/components/LoopQueue";
-import {
-    PreviewQueueReorder,
-    ProjectionMutator,
-} from "@/components/ProjectionQueue";
+import { PreviewQueueReorder, ProjectionMutator } from "@/components/ProjectionQueue";
 import { Sidebar } from "@/components/Sidebar";
 import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { OnScreenViewer } from "@/components/Viewer";
-import {
-    ControlProvider,
-    MaxProjectionSync,
-    SidebarControlSync,
-} from "@/context/ControlContext";
-import { GlobalKeyboardProvider } from "@/context/GlobalKeyboardContext";
+import { ControlProvider, MaxProjectionSync, SidebarControlSync } from "@/context/ControlContext";
 import { PreviewProvider } from "@/context/PreviewContext";
+import { GlobalKeyboardListener } from "@/hooks/use-shortcuts";
 
 export default function HomePage() {
     return (
         <main className="flex h-dvh min-h-192 w-dvw flex-row">
             <ControllerRegister />
             <ProjectionMutator />
+            <GlobalKeyboardListener />
 
-            <GlobalKeyboardProvider>
-                <ResizablePanelGroup direction="horizontal">
-                    <SidebarPanel>
-                        <PreviewQueueReorder />
-                        <Sidebar />
-                    </SidebarPanel>
+            <ResizablePanelGroup direction="horizontal">
+                <SidebarPanel>
+                    <PreviewQueueReorder />
+                    <Sidebar />
+                </SidebarPanel>
 
-                    <ResizablePanel
-                        defaultSize={80}
-                        collapsible
-                        className="px-4 py-2 lg:py-4"
-                    >
-                        <ControlPanel
-                            preview={
-                                <PreviewProvider>
-                                    <ControlProvider>
-                                        <SidebarControlSync />
-                                        <MaxProjectionSync />
-                                        <PreviewSlideController />
-                                    </ControlProvider>
-                                </PreviewProvider>
-                            }
-                            onScreen={
+                <ResizablePanel defaultSize={80} collapsible className="px-4 py-2 lg:py-4">
+                    <ControlPanel
+                        preview={
+                            <PreviewProvider>
                                 <ControlProvider>
+                                    <SidebarControlSync />
                                     <MaxProjectionSync />
-                                    <LoopQueueSync />
-                                    <OnScreenSlideController>
-                                        <OnScreenViewer />
-                                    </OnScreenSlideController>
+                                    <PreviewSlideController />
                                 </ControlProvider>
-                            }
-                        />
-                    </ResizablePanel>
-                </ResizablePanelGroup>
-            </GlobalKeyboardProvider>
+                            </PreviewProvider>
+                        }
+                        onScreen={
+                            <ControlProvider>
+                                <MaxProjectionSync />
+                                <LoopQueueSync />
+                                <OnScreenSlideController>
+                                    <OnScreenViewer />
+                                </OnScreenSlideController>
+                            </ControlProvider>
+                        }
+                    />
+                </ResizablePanel>
+            </ResizablePanelGroup>
         </main>
     );
 }

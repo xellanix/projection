@@ -1,9 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -14,7 +10,8 @@ import {
     SortableOverlay,
 } from "@/components/ui/sortable";
 import { useControl } from "@/context/ControlContext";
-import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
+import { useShortcut } from "@/hooks/use-shortcuts";
+import { useShortcutsStore } from "@/stores/shortcuts.store";
 import { usePreview } from "@/context/PreviewContext";
 import { cn, mod } from "@/lib/utils";
 import { useSidebarControl } from "@/stores/control.store";
@@ -115,8 +112,7 @@ export const ProjectionMutator = memo(function ProjectionMutator() {
                     continue;
                 }
 
-                result[i] =
-                    useProjectionStore.getInitialState().projections[indice]!;
+                result[i] = useProjectionStore.getInitialState().projections[indice]!;
             }
 
             useProjectionStore.getState().setProjectionsWithIds(result);
@@ -128,10 +124,7 @@ export const ProjectionMutator = memo(function ProjectionMutator() {
             useProjectionStore.getState().addProjection(res);
         };
 
-        socket.emit(
-            "client:queue:init",
-            useProjectionStore.getInitialState().projections.length,
-        );
+        socket.emit("client:queue:init", useProjectionStore.getInitialState().projections.length);
         socket.on("server:queue:init", init);
         socket.on("server:queue:add", add);
 
@@ -150,14 +143,7 @@ const AddButton = memo(function AddButton() {
     });
     const socket = useSocketStore((s) => s.socket);
 
-    const [register, unregister] = useGlobalKeyboard();
-    useEffect(() => {
-        register("Shift+A", openFilePicker);
-
-        return () => {
-            unregister("Shift+A");
-        };
-    }, [register, unregister, openFilePicker]);
+    useShortcut({ key: "A", shift: true }, openFilePicker);
 
     const onFilesChange = useEffectEvent(() => {
         if (loading || !socket) return;
@@ -198,19 +184,16 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
     const socket = useSocketStore((s) => s.socket);
 
     const handleClick = useCallback(
-        (projectionIndex: React.SetStateAction<number>, index: number) =>
-            () => {
-                setCurrentProjection(projectionIndex);
-                setCurrentIndex(index);
-            },
+        (projectionIndex: React.SetStateAction<number>, index: number) => () => {
+            setCurrentProjection(projectionIndex);
+            setCurrentIndex(index);
+        },
         [setCurrentProjection, setCurrentIndex],
     );
 
     const onMoved = useCallback(
         (ev: { activeIndex: number; overIndex: number }) => {
-            setProjectionsWithIds((p) =>
-                arrayMove(p, ev.activeIndex, ev.overIndex),
-            );
+            setProjectionsWithIds((p) => arrayMove(p, ev.activeIndex, ev.overIndex));
             socket?.emit("client:queue:reorder", ev.activeIndex, ev.overIndex);
 
             const updateServer = (p: number) => {
@@ -234,9 +217,7 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
 
     const overlay = useCallback(
         (activeItem: { value: UniqueIdentifier }) => {
-            const pIndex = projections.findIndex(
-                (p) => p.id === activeItem.value,
-            );
+            const pIndex = projections.findIndex((p) => p.id === activeItem.value);
 
             if (pIndex === -1) return null;
 
@@ -253,22 +234,14 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
         [projections],
     );
 
-    const [register, unregister] = useGlobalKeyboard();
-    useEffect(() => {
-        register(
-            "ArrowDown",
-            handleClick((p) => Math.min(p + 1, projections.length - 1), 0),
-        );
-        register(
-            "ArrowUp",
-            handleClick((p) => Math.max(p - 1, 0), 0),
-        );
-
-        return () => {
-            unregister("ArrowDown");
-            unregister("ArrowUp");
-        };
-    }, [handleClick, projections.length, register, unregister]);
+    useShortcut(
+        { key: "ArrowDown" },
+        handleClick((p) => Math.min(p + 1, projections.length - 1), 0),
+    );
+    useShortcut(
+        { key: "ArrowUp" },
+        handleClick((p) => Math.max(p - 1, 0), 0),
+    );
 
     return (
         <>
@@ -278,20 +251,11 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
             </div>
 
             <div className="flex-1 overflow-hidden">
-                <Sortable
-                    value={projections}
-                    onMove={onMoved}
-                    getItemValue={(i) => i.id}
-                >
+                <Sortable value={projections} onMove={onMoved} getItemValue={(i) => i.id}>
                     <ScrollArea className="h-full w-full px-2 lg:px-4 [&>div>div]:!flex [&>div>div]:!flex-col">
                         <SortableContent>
                             {projections.map((p, i) => (
-                                <QueueItem
-                                    key={p.id}
-                                    p={p}
-                                    i={i}
-                                    handleClick={handleClick}
-                                />
+                                <QueueItem key={p.id} p={p} i={i} handleClick={handleClick} />
                             ))}
                         </SortableContent>
                     </ScrollArea>
@@ -314,11 +278,7 @@ const QueueItem = memo(function QueueItem({
     return (
         <SortableItem value={p.id} asChild>
             <Collapsible className="group/collapsible flex flex-col">
-                <QueueCollapsibleItem
-                    i={i}
-                    title={p.title}
-                    handleClick={handleClick}
-                />
+                <QueueCollapsibleItem i={i} title={p.title} handleClick={handleClick} />
                 <CollapsibleContent className="flex flex-col">
                     {p.contents.map((c, j) => (
                         <Button
@@ -346,17 +306,14 @@ const QueueCollapsibleItem = memo(function QueueCollapsibleItem({
     title: string;
     handleClick: (i: number, j: number) => () => void;
 }) {
-    const [isActive] = useSidebarControl(
-        useShallow((s) => [s.currentProjection === i]),
-    );
+    const [isActive] = useSidebarControl(useShallow((s) => [s.currentProjection === i]));
 
     return (
         <div
             className={cn(
                 "relative flex flex-row rounded-md transition-all duration-133 ease-out",
                 {
-                    "active-projection bg-brand text-brand-foreground":
-                        isActive,
+                    "active-projection bg-brand text-brand-foreground": isActive,
                 },
             )}
         >
@@ -367,11 +324,7 @@ const QueueCollapsibleItem = memo(function QueueCollapsibleItem({
                     tabIndex={-1}
                     className="hover:text-foreground in-[.active-projection]:hover:text-brand-foreground active:text-foreground in-[.active-projection]:active:text-brand-foreground rounded-md hover:bg-transparent active:bg-transparent"
                 >
-                    <HugeiconsIcon
-                        icon={DragDropVerticalIcon}
-                        strokeWidth={4}
-                        size={"1rem"}
-                    />
+                    <HugeiconsIcon icon={DragDropVerticalIcon} strokeWidth={4} size={"1rem"} />
                 </Button>
             </SortableItemHandle>
 
@@ -447,33 +400,27 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
         [grouped, groupedKeys, setCurrentIndex],
     );
 
-    const [register, unregister] = useGlobalKeyboard();
     useEffect(() => {
-        if (isPreview) return;
+        const register = useShortcutsStore.getState().registerShortcut;
         for (let i = 0; i < 10; i++) {
-            register(`Shift+Digit${mod(i + 1, 10)}`, goToGroup(i));
-            register(`Shift+Numpad${mod(i + 1, 10)}`, goToGroup(i));
+            const keyString = String(mod(i + 1, 10));
+            register({ key: keyString, shift: true }, goToGroup(i));
         }
 
         return () => {
+            const unregister = useShortcutsStore.getState().unregisterShortcut;
             for (let i = 0; i < 10; i++) {
-                unregister(`Shift+Digit${i}`);
-                unregister(`Shift+Numpad${i}`);
+                unregister({ key: String(i), shift: true });
             }
         };
-    }, [goToGroup, isPreview, register, unregister]);
+    }, [goToGroup]);
 
     return (
         <div className="flex h-full w-full flex-col overflow-hidden">
             <ScrollArea className="h-full w-full *:scroll-pt-20">
                 <div className="flex h-full flex-col gap-2">
                     {groupedKeys.map((g, i) => (
-                        <ContentQueueGroup
-                            key={i}
-                            index={i}
-                            g={g}
-                            items={grouped[g]!}
-                        />
+                        <ContentQueueGroup key={i} index={i} g={g} items={grouped[g]!} />
                     ))}
                 </div>
             </ScrollArea>
