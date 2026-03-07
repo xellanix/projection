@@ -17,7 +17,8 @@ import {
     IconSplitButton,
     IconToggleButton,
 } from "@/components/core/Buttons";
-import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
+import { useShortcut } from "@/hooks/use-shortcuts";
+import { useShortcutsStore } from "@/stores/shortcuts.store";
 import { ProjectionContentQueue } from "@/components/ProjectionQueue";
 import { useSocketStore } from "@/stores/socket.store";
 import { useShallow } from "zustand/react/shallow";
@@ -54,9 +55,7 @@ const NavButton = memo(function NavButton({
     );
 });
 const SlideIndex = memo(function SlideIndex() {
-    const [currentIndex, maxIndex] = useControl(
-        useShallow((s) => [s.currentIndex, s.maxIndex]),
-    );
+    const [currentIndex, maxIndex] = useControl(useShallow((s) => [s.currentIndex, s.maxIndex]));
 
     return (
         <ButtonGroup>
@@ -71,20 +70,20 @@ export const SlideController = memo(function SlideController() {
     const { isPreview } = usePreview();
     const setCurrentIndex = useControl((s) => s.setCurrentIndex);
 
-    const [register, unregister] = useGlobalKeyboard();
     useEffect(() => {
+        const register = useShortcutsStore.getState().registerShortcut;
         for (let i = 0; i < 10; i++) {
-            register(`Digit${mod(i + 1, 10)}`, () => setCurrentIndex(i));
-            register(`Numpad${mod(i + 1, 10)}`, () => setCurrentIndex(i));
+            const keyString = String(mod(i + 1, 10));
+            register({ key: keyString }, () => setCurrentIndex(i));
         }
 
         return () => {
+            const unregister = useShortcutsStore.getState().unregisterShortcut;
             for (let i = 0; i < 10; i++) {
-                unregister(`Digit${i}`);
-                unregister(`Numpad${i}`);
+                unregister({ key: String(i) });
             }
         };
-    }, [register, unregister, setCurrentIndex]);
+    }, [setCurrentIndex]);
 
     return (
         <ButtonGroup aria-label="Slide Navigation">
@@ -119,10 +118,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
     );
 
     return (
-        <ButtonGroup
-            aria-label="Slide Manipulations"
-            className="@container/slide-manip"
-        >
+        <ButtonGroup aria-label="Slide Manipulations" className="@container/slide-manip">
             <ButtonGroup className="[&>*:not(:first-child)>*]:rounded-l-none [&>*:not(:first-child)>*]:border-l-0 [&>*:not(:last-child)>*]:rounded-r-none">
                 <IconToggleButton
                     label="Cover Screen"
@@ -184,11 +180,7 @@ const OnScreenManipulator = memo(function OnScreenManipulator() {
     );
 });
 
-const IndexSender = memo(function IndexSender({
-    isLoaded,
-}: {
-    isLoaded: boolean;
-}) {
+const IndexSender = memo(function IndexSender({ isLoaded }: { isLoaded: boolean }) {
     const control = useControlApi();
     const socket = useSocketStore((s) => s.socket);
 
@@ -204,11 +196,7 @@ const IndexSender = memo(function IndexSender({
             )
                 return;
 
-            socket?.emit(
-                "client:caster:index:update",
-                s.currentProjection,
-                s.currentIndex,
-            );
+            socket?.emit("client:caster:index:update", s.currentProjection, s.currentIndex);
         });
 
         return unsubscribe;
@@ -224,9 +212,7 @@ const SocketStatus = memo(function SocketStatus() {
         <div
             className={cn(
                 "relative flex aspect-square h-[calc(100%-1rem)] *:inline-flex *:rounded-full",
-                isConnected
-                    ? "*:bg-(--success-foreground)"
-                    : "*:bg-(--error-foreground)",
+                isConnected ? "*:bg-(--success-foreground)" : "*:bg-(--error-foreground)",
             )}
         >
             <div className="absolute h-full w-full animate-ping opacity-75" />
@@ -242,9 +228,7 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
     children,
 }: OnScreenSlideControllerProps) {
     const setCurrent = useControl((s) => s.setCurrent);
-    const [socket, socketId] = useSocketStore(
-        useShallow((s) => [s.socket, s.socketId]),
-    );
+    const [socket, socketId] = useSocketStore(useShallow((s) => [s.socket, s.socketId]));
     const [isLoaded, setIsLoaded] = useState(false);
     const setScreen = useSettingsStore((s) => s.setScreen);
 
@@ -289,9 +273,7 @@ export const OnScreenSlideController = memo(function OnScreenSlideController({
 
             <div className="flex flex-row items-center gap-2">
                 <SocketStatus />
-                <span className="text-base font-semibold lg:text-xl">
-                    On Screen
-                </span>
+                <span className="text-base font-semibold lg:text-xl">On Screen</span>
             </div>
 
             <ViewerContainer>{children}</ViewerContainer>
@@ -340,22 +322,13 @@ const PreviewManipulator = memo(function PreviewManipulator({
 
 export const PreviewSlideController = memo(function PreviewSlideController() {
     const [setCurrent, emit, currentProjection, currentIndex] = useControl(
-        useShallow((s) => [
-            s.setCurrent,
-            s.emit,
-            s.currentProjection,
-            s.currentIndex,
-        ]),
+        useShallow((s) => [s.setCurrent, s.emit, s.currentProjection, s.currentIndex]),
     );
 
     useEffect(() => setCurrent(0, 0), [setCurrent]);
 
     const projectToScreen = useCallback(() => {
-        emit("client:caster:index:project", (s) => [
-            s.currentProjection,
-            s.currentIndex,
-            true,
-        ]);
+        emit("client:caster:index:project", (s) => [s.currentProjection, s.currentIndex, true]);
     }, [emit]);
 
     const stopProjection = useCallback(
@@ -363,26 +336,15 @@ export const PreviewSlideController = memo(function PreviewSlideController() {
         [emit],
     );
 
-    const [register, unregister] = useGlobalKeyboard();
-    useEffect(() => {
-        register("Enter", projectToScreen);
-        register("Shift+Enter", stopProjection);
-
-        return () => {
-            unregister("Enter");
-            unregister("Shift+Enter");
-        };
-    }, [projectToScreen, stopProjection, register, unregister]);
+    useShortcut({ key: "Enter" }, projectToScreen);
+    useShortcut({ shift: true, key: "Enter" }, stopProjection);
 
     return (
         <div className="relative flex h-full flex-col items-center gap-2 lg:gap-4">
             <span className="text-base font-semibold lg:text-xl">Preview</span>
 
             <ViewerContainer>
-                <Viewer
-                    currentProjection={currentProjection}
-                    currentIndex={currentIndex}
-                />
+                <Viewer currentProjection={currentProjection} currentIndex={currentIndex} />
             </ViewerContainer>
 
             <div className="flex w-full flex-row justify-between gap-2 *:last:@container/slide-manip lg:gap-4 @max-[14rem]:flex-col *:@max-[14rem]:w-full *:@max-[14rem]:!justify-center *:last:@[14rem]:flex-1 *:last:@[14rem]:basis-18 *:last:@[14rem]:justify-end">
@@ -402,9 +364,7 @@ export const PreviewSlideController = memo(function PreviewSlideController() {
 });
 
 export function ControllerRegister() {
-    const [socket, socketId] = useSocketStore(
-        useShallow((s) => [s.socket, s.socketId]),
-    );
+    const [socket, socketId] = useSocketStore(useShallow((s) => [s.socket, s.socketId]));
 
     useEffect(() => {
         if (!socket || !socketId) return;

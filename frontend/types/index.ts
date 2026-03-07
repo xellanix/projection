@@ -25,3 +25,11 @@ export type Size = {
 };
 
 export type InputChangeEvent = React.ChangeEvent<HTMLInputElement>;
+
+export type Accelerator = {
+    shift?: boolean;
+    meta?: boolean;
+    alt?: boolean;
+    ctrl?: boolean;
+    key: string;
+};

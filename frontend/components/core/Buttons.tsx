@@ -10,15 +10,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Toggle } from "@/components/ui/toggle";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useGlobalKeyboard } from "@/context/GlobalKeyboardContext";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useShortcut } from "@/hooks/use-shortcuts";
+import type { Accelerator } from "@/types";
 import { MoreHorizontalIcon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
-import { useCallback, useEffect, useState, memo } from "react";
+import { useCallback, useState, memo } from "react";
 
 interface BaseIconButtonProps {
     label: string;
@@ -26,13 +23,7 @@ interface BaseIconButtonProps {
     iconStrokeWidth?: number;
     text?: string;
     textClassName?: string;
-    accelerator?: {
-        shift?: boolean;
-        meta?: boolean;
-        alt?: boolean;
-        ctrl?: boolean;
-        key: string;
-    };
+    accelerator?: Accelerator;
 }
 
 interface IconButtonProps extends BaseIconButtonProps {
@@ -47,21 +38,7 @@ export const IconButton = memo(function IconButton({
     onClick,
     accelerator,
 }: IconButtonProps) {
-    const [register, unregister] = useGlobalKeyboard();
-    useEffect(() => {
-        if (accelerator) {
-            const key = `${accelerator.shift ? "Shift+" : ""}${
-                accelerator.meta ? "Meta+" : ""
-            }${accelerator.alt ? "Alt+" : ""}${
-                accelerator.ctrl ? "Ctrl+" : ""
-            }${accelerator.key}`;
-
-            register(key, onClick ?? (() => {/* do nothing */}));
-            return () => {
-                unregister(key);
-            };
-        }
-    }, [accelerator, register, unregister, onClick]);
+    useShortcut(accelerator, onClick);
 
     return (
         <Tooltip>
@@ -73,10 +50,7 @@ export const IconButton = memo(function IconButton({
                     aria-label={label}
                     onClick={onClick}
                 >
-                    <HugeiconsIcon
-                        icon={icon}
-                        strokeWidth={iconStrokeWidth ?? 2}
-                    />
+                    <HugeiconsIcon icon={icon} strokeWidth={iconStrokeWidth ?? 2} />
                     {text && <span className={textClassName}>{text}</span>}
                 </Button>
             </TooltipTrigger>
@@ -129,21 +103,7 @@ export const IconToggleButton = memo(function IconToggleButton({
         });
     }, [onPressed]);
 
-    const [register, unregister] = useGlobalKeyboard();
-    useEffect(() => {
-        if (accelerator) {
-            const key = `${accelerator.shift ? "Shift+" : ""}${
-                accelerator.meta ? "Meta+" : ""
-            }${accelerator.alt ? "Alt+" : ""}${
-                accelerator.ctrl ? "Ctrl+" : ""
-            }${accelerator.key}`;
-
-            register(key, togglePressed);
-            return () => {
-                unregister(key);
-            };
-        }
-    }, [accelerator, register, unregister, togglePressed]);
+    useShortcut(accelerator, togglePressed);
 
     return (
         <Tooltip>
@@ -156,10 +116,7 @@ export const IconToggleButton = memo(function IconToggleButton({
                         pressed={pressed}
                         onPressedChange={togglePressed}
                     >
-                        <HugeiconsIcon
-                            icon={icon}
-                            strokeWidth={iconStrokeWidth ?? 2}
-                        />
+                        <HugeiconsIcon icon={icon} strokeWidth={iconStrokeWidth ?? 2} />
                         {text && <span className={textClassName}>{text}</span>}
                     </Toggle>
                 </div>
@@ -223,9 +180,7 @@ export const IconSplitButton = memo(function IconSplitButton({
                     </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                    <DropdownMenuLabel>
-                        {moreLabel || "More Options"}
-                    </DropdownMenuLabel>
+                    <DropdownMenuLabel>{moreLabel || "More Options"}</DropdownMenuLabel>
                     {children}
                 </DropdownMenuContent>
             </DropdownMenu>
