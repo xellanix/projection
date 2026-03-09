@@ -26,19 +26,12 @@ import {
     DragDropVerticalIcon,
 } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-    memo,
-    useCallback,
-    useEffect,
-    useEffectEvent,
-    useLayoutEffect,
-    useMemo,
-    useRef,
-} from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useFilePicker } from "use-file-picker";
 import { jsonToProjection } from "@/lib/json-to-projection";
 import { useGroupStore } from "@/stores/group.store";
+import { processImportedFiles } from "@/lib/import";
 
 const createItemName = (c: ProjectionItem) => {
     return c.name || (c.type !== "Component" && c.content) || "Untitled";
@@ -106,7 +99,7 @@ export const ProjectionMutator = memo(function ProjectionMutator() {
                 const indice = data[i]!;
 
                 if (typeof indice === "string") {
-                    const res = jsonToProjection(indice);
+                    const res = jsonToProjection(indice, true);
                     if (res === null) continue;
                     result[i] = generateId(res);
                     continue;
@@ -119,7 +112,7 @@ export const ProjectionMutator = memo(function ProjectionMutator() {
         };
 
         const add = (data: string) => {
-            const res = jsonToProjection(data);
+            const res = jsonToProjection(data, true);
             if (res === null) return;
             useProjectionStore.getState().addProjection(res);
         };
@@ -138,24 +131,20 @@ export const ProjectionMutator = memo(function ProjectionMutator() {
 });
 
 const AddButton = memo(function AddButton() {
-    const { openFilePicker, filesContent, loading } = useFilePicker({
-        accept: ".json",
+    const { openFilePicker, plainFiles, loading, clear } = useFilePicker({
+        accept: [".json", ".zip"],
+        multiple: true,
     });
     const socket = useSocketStore((s) => s.socket);
 
     useShortcut({ key: "A", shift: true }, openFilePicker);
 
-    const onFilesChange = useEffectEvent(() => {
-        if (loading || !socket) return;
+    useEffect(() => {
+        // If loading, no socket available, or no files picked, do nothing
+        if (loading || !socket || plainFiles.length === 0) return;
 
-        for (const file of filesContent) {
-            const res = jsonToProjection(file.content);
-            if (res === null) continue;
-            useProjectionStore.getState().addProjection(res);
-            socket.emit("client:queue:add", file.content);
-        }
-    });
-    useEffect(() => onFilesChange(), [loading, socket]);
+        processImportedFiles(plainFiles, socket, clear).catch(console.error);
+    }, [loading, socket, plainFiles, clear]);
 
     return (
         <Button

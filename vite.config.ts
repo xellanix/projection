@@ -20,6 +20,10 @@ export default defineConfig({
                 changeOrigin: true,
                 ws: true,
             },
+            "/api/assets/": {
+                target: "http://localhost:12526",
+                changeOrigin: true,
+            },
         },
     },
     base: "./",
