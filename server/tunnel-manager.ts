@@ -12,9 +12,9 @@ export class TunnelManager {
 
     constructor() {
         // AUTOMATIC KILL SWITCH:
-        // This ensures that if you kill the Next.js server (Ctrl+C),
+        // This ensures that if you kill the server (Ctrl+C),
         // the tunnel child process is also killed immediately.
-        ["SIGINT", "SIGTERM", "exit"].forEach((signal) => {
+        ["SIGINT", "SIGTERM", "SIGHUP", "SIGQUIT", "exit"].forEach((signal) => {
             process.on(signal, () => this.forceKill());
         });
     }
