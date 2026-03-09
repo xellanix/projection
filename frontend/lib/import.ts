@@ -1,0 +1,60 @@
+import { unzipSync, strFromU8 } from "fflate";
+import { jsonToProjection } from "@/lib/json-to-projection";
+import { useProjectionStore } from "@/stores/projection.store";
+import type { Socket } from "socket.io-client";
+
+export async function processImportedFiles(files: File[], socket: Socket, onSuccess?: () => void) {
+    for (const f of files) {
+        if (f.name.endsWith(".json")) {
+            const text = await f.text();
+            const res = jsonToProjection(text, true);
+            if (res === null) continue;
+
+            useProjectionStore.getState().addProjection(res);
+            socket.emit("client:queue:add", text);
+        } else if (f.name.endsWith(".zip")) {
+            const arrayBuffer = await f.arrayBuffer();
+            const unzipped = unzipSync(new Uint8Array(arrayBuffer));
+
+            // Upload Assets via raw buffer body
+            for (const [path, uint8Array] of Object.entries(unzipped)) {
+                if (path.startsWith("assets/") && uint8Array.length > 0) {
+                    const safeName = path.replace("assets/", "");
+                    let mime = "application/octet-stream";
+
+                    if (safeName.endsWith(".mp4")) mime = "video/mp4";
+                    else if (safeName.endsWith(".webm")) mime = "video/webm";
+                    else if (/\.(jpg|jpeg|png|gif|webp)$/i.exec(safeName))
+                        mime = `image/${safeName.split(".").pop()}`;
+
+                    const fileBlob = new Blob([uint8Array as unknown as BlobPart], { type: mime });
+
+                    await fetch(`/api/assets/${encodeURIComponent(safeName)}`, {
+                        method: "POST",
+                        body: fileBlob,
+                    });
+                }
+            }
+
+            // Read JSON entries, convert, and push to store/socket
+            for (const [path, uint8Array] of Object.entries(unzipped)) {
+                if (path.endsWith(".json") && !path.startsWith("assets/")) {
+                    const text = strFromU8(uint8Array);
+                    const data = JSON.parse(text);
+                    const projectionsData = Array.isArray(data) ? data : [data];
+
+                    for (const p of projectionsData) {
+                        const pText = JSON.stringify(p);
+                        const res = jsonToProjection(pText, true);
+                        if (res === null) continue;
+
+                        useProjectionStore.getState().addProjection(res);
+                        socket.emit("client:queue:add", pText);
+                    }
+                }
+            }
+        }
+    }
+
+    onSuccess?.();
+}
