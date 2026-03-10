@@ -157,7 +157,7 @@ const SlideComposerContent = memo(function SlideComposerContent({
             return (
                 <span
                     className={cn(
-                        "text-8xl font-bold text-white",
+                        "text-8xl font-bold whitespace-pre-line text-white",
                         content.options?.className,
                     )}
                     style={{ ...content.options?.style }}
