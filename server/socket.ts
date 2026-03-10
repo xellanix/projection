@@ -310,4 +310,4 @@ io.on("connection", (socket) => {
     });
 });
 
-export { engine, SERVER_PORT };
+export { engine, SERVER_PORT, FRONTEND_PORT };
