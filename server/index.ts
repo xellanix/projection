@@ -1,6 +1,7 @@
 import { serve, file } from "bun";
 import { dirname, join } from "path";
-import { engine, SERVER_PORT } from "$/socket";
+import open from "open";
+import { engine, SERVER_PORT, FRONTEND_PORT } from "$/socket";
 import { cleanupAssets, importRequest } from "$/import";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -71,6 +72,11 @@ serve({
 console.log(`│ Server: http://localhost:${SERVER_PORT} │`);
 console.log(`│ Mode  : ${isProd ? "production " : "development"}            │`);
 console.log("└────────────────────────────────┘");
+
+if (process.env.ALREADY_OPENED !== "true") {
+    void open(`http://localhost:${isProd ? SERVER_PORT : FRONTEND_PORT}`);
+    process.env.ALREADY_OPENED = "true";
+}
 
 const SIGCleanup = () => {
     cleanupAssets();
