@@ -39,8 +39,7 @@ const SettingSender = memo(function SettingSender() {
 
     useEffect(() => {
         const unsubscribe = useSettingsStore.subscribe((s, prev) => {
-            if (s.globalActivator === "server" || s.global === prev.global)
-                return;
+            if (s.globalActivator === "server" || s.global === prev.global) return;
             socket?.emit("client:settings:update", s.global);
         });
 

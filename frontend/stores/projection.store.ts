@@ -1,9 +1,5 @@
 import { _projections } from "@/data/__temp/slides";
-import type {
-    ProjectionBackgroundsMap,
-    ProjectionMaster,
-    ProjectionMasterWithId,
-} from "@/types";
+import type { ProjectionBackgroundsMap, ProjectionMaster, ProjectionMasterWithId } from "@/types";
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { useTransitionStore } from "@/stores/transition.store";
@@ -23,25 +19,18 @@ interface ProjectionState {
 
 interface ProjectionActions {
     getProjectionLength: (projectionIndex: number) => number;
-    getBackground: (
-        projectionIndex: number,
-        contentIndex: number,
-    ) => [string, number];
+    getBackground: (projectionIndex: number, contentIndex: number) => [string, number];
     getContents: (projectionIndex: number) => ProjectionMaster["contents"];
 
     setProjections: (projections: Setter<ProjectionMaster[]>) => void;
-    setProjectionsWithIds: (
-        projections: Setter<ProjectionMasterWithId[]>,
-    ) => void;
+    setProjectionsWithIds: (projections: Setter<ProjectionMasterWithId[]>) => void;
 
     addProjection: (projection: ProjectionMaster) => void;
 }
 
 type ProjectionStore = ProjectionState & ProjectionActions;
 
-const backgroundMiner = (
-    projections: ProjectionMaster[],
-): ProjectionBackgrounds => {
+const backgroundMiner = (projections: ProjectionMaster[]): ProjectionBackgrounds => {
     const backgrounds: string[] = [];
     const backgroundsMap: ProjectionBackgroundsMap = {};
 
@@ -63,9 +52,7 @@ const backgroundMiner = (
             }
 
             backgroundsMap[i] ??= {} as ProjectionBackgroundsMap[number];
-            backgroundsMap[i]![j] = contentBg
-                ? backgrounds.indexOf(contentBg)
-                : bgIndex;
+            backgroundsMap[i]![j] = contentBg ? backgrounds.indexOf(contentBg) : bgIndex;
         }
     }
 
@@ -95,15 +82,11 @@ export const useProjectionStore = create<ProjectionStore>((set, get) => ({
         return [get().backgrounds[bgIndex] ?? "", bgIndex];
     },
 
-    getContents: (projectionIndex: number) =>
-        get().projections[projectionIndex]?.contents ?? [],
+    getContents: (projectionIndex: number) => get().projections[projectionIndex]?.contents ?? [],
 
     setProjections: (projections) => {
         set((s) => {
-            const p =
-                typeof projections === "function"
-                    ? projections(s.projections)
-                    : projections;
+            const p = typeof projections === "function" ? projections(s.projections) : projections;
 
             useTransitionStore.getState().syncWithProjections(p);
             return {
@@ -115,10 +98,7 @@ export const useProjectionStore = create<ProjectionStore>((set, get) => ({
 
     setProjectionsWithIds: (projections) => {
         set((s) => {
-            const p =
-                typeof projections === "function"
-                    ? projections(s.projections)
-                    : projections;
+            const p = typeof projections === "function" ? projections(s.projections) : projections;
 
             useTransitionStore.getState().syncWithProjections(p);
             return {

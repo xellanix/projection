@@ -7,16 +7,9 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/ui/command";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import {
-    ArrowDown01Icon,
-    Tick02Icon,
-} from "@hugeicons-pro/core-stroke-rounded";
+import { ArrowDown01Icon, Tick02Icon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useEffect, useMemo, useState } from "react";
 
@@ -79,9 +72,7 @@ function ComboboxR<T>({
             </PopoverTrigger>
             <PopoverContent className={cn("w-[200px] p-0", className?.content)}>
                 <Command>
-                    {canSearch && (
-                        <CommandInput placeholder="Search..." className="h-9" />
-                    )}
+                    {canSearch && <CommandInput placeholder="Search..." className="h-9" />}
                     <CommandList>
                         <CommandEmpty>No option found.</CommandEmpty>
                         <CommandGroup>
@@ -101,9 +92,7 @@ function ComboboxR<T>({
                                         strokeWidth={2.5}
                                         className={cn(
                                             "ml-auto",
-                                            value === dataKey(item)
-                                                ? "opacity-100"
-                                                : "opacity-0",
+                                            value === dataKey(item) ? "opacity-100" : "opacity-0",
                                         )}
                                     />
                                 </CommandItem>

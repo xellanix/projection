@@ -50,11 +50,7 @@ function RemapperContainerR({ children }: { children: React.ReactNode }) {
 export const RemapperContainer = memo(RemapperContainerR);
 RemapperContainer.displayName = "RemapperContainer";
 
-const calcStretchFactor = (
-    contentRes: Size,
-    screenRes: Size,
-    contentFit: "fit" | "fill",
-) => {
+const calcStretchFactor = (contentRes: Size, screenRes: Size, contentFit: "fit" | "fill") => {
     const { width: cw, height: ch } = contentRes;
     const { width: sw, height: sh } = screenRes;
 
@@ -95,11 +91,7 @@ function ScreenRemapperR({ children }: ScreenRemapperProps) {
             rawRef.current.style.height = `${contentRes.height}px`;
         };
 
-        const setScalerSize = (
-            contentRes: Size,
-            screenRes: Size,
-            contentFit: "fit" | "fill",
-        ) => {
+        const setScalerSize = (contentRes: Size, screenRes: Size, contentFit: "fit" | "fill") => {
             if (!scalerRef.current) return;
             const res = calcStretchFactor(contentRes, screenRes, contentFit);
             scalerRef.current.style.transform = `scale(${res.width}, ${res.height})`;

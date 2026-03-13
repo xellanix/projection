@@ -12,6 +12,7 @@
     "build:server": "bun run exe.ts",
     "start": "NODE_ENV=production ./dist/server/projection",
     "lint": "eslint .",
+    "pretty": "prettier --write .",
     "preview": "bunx --bun vite preview"
   },
   "dependencies": {

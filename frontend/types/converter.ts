@@ -4,16 +4,10 @@ import type { ProjectionMaster } from "@/types";
 import type { JSX } from "react";
 
 type ComponentProps<P> = P & { className?: string };
-type BaseComponent<
-    T extends string,
-    P extends object = {},
-    O extends boolean = true,
-> = {
+type BaseComponent<T extends string, P extends object = {}, O extends boolean = true> = {
     type: T;
     key?: React.Key | null | undefined;
-} & (O extends true
-    ? { props?: ComponentProps<P> }
-    : { props: ComponentProps<P> });
+} & (O extends true ? { props?: ComponentProps<P> } : { props: ComponentProps<P> });
 
 type SpanComponent = BaseComponent<"span", { children?: AllowedComponents[] }>;
 type BrComponent = BaseComponent<"br">;

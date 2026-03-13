@@ -12,20 +12,13 @@ interface LiveMessageProps {
     progress: number;
 }
 
-export const LiveMessage = memo(function LiveMessage({
-    remaining,
-    progress,
-}: LiveMessageProps) {
+export const LiveMessage = memo(function LiveMessage({ remaining, progress }: LiveMessageProps) {
     const [isOpen, contentResolution] = useSettingsStore(
-        useShallow((s) => [
-            s.local.message.isOpen,
-            s.global.remap.contentResolution,
-        ]),
+        useShallow((s) => [s.local.message.isOpen, s.global.remap.contentResolution]),
     );
 
     const isAnimatePresent =
-        (remaining === 3 && progress === 0) ||
-        (remaining === 0 && progress === 100);
+        (remaining === 3 && progress === 0) || (remaining === 0 && progress === 100);
 
     return (
         <div className="absolute h-full w-full">
@@ -53,10 +46,7 @@ export const LiveMessage = memo(function LiveMessage({
                                 exit={{ x: -contentResolution.width, opacity: 0 }}
                                 transition={{ duration: 0.5, ease: "easeOut" }}
                             >
-                                <LiveMessageMarquee
-                                    remaining={remaining}
-                                    progress={progress}
-                                />
+                                <LiveMessageMarquee remaining={remaining} progress={progress} />
                             </motion.div>
                         )}
                     </AnimatePresence>

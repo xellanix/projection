@@ -9,10 +9,7 @@ import { useLoopStore } from "@/stores/loop.store";
 import { useProjectionStore } from "@/stores/projection.store";
 import { useSocketStore } from "@/stores/socket.store";
 import type { ProjectionLoopQueue } from "@/types";
-import {
-    ArrowLeft01Icon,
-    ArrowRight01Icon,
-} from "@hugeicons-pro/core-stroke-rounded";
+import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons-pro/core-stroke-rounded";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 function NavButtonR({ type }: { type: "next" | "prev" }) {
@@ -68,9 +65,7 @@ function LoopQueueItemR({ queueIndex, group, item }: LoopQueueItemProps) {
             data-state={isActive ? "on" : "off"}
         >
             <span className="in-data-[state=on]:[&>span:first-child]:text-brand-foreground/80">
-                {item !== undefined && (
-                    <span className="text-muted-foreground">#</span>
-                )}
+                {item !== undefined && <span className="text-muted-foreground">#</span>}
                 {item ?? group}
             </span>
         </Button>
@@ -132,20 +127,14 @@ function LoopQueueSyncR() {
             if (s.activator === "loop-queue") return;
 
             const notReset = s.currentProjection === prev.currentProjection;
-            if (
-                notReset &&
-                (s.currentIndex === prev.currentIndex ||
-                    s.activator === "server")
-            )
+            if (notReset && (s.currentIndex === prev.currentIndex || s.activator === "server"))
                 return;
 
             if (!notReset) {
                 useLoopStore
                     .getState()
                     .syncWithProjection(
-                        useProjectionStore.getState().projections[
-                            s.currentProjection
-                        ],
+                        useProjectionStore.getState().projections[s.currentProjection],
                     );
                 useLoopStore.getState().resetQueueIndex(s.activator);
                 return;
@@ -173,8 +162,7 @@ function LoopQueueSyncR() {
         if (!socket || !isLoaded) return;
 
         const unsubscribe = useLoopStore.subscribe((s, prev) => {
-            if (s.queueIndex === prev.queueIndex || s.activator === "server")
-                return;
+            if (s.queueIndex === prev.queueIndex || s.activator === "server") return;
             socket.emit("client:loop:update", s.queueIndex);
         });
 

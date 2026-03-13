@@ -143,8 +143,7 @@ export const Marquee = memo(
              * - false: "long-chain" for loop 0 or 1. Accurate "blank" ending.
              */
             const isInfinite = loop === Infinity;
-            const shouldUseTwoCloneRender =
-                isInfinite || (!isInfinite && loop >= 2);
+            const shouldUseTwoCloneRender = isInfinite || (!isInfinite && loop >= 2);
 
             // --- Calculations ---
             /** The calculated spacing in pixels. */
@@ -159,15 +158,13 @@ export const Marquee = memo(
             if (shouldUseTwoCloneRender) {
                 // "Two-clone" strategy (loop >= 2 or Infinity)
                 totalDistance = singleBlockWidth;
-                const duration =
-                    speed > 0 && totalDistance > 0 ? totalDistance / speed : 0;
+                const duration = speed > 0 && totalDistance > 0 ? totalDistance / speed : 0;
                 durationMs = duration * 1000;
                 iterations = isInfinite ? Infinity : loop;
             } else {
                 // "Long-chain" strategy (loop 0 or 1)
                 totalDistance = singleBlockWidth * Math.max(0, loop);
-                const duration =
-                    speed > 0 && totalDistance > 0 ? totalDistance / speed : 0;
+                const duration = speed > 0 && totalDistance > 0 ? totalDistance / speed : 0;
                 durationMs = duration * 1000;
                 iterations = loop > 0 ? 1 : 0;
             }
@@ -264,25 +261,19 @@ export const Marquee = memo(
                      */
                     getProgress: () => {
                         // Read from props/state refs to get the latest values
-                        const { durationMs, shouldUseTwoCloneRender, delay } =
-                            stateRef.current;
+                        const { durationMs, shouldUseTwoCloneRender, delay } = stateRef.current;
 
                         const animation = animationRef.current;
                         if (!animation || durationMs === 0) return 0;
-                        const currentTime =
-                            (animation.currentTime as number) || 0;
+                        const currentTime = (animation.currentTime as number) || 0;
                         const activeTime = currentTime - delay;
 
                         if (activeTime <= 0) return 0;
 
                         if (shouldUseTwoCloneRender) {
                             // Two-clone: progress is % of a single cycle
-                            const cycleProgress =
-                                (activeTime % durationMs) / durationMs;
-                            if (
-                                activeTime > 0 &&
-                                activeTime % durationMs === 0
-                            ) {
+                            const cycleProgress = (activeTime % durationMs) / durationMs;
+                            if (activeTime > 0 && activeTime % durationMs === 0) {
                                 return 1;
                             }
                             return cycleProgress;
@@ -296,13 +287,8 @@ export const Marquee = memo(
                      */
                     getRemainingLoops: () => {
                         // Read from props/state refs to get the latest values
-                        const {
-                            durationMs,
-                            shouldUseTwoCloneRender,
-                            delay,
-                            isInfinite,
-                            loop,
-                        } = stateRef.current;
+                        const { durationMs, shouldUseTwoCloneRender, delay, isInfinite, loop } =
+                            stateRef.current;
 
                         if (isInfinite) {
                             return Infinity;
@@ -317,8 +303,7 @@ export const Marquee = memo(
                             return 0;
                         }
 
-                        const currentTime =
-                            (animation.currentTime as number) || 0;
+                        const currentTime = (animation.currentTime as number) || 0;
                         const activeTime = currentTime - delay;
 
                         if (activeTime <= 0) {
@@ -326,8 +311,7 @@ export const Marquee = memo(
                         }
 
                         if (shouldUseTwoCloneRender) {
-                            const currentLoopNumber =
-                                Math.floor(activeTime / durationMs) + 1;
+                            const currentLoopNumber = Math.floor(activeTime / durationMs) + 1;
                             const remaining = loop - currentLoopNumber + 1;
                             return Math.max(0, remaining);
                         } else {
@@ -341,34 +325,25 @@ export const Marquee = memo(
             // --- Render Logic ---
 
             /** CSS variables for the container. */
-            const containerStyle: React.CSSProperties & Record<string, string> =
-                {
-                    "--marquee-spacing": `${spacingInPixels}px`,
-                };
+            const containerStyle: React.CSSProperties & Record<string, string> = {
+                "--marquee-spacing": `${spacingInPixels}px`,
+            };
 
             /** Dynamic styles for the wrapper. */
             const wrapperStyle: React.CSSProperties = {};
 
             if (progress !== undefined) {
-                wrapperStyle.transform = `translateX(-${
-                    totalDistance * progress
-                }px)`;
+                wrapperStyle.transform = `translateX(-${totalDistance * progress}px)`;
             }
 
             /**
              * Render 2 copies for the "two-clone" strategy,
              * or (loop + 1) copies for the "long-chain" strategy.
              */
-            const copiesToRender = shouldUseTwoCloneRender
-                ? 2
-                : Math.max(1, Math.ceil(loop + 1));
+            const copiesToRender = shouldUseTwoCloneRender ? 2 : Math.max(1, Math.ceil(loop + 1));
 
             return (
-                <div
-                    ref={containerRef}
-                    className="w-full overflow-hidden"
-                    style={containerStyle}
-                >
+                <div ref={containerRef} className="w-full overflow-hidden" style={containerStyle}>
                     <div
                         ref={wrapperRef}
                         style={wrapperStyle}

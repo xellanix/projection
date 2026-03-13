@@ -7,20 +7,13 @@ import { useRetain } from "@/hooks/use-retain";
 import { isTransparent } from "@/lib/background";
 import { cn } from "@/lib/utils";
 import { useProjectionStore } from "@/stores/projection.store";
-import {
-    bgTransitionVariants,
-    useTransitionStore,
-} from "@/stores/transition.store";
+import { bgTransitionVariants, useTransitionStore } from "@/stores/transition.store";
 import type { ProjectionItem } from "@/types";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
 import { memo, useMemo } from "react";
 
-const BackcoverSwitcher = memo(function BackcoverSwitcher({
-    isShowBg,
-}: {
-    isShowBg: boolean;
-}) {
+const BackcoverSwitcher = memo(function BackcoverSwitcher({ isShowBg }: { isShowBg: boolean }) {
     return (
         isShowBg && (
             <div className="animate-in fade-in absolute size-full duration-1000">
@@ -82,13 +75,10 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
 }: SlideComposerProps) {
     const background = useRetain(
         () => {
-            if (currentIndex === SPECIAL_INDEX.TRANSPARENT)
-                return "transparent";
+            if (currentIndex === SPECIAL_INDEX.TRANSPARENT) return "transparent";
             if (currentProjection < 0 || currentIndex < 0) return;
 
-            return useProjectionStore
-                .getState()
-                .getBackground(currentProjection, currentIndex)[0];
+            return useProjectionStore.getState().getBackground(currentProjection, currentIndex)[0];
         },
         [currentProjection, currentIndex],
         "",
@@ -96,9 +86,7 @@ export const SlideBackgroundComposer = memo(function SlideBackgroundComposer({
     const isShowBg = !isTransparent(background);
 
     const transition = useMemo(() => {
-        return useTransitionStore
-            .getState()
-            .getTransition(currentProjection, currentIndex);
+        return useTransitionStore.getState().getTransition(currentProjection, currentIndex);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [background]);
 

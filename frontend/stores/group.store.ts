@@ -24,8 +24,7 @@ export const useGroupStore = create<GroupStore>((set, get) => ({
 
     init: (indices) => set({ groupIndices: indices }),
 
-    addIndex: (index: number) =>
-        set((s) => ({ groupIndices: [...s.groupIndices, index] })),
+    addIndex: (index: number) => set((s) => ({ groupIndices: [...s.groupIndices, index] })),
 
     reset: () => set({ groupIndices: [] }),
 }));

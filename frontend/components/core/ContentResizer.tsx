@@ -25,8 +25,7 @@ export const ContentResizer = memo(function ContentResizer({
             if (newScale === prevScale) return;
 
             const contentMaxDim = Math.max(cw, ch);
-            const renderedPixelDiff =
-                Math.abs(newScale - prevScale) * contentMaxDim;
+            const renderedPixelDiff = Math.abs(newScale - prevScale) * contentMaxDim;
             if (renderedPixelDiff < 2) {
                 return;
             }
@@ -74,10 +73,7 @@ export const ContentResizer = memo(function ContentResizer({
             className={`relative flex items-center justify-center overflow-hidden ${className}`}
             data-slot="content-resizer"
         >
-            <div
-                ref={contentRef}
-                className="origin-center transform-[scale(0)]"
-            >
+            <div ref={contentRef} className="origin-center transform-[scale(0)]">
                 {children}
             </div>
         </div>

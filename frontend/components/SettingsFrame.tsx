@@ -12,9 +12,7 @@ const FrameHeader = memo(function FrameHeader({ children }: FrameProps) {
     return <div className="flex flex-col gap-2">{children}</div>;
 });
 
-const FrameDescription = memo(function FrameDescription({
-    children,
-}: FrameProps) {
+const FrameDescription = memo(function FrameDescription({ children }: FrameProps) {
     return <p className="text-muted-foreground text-sm">{children}</p>;
 });
 

@@ -1,8 +1,4 @@
-import {
-    FrameContainer,
-    FrameDescription,
-    FrameHeader,
-} from "@/components/SettingsFrame";
+import { FrameContainer, FrameDescription, FrameHeader } from "@/components/SettingsFrame";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
@@ -30,20 +26,9 @@ import {
 import { getAspectRatio } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settings.store";
 import type { InputChangeEvent, Size } from "@/types";
-import {
-    ArrowDown01Icon,
-    Idea01Icon,
-} from "@hugeicons-pro/core-stroke-rounded";
+import { ArrowDown01Icon, Idea01Icon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-    Fragment,
-    memo,
-    useCallback,
-    useLayoutEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
+import { Fragment, memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 export const RemapSetting = memo(function RemapSetting() {
@@ -51,15 +36,14 @@ export const RemapSetting = memo(function RemapSetting() {
         <FrameContainer>
             <FrameHeader>
                 <FrameDescription>
-                    Remap the projection output to the actual screen aspect
-                    ratio using custom resolutions and scaling strategy,
-                    ensuring the content displays correctly.
+                    Remap the projection output to the actual screen aspect ratio using custom
+                    resolutions and scaling strategy, ensuring the content displays correctly.
                 </FrameDescription>
                 <Alert>
                     <HugeiconsIcon icon={Idea01Icon} strokeWidth={1.75} />
                     <AlertDescription>
-                        This setting prevents the content stretching caused by a
-                        screen resolution and aspect ratio mismatch.
+                        This setting prevents the content stretching caused by a screen resolution
+                        and aspect ratio mismatch.
                     </AlertDescription>
                 </Alert>
             </FrameHeader>
@@ -72,9 +56,7 @@ export const RemapSetting = memo(function RemapSetting() {
                 <Item variant={"outline"}>
                     <ItemContent>
                         <ItemTitle>Output Resolution</ItemTitle>
-                        <ItemDescription>
-                            The projection output resolution.
-                        </ItemDescription>
+                        <ItemDescription>The projection output resolution.</ItemDescription>
                     </ItemContent>
                     <ContentAction />
                 </Item>
@@ -82,8 +64,7 @@ export const RemapSetting = memo(function RemapSetting() {
                     <ItemContent>
                         <ItemTitle>Screen Resolution</ItemTitle>
                         <ItemDescription>
-                            The expected screen resolution (corresponding to the
-                            aspect ratio).
+                            The expected screen resolution (corresponding to the aspect ratio).
                         </ItemDescription>
                     </ItemContent>
                     <ScreenAction />
@@ -92,8 +73,7 @@ export const RemapSetting = memo(function RemapSetting() {
                     <ItemContent>
                         <ItemTitle>Scaling Strategy</ItemTitle>
                         <ItemDescription>
-                            The scaling strategy for the projection output onto
-                            the screen.
+                            The scaling strategy for the projection output onto the screen.
                         </ItemDescription>
                     </ItemContent>
                     <ScaleAction />
@@ -208,9 +188,7 @@ const baseHandleResize = (ev: InputChangeEvent) => {
     const name = ev.currentTarget.name;
     const value = parseInt(ev.currentTarget.value);
 
-    const k1 = name.startsWith("screen-")
-        ? "screenResolution"
-        : "contentResolution";
+    const k1 = name.startsWith("screen-") ? "screenResolution" : "contentResolution";
     const k2: keyof Size = name.endsWith("width") ? "width" : "height";
 
     useSettingsStore.getState().set(({ temp }) => {
@@ -219,31 +197,15 @@ const baseHandleResize = (ev: InputChangeEvent) => {
 };
 
 const ContentAction = memo(function ContentAction() {
-    const contentResolution = useSettingsStore(
-        (s) => s.temp.remap.contentResolution,
-    );
+    const contentResolution = useSettingsStore((s) => s.temp.remap.contentResolution);
 
-    return (
-        <ResolutionInput
-            {...contentResolution}
-            type="content"
-            onChange={baseHandleResize}
-        />
-    );
+    return <ResolutionInput {...contentResolution} type="content" onChange={baseHandleResize} />;
 });
 
 const ScreenAction = memo(function ScreenAction() {
-    const screenResolution = useSettingsStore(
-        (s) => s.temp.remap.screenResolution,
-    );
+    const screenResolution = useSettingsStore((s) => s.temp.remap.screenResolution);
 
-    return (
-        <ResolutionInput
-            {...screenResolution}
-            type="screen"
-            onChange={baseHandleResize}
-        />
-    );
+    return <ResolutionInput {...screenResolution} type="screen" onChange={baseHandleResize} />;
 });
 
 type ResolutionItem = {
@@ -416,10 +378,7 @@ const ResolutionDropdown = memo(function ResolutionDropdown({
                         className="!px-2 py-0"
                         aria-label="More Options"
                     >
-                        <HugeiconsIcon
-                            icon={ArrowDown01Icon}
-                            strokeWidth={2.5}
-                        />
+                        <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2.5} />
                     </Button>
                 </div>
             </DropdownMenuTrigger>
@@ -427,11 +386,7 @@ const ResolutionDropdown = memo(function ResolutionDropdown({
                 <DropdownMenuLabel>Resolutions</DropdownMenuLabel>
                 {resolutions.map((r) => (
                     <Fragment key={r.name}>
-                        <ResolutionOptions
-                            type={type}
-                            groupLabel={r.name}
-                            items={r.items}
-                        />
+                        <ResolutionOptions type={type} groupLabel={r.name} items={r.items} />
                     </Fragment>
                 ))}
             </DropdownMenuContent>
@@ -447,17 +402,11 @@ const ResolutionOptions = memo(function ResolutionOptions(props: {
     return (
         <DropdownMenuGroup>
             <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                    {props.groupLabel}
-                </DropdownMenuSubTrigger>
+                <DropdownMenuSubTrigger>{props.groupLabel}</DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
                     <DropdownMenuSubContent>
                         {props.items.map((i) => (
-                            <ResolutionOptionsItem
-                                key={i.name}
-                                {...i}
-                                type={props.type}
-                            />
+                            <ResolutionOptionsItem key={i.name} {...i} type={props.type} />
                         ))}
                     </DropdownMenuSubContent>
                 </DropdownMenuPortal>
@@ -472,8 +421,7 @@ const ResolutionOptionsItem = memo(function ResolutionOptionsItem(
     },
 ) {
     const selected = useCallback(() => {
-        const k1 =
-            props.type === "screen" ? "screenResolution" : "contentResolution";
+        const k1 = props.type === "screen" ? "screenResolution" : "contentResolution";
 
         useSettingsStore.getState().set(({ temp }) => {
             temp.remap[k1].width = props.width;
@@ -496,10 +444,7 @@ const ResolutionOptionsItem = memo(function ResolutionOptionsItem(
 });
 
 const RatioText = memo(function RatioText(props: Size) {
-    const ratio = useMemo(
-        () => getAspectRatio(props.width, props.height),
-        [props],
-    );
+    const ratio = useMemo(() => getAspectRatio(props.width, props.height), [props]);
 
     return (
         <span className="text-muted-foreground">
