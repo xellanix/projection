@@ -361,7 +361,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
         const globalIndices: number[] = [];
         for (const item of contents) {
             const { group, ...rest } = item;
-            const key = group ?? "Contents";
+            const key = group || "Contents";
 
             if (!groups[key]) {
                 groups[key] = [];
