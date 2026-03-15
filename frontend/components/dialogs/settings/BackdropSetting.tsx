@@ -1,8 +1,4 @@
-import {
-    FrameContainer,
-    FrameDescription,
-    FrameHeader,
-} from "@/components/SettingsFrame";
+import { FrameContainer, FrameDescription, FrameHeader } from "@/components/SettingsFrame";
 import { Button } from "@/components/ui/button";
 import {
     Item,
@@ -12,11 +8,7 @@ import {
     ItemGroup,
     ItemTitle,
 } from "@/components/ui/item";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
     ColorPicker,
     ColorPickerAlpha,
@@ -55,9 +47,7 @@ export const BackdropSetting = memo(function BackdropSetting() {
 });
 
 const ColorSelector = memo(function ColorSelector() {
-    const [color, set] = useSettingsStore(
-        useShallow((s) => [s.temp.backdrop.color, s.set]),
-    );
+    const [color, set] = useSettingsStore(useShallow((s) => [s.temp.backdrop.color, s.set]));
     const deferredColor = useDeferredValue(color);
 
     const onChange = useCallback(
@@ -71,18 +61,12 @@ const ColorSelector = memo(function ColorSelector() {
 
     return (
         <ItemActions>
-            <div
-                className="size-8 rounded-sm"
-                style={{ backgroundColor: deferredColor }}
-            />
+            <div className="size-8 rounded-sm" style={{ backgroundColor: deferredColor }} />
             <Popover>
                 <PopoverTrigger asChild>
                     <Button variant={"outline"}>Change</Button>
                 </PopoverTrigger>
-                <PopoverContent
-                    align="end"
-                    className="min-h-32 max-w-sm min-w-76"
-                >
+                <PopoverContent align="end" className="min-h-32 max-w-sm min-w-76">
                     <ColorPicker defaultValue={color} onChange={onChange}>
                         <ColorPickerSelection className="aspect-square w-full" />
                         <div className="flex items-center gap-4">

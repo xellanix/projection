@@ -34,10 +34,7 @@ const ProjectionItemTextSchema = ProjectionItemBaseSchema.extend({
     options: object({
         className: string().optional(),
         style: (
-            record(
-                string(),
-                union([string(), number()]),
-            ) as ZodType<React.CSSProperties>
+            record(string(), union([string(), number()])) as ZodType<React.CSSProperties>
         ).optional(),
     }).optional(),
 });
@@ -50,9 +47,10 @@ const JsonComponentSchema = object({
 
 const ProjectionItemComponentSchema = ProjectionItemBaseSchema.extend({
     type: literal("Component"),
-    content: union([JsonComponentSchema, string()]).transform(
-        converter,
-    ) as ZodType<React.ReactNode, zInfer<typeof JsonComponentSchema> | string>,
+    content: union([JsonComponentSchema, string()]).transform(converter) as ZodType<
+        React.ReactNode,
+        zInfer<typeof JsonComponentSchema> | string
+    >,
 });
 
 export const ProjectionItemSchema = union([

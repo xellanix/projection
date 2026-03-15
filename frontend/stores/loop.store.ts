@@ -98,13 +98,7 @@ export const useLoopStore = create<LoopStore>((set, get) => ({
     },
     syncWithProjection: (projection) => {
         const queue = queueFromProjection(projection);
-        if (
-            compareArrays(
-                queue,
-                get().queue,
-                (a, b) => a.group === b.group && a.item === b.item,
-            )
-        )
+        if (compareArrays(queue, get().queue, (a, b) => a.group === b.group && a.item === b.item))
             return;
 
         set({ queue });
@@ -116,6 +110,5 @@ export const useLoopStore = create<LoopStore>((set, get) => ({
         get().setQueueIndex(moved);
     },
     moveNext: (start) => get().moveIndex(1, start),
-    resetQueueIndex: (activator = "client") =>
-        set({ activator, queueIndex: -1 }),
+    resetQueueIndex: (activator = "client") => set({ activator, queueIndex: -1 }),
 }));

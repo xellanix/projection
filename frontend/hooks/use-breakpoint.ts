@@ -1,9 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-export function addBreakpointHandler(
-    media: string,
-    handler: (trigger: boolean) => void,
-) {
+export function addBreakpointHandler(media: string, handler: (trigger: boolean) => void) {
     const mql = window.matchMedia(media);
     const onChange = (ev: MediaQueryListEvent) => {
         handler(ev.matches);
@@ -18,10 +15,7 @@ export function useBreakpoint(initialMaxWidth: number) {
     const [isMobile, setIsMobile] = useState<boolean | undefined>(undefined);
 
     useEffect(() => {
-        return addBreakpointHandler(
-            `(max-width: ${initial.current - 1}px)`,
-            setIsMobile,
-        );
+        return addBreakpointHandler(`(max-width: ${initial.current - 1}px)`, setIsMobile);
     }, []);
 
     return !!isMobile;

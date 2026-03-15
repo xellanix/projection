@@ -141,9 +141,7 @@ export const AboutSetting = memo(function AboutSetting() {
                         <ItemTitle>
                             <span>
                                 Licensed under the{" "}
-                                <span className="text-brand">
-                                    BSD 2-Clause License
-                                </span>
+                                <span className="text-brand">BSD 2-Clause License</span>
                             </span>
                         </ItemTitle>
                     </ItemContent>
@@ -152,9 +150,7 @@ export const AboutSetting = memo(function AboutSetting() {
                             variant={"outline"}
                             aria-label="View License"
                             onClick={() =>
-                                openWeb(
-                                    "https://github.com/xellanix/projection/blob/main/LICENSE",
-                                )
+                                openWeb("https://github.com/xellanix/projection/blob/main/LICENSE")
                             }
                         >
                             View
@@ -166,10 +162,7 @@ export const AboutSetting = memo(function AboutSetting() {
             <ItemGroup className="*:not-first:rounded-t-none *:not-first:border-t-0 *:not-last:rounded-b-none">
                 <Item variant={"outline"}>
                     <ItemMedia>
-                        <HugeiconsIcon
-                            icon={SystemUpdate02Icon}
-                            strokeWidth={1.75}
-                        />
+                        <HugeiconsIcon icon={SystemUpdate02Icon} strokeWidth={1.75} />
                     </ItemMedia>
                     <ItemContent>
                         <ItemTitle>Check for updates</ItemTitle>
@@ -179,17 +172,15 @@ export const AboutSetting = memo(function AboutSetting() {
                 <Alert>
                     <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.75} />
                     <AlertDescription>
-                        Self-updating is not available in browser mode. You
-                        still need to use the utilities app (Windows) or run the
-                        commands manually to install the update.
+                        Self-updating is not available in browser mode. You still need to use the
+                        utilities app (Windows) or run the commands manually to install the update.
                     </AlertDescription>
                 </Alert>
                 <Alert>
                     <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.75} />
                     <AlertDescription>
-                        After the update is applied, you need to rebuild this
-                        project in order to see the changes when using
-                        production mode.
+                        After the update is applied, you need to rebuild this project in order to
+                        see the changes when using production mode.
                     </AlertDescription>
                 </Alert>
             </ItemGroup>
@@ -255,11 +246,7 @@ const UpdateActions = memo(function UpdateActions() {
         <ItemActions className="flex-wrap">
             {!loading && (
                 <div className="text-muted-foreground flex items-center gap-0.5">
-                    <HugeiconsIcon
-                        icon={ArrowUpRight01Icon}
-                        strokeWidth={2}
-                        className="size-4"
-                    />
+                    <HugeiconsIcon icon={ArrowUpRight01Icon} strokeWidth={2} className="size-4" />
                     <span>{data.version}</span>
                 </div>
             )}
@@ -267,9 +254,7 @@ const UpdateActions = memo(function UpdateActions() {
                 variant={"outline"}
                 aria-label="View Release Notes"
                 onClick={() =>
-                    openWeb(
-                        `https://github.com/xellanix/projection/releases/tag/v${data.version}`,
-                    )
+                    openWeb(`https://github.com/xellanix/projection/releases/tag/v${data.version}`)
                 }
             >
                 Release Notes
@@ -304,10 +289,7 @@ const DependencyItem = memo(function DependencyItem({
                         aria-label={`Go to ${name} Homepage`}
                         onClick={() => openWeb(website)}
                     >
-                        <HugeiconsIcon
-                            icon={ArrowUpRight01Icon}
-                            strokeWidth={2.25}
-                        />
+                        <HugeiconsIcon icon={ArrowUpRight01Icon} strokeWidth={2.25} />
                     </Button>
                 </ItemActions>
             )}

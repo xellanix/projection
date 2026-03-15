@@ -1,16 +1,6 @@
-import {
-    createControlStore,
-    useSidebarControl,
-    type ControlStore,
-} from "@/stores/control.store";
+import { createControlStore, useSidebarControl, type ControlStore } from "@/stores/control.store";
 import { useProjectionStore } from "@/stores/projection.store";
-import {
-    createContext,
-    useContext,
-    useEffect,
-    useState,
-    type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 
@@ -24,11 +14,7 @@ interface ControlProviderProps {
 export const ControlProvider = ({ children }: ControlProviderProps) => {
     const [store] = useState<ControlStoreApi>(() => createControlStore());
 
-    return (
-        <ControlContext.Provider value={store}>
-            {children}
-        </ControlContext.Provider>
-    );
+    return <ControlContext.Provider value={store}>{children}</ControlContext.Provider>;
 };
 
 export const useControl = <T,>(selector: (store: ControlStore) => T): T => {

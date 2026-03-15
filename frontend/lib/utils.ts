@@ -40,14 +40,7 @@ export const getAspectRatio = (width: number | Size, height?: number): Size => {
         h = width.height;
     }
 
-    if (
-        w === 0 ||
-        height === 0 ||
-        isNaN(w) ||
-        isNaN(h) ||
-        !isFinite(w) ||
-        !isFinite(h)
-    ) {
+    if (w === 0 || height === 0 || isNaN(w) || isNaN(h) || !isFinite(w) || !isFinite(h)) {
         return { width: 0, height: 0 };
     }
 
@@ -94,11 +87,7 @@ export function updateObjectFromSource<T extends object, U extends object>(
  *
  * @returns `true` if the arrays are equal, `false` otherwise.
  */
-export function compareArrays<T>(
-    prev: T[],
-    next: T[],
-    isValueEqual?: (a: T, b: T) => boolean,
-) {
+export function compareArrays<T>(prev: T[], next: T[], isValueEqual?: (a: T, b: T) => boolean) {
     if (prev === next) return true;
     if (prev.length !== next.length) return false;
 

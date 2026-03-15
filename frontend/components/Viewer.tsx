@@ -2,10 +2,7 @@ import { memo, useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
 
-import {
-    SlideBackgroundComposer,
-    SlideComposer,
-} from "@/components/SlideComposer";
+import { SlideBackgroundComposer, SlideComposer } from "@/components/SlideComposer";
 import { ContentResizer } from "@/components/core/ContentResizer";
 import { useSocketStore } from "@/stores/socket.store";
 import {
@@ -17,16 +14,10 @@ import {
     EmptyTitle,
 } from "@/components/ui/empty";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-    ModernTvIssueIcon,
-    VideoOffIcon,
-} from "@hugeicons-pro/core-stroke-rounded";
+import { ModernTvIssueIcon, VideoOffIcon } from "@hugeicons-pro/core-stroke-rounded";
 import { BrandHorizontal } from "@/components/core/Brand";
 import { Spinner } from "@/components/ui/spinner";
-import {
-    transitionVariants,
-    useTransitionStore,
-} from "@/stores/transition.store";
+import { transitionVariants, useTransitionStore } from "@/stores/transition.store";
 import { useShallow } from "zustand/react/shallow";
 import { LiveMessage } from "@/components/live-message/LiveMessage";
 import { useSettingsStore } from "@/stores/settings.store";
@@ -34,9 +25,7 @@ import { SPECIAL_INDEX } from "@/data/special-index";
 import { VideoPlayer } from "@/components/core/VideoPlayer";
 
 function BlackScreen() {
-    const contentResolution = useSettingsStore(
-        (s) => s.global.remap.contentResolution,
-    );
+    const contentResolution = useSettingsStore((s) => s.global.remap.contentResolution);
 
     return (
         <div
@@ -51,10 +40,7 @@ function BlackScreen() {
 
 export function Backcover() {
     const [contentResolution, color] = useSettingsStore(
-        useShallow((s) => [
-            s.global.remap.contentResolution,
-            s.global.backdrop.color,
-        ]),
+        useShallow((s) => [s.global.remap.contentResolution, s.global.backdrop.color]),
     );
 
     return (
@@ -77,20 +63,12 @@ function CoverScreen() {
         useShallow((s) => [
             s.global.cover.type,
             s.global.cover.content,
-            s.global.cover.scaleStrategy === "fit"
-                ? "object-contain"
-                : "object-cover",
+            s.global.cover.scaleStrategy === "fit" ? "object-contain" : "object-cover",
         ]),
     );
 
     if (type === "image") {
-        return (
-            <img
-                src={content}
-                alt="Cover Screen"
-                className={"size-full " + scaleStrategy}
-            />
-        );
+        return <img src={content} alt="Cover Screen" className={"size-full " + scaleStrategy} />;
     } else if (type === "video") {
         return (
             <VideoPlayer
@@ -147,11 +125,7 @@ const ScreenContent = memo(
 
         // If the index is special, but not stopped, the component ignores prop projection.
         // We return 'true' (props are equal) to skip re-render even if projection changed.
-        if (
-            next.currentIndex !== SPECIAL_INDEX.STOPPED &&
-            next.currentIndex < 0
-        )
-            return true;
+        if (next.currentIndex !== SPECIAL_INDEX.STOPPED && next.currentIndex < 0) return true;
 
         // Default case: The output depends on projection, so we check if it changed.
         return prev.currentProjection === next.currentProjection;
@@ -180,9 +154,7 @@ const ForegroundAnimator = memo(
                     variants={transitionVariants}
                     data-slot="foreground"
                 >
-                    <ContentResizer className="h-full w-full">
-                        {children}
-                    </ContentResizer>
+                    <ContentResizer className="h-full w-full">{children}</ContentResizer>
                 </motion.div>
             </AnimatePresence>
         );
@@ -216,9 +188,7 @@ export const Viewer = memo(function Viewer({
 }: ViewerProps) {
     const motionKey = buildFKey(currentProjection, currentIndex);
     const transition = useMemo(() => {
-        return useTransitionStore
-            .getState()
-            .getTransition(currentProjection, currentIndex);
+        return useTransitionStore.getState().getTransition(currentProjection, currentIndex);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [motionKey]);
 
@@ -230,10 +200,7 @@ export const Viewer = memo(function Viewer({
             />
 
             <ForegroundAnimator motionKey={motionKey} transition={transition}>
-                <ScreenContent
-                    currentProjection={currentProjection}
-                    currentIndex={currentIndex}
-                />
+                <ScreenContent currentProjection={currentProjection} currentIndex={currentIndex} />
             </ForegroundAnimator>
         </>
     );
@@ -251,11 +218,7 @@ export const OnScreenViewer = memo(function OnScreenViewer() {
     useEffect(() => {
         if (!socket) return;
 
-        const updateIndex = (
-            currentProjection: number,
-            _: number,
-            viewIndex: number,
-        ) => {
+        const updateIndex = (currentProjection: number, _: number, viewIndex: number) => {
             setCurrentProjection(currentProjection);
             setCurrentIndex(viewIndex);
             if (viewIndex === _) return;
@@ -309,9 +272,7 @@ export const ViewerContainer = memo(function ViewerContainer({
 }: {
     children: React.ReactNode;
 }) {
-    const contentResolution = useSettingsStore(
-        (s) => s.global.remap.contentResolution,
-    );
+    const contentResolution = useSettingsStore((s) => s.global.remap.contentResolution);
 
     return (
         <div
@@ -329,12 +290,8 @@ export const ViewerContainer = memo(function ViewerContainer({
 interface EmptySignalProps {
     variant?: "no-source" | "source-stopped";
 }
-const EmptySignal = memo(function EmptySignal({
-    variant = "no-source",
-}: EmptySignalProps) {
-    const contentResolution = useSettingsStore(
-        (s) => s.global.remap.contentResolution,
-    );
+const EmptySignal = memo(function EmptySignal({ variant = "no-source" }: EmptySignalProps) {
+    const contentResolution = useSettingsStore((s) => s.global.remap.contentResolution);
 
     return (
         <div className="dark text-foreground absolute h-full w-full bg-black">
@@ -355,9 +312,7 @@ const EmptySignal = memo(function EmptySignal({
                             >
                                 <HugeiconsIcon
                                     icon={
-                                        variant === "no-source"
-                                            ? ModernTvIssueIcon
-                                            : VideoOffIcon
+                                        variant === "no-source" ? ModernTvIssueIcon : VideoOffIcon
                                     }
                                 />
                             </EmptyMedia>

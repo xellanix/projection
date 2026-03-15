@@ -6,6 +6,8 @@ import type { Socket } from "socket.io-client";
 export async function processImportedFiles(files: File[], socket: Socket, onSuccess?: () => void) {
     for (const f of files) {
         if (f.name.endsWith(".json")) {
+            if (f.name.endsWith("settings.json")) continue;
+
             const text = await f.text();
             const res = jsonToProjection(text, true);
             if (res === null) continue;
@@ -39,6 +41,8 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
             // Read JSON entries, convert, and push to store/socket
             for (const [path, uint8Array] of Object.entries(unzipped)) {
                 if (path.endsWith(".json") && !path.startsWith("assets/")) {
+                    if (path.endsWith("settings.json")) continue;
+
                     const text = strFromU8(uint8Array);
                     const data = JSON.parse(text);
                     const projectionsData = Array.isArray(data) ? data : [data];

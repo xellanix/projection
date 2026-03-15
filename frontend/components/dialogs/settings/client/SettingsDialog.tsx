@@ -68,9 +68,7 @@ const DialogFooter2 = memo(function DialogFooter2() {
 const DialogSidebar = memo(function DialogSidebar() {
     const isLocal = useSocketStore((s) => s.isLocal);
 
-    const _navs = isLocal
-        ? NAVIGATION_LIST
-        : NAVIGATION_LIST.filter((n) => !n.isLocal);
+    const _navs = isLocal ? NAVIGATION_LIST : NAVIGATION_LIST.filter((n) => !n.isLocal);
 
     return (
         <Sidebar className="h-full">
@@ -126,9 +124,7 @@ const SidebarFrameBreadcrumb = memo(function SidebarFrameBreadcrumb() {
     const activePage = useSettingsStore((s) => s.temp.activePage);
 
     const breadcrumbs = useMemo(() => {
-        const arr = activePage.startsWith("f-")
-            ? FOOTER_LOOKUP
-            : NAVIGATION_LOOKUP;
+        const arr = activePage.startsWith("f-") ? FOOTER_LOOKUP : NAVIGATION_LOOKUP;
         const item = arr[activePage];
 
         if (!item) return ["Settings"];
@@ -157,9 +153,7 @@ const SidebarFrameContent = memo(function SidebarFrameContent() {
         useShallow((s) => {
             const activePage = s.temp.activePage;
 
-            const arr = activePage.startsWith("f-")
-                ? FOOTER_LOOKUP
-                : NAVIGATION_LOOKUP;
+            const arr = activePage.startsWith("f-") ? FOOTER_LOOKUP : NAVIGATION_LOOKUP;
             return arr[activePage]?.content;
         }),
     );
@@ -194,9 +188,4 @@ const BreadcrumbPair = memo(function BreadcrumbPair({
     );
 });
 
-export {
-    DialogFooter2,
-    DialogSidebar,
-    SidebarFrameBreadcrumb,
-    SidebarFrameContent,
-};
+export { DialogFooter2, DialogSidebar, SidebarFrameBreadcrumb, SidebarFrameContent };

@@ -21,11 +21,7 @@ interface ControlState extends BaseControlState {
 interface BaseControlActions {
     setCurrentIndex: Dispatcher<number>;
     setCurrentProjection: Dispatcher<number>;
-    setCurrent: (
-        projection: Setter<number>,
-        index: Setter<number>,
-        activator?: Activator,
-    ) => void;
+    setCurrent: (projection: Setter<number>, index: Setter<number>, activator?: Activator) => void;
 }
 
 interface ControlActions extends BaseControlActions {
@@ -63,8 +59,7 @@ const _setIndex = (i: Setter<number>, ci: number, m: number) =>
     loop(typeof i === "function" ? i(ci) : i, m);
 const _setProjection = (i: Setter<number>, s: ControlStore) =>
     loop(typeof i === "function" ? i(s.currentProjection) : i, s.maxProjection);
-const _maxIndex = (cp: number) =>
-    useProjectionStore.getState().getProjectionLength(cp) - 1;
+const _maxIndex = (cp: number) => useProjectionStore.getState().getProjectionLength(cp) - 1;
 
 export const createControlStore = () =>
     createStore<ControlStore>((set, get) => ({
@@ -79,19 +74,13 @@ export const createControlStore = () =>
                 activator,
                 currentIndex: _setIndex(i, s.currentIndex, s.maxIndex),
             })),
-        setCurrentProjection: (
-            i: Setter<number>,
-            activator: Activator = "client",
-        ) =>
+        setCurrentProjection: (i: Setter<number>, activator: Activator = "client") =>
             set((s) => {
                 const final = _setProjection(i, s);
                 return {
                     activator,
                     currentProjection: final,
-                    maxIndex:
-                        useProjectionStore
-                            .getState()
-                            .getProjectionLength(final) - 1,
+                    maxIndex: useProjectionStore.getState().getProjectionLength(final) - 1,
                 };
             }),
         setCurrent: (
@@ -117,8 +106,7 @@ export const createControlStore = () =>
             })),
         initMaxProjection: () =>
             set({
-                maxProjection:
-                    useProjectionStore.getState().projections.length - 1,
+                maxProjection: useProjectionStore.getState().projections.length - 1,
             }),
 
         incrementIndex: (activator: Activator = "client") =>
@@ -129,10 +117,7 @@ export const createControlStore = () =>
         incrementProjection: (activator: Activator = "client") =>
             set((s) => ({
                 activator,
-                currentProjection: loop(
-                    s.currentProjection + 1,
-                    s.maxProjection,
-                ),
+                currentProjection: loop(s.currentProjection + 1, s.maxProjection),
             })),
 
         decrementIndex: (activator: Activator = "client") =>
@@ -143,10 +128,7 @@ export const createControlStore = () =>
         decrementProjection: (activator: Activator = "client") =>
             set((s) => ({
                 activator,
-                currentProjection: loop(
-                    s.currentProjection - 1,
-                    s.maxProjection,
-                ),
+                currentProjection: loop(s.currentProjection - 1, s.maxProjection),
             })),
 
         moveIndex:
@@ -161,10 +143,7 @@ export const createControlStore = () =>
             () =>
                 set((s) => ({
                     activator,
-                    currentProjection: loop(
-                        s.currentProjection + delta,
-                        s.maxProjection,
-                    ),
+                    currentProjection: loop(s.currentProjection + delta, s.maxProjection),
                 })),
 
         emit: <T extends [unknown, ...unknown[]]>(
@@ -191,17 +170,13 @@ export const useSidebarControl = create<BaseControlStore>((set) => ({
             const final = typeof i === "function" ? i(s.currentProjection) : i;
             return {
                 currentProjection: final,
-                maxIndex:
-                    useProjectionStore.getState().getProjectionLength(final) -
-                    1,
+                maxIndex: useProjectionStore.getState().getProjectionLength(final) - 1,
             };
         }),
     setCurrent: (projection: Setter<number>, index: Setter<number>) =>
         set((s) => {
             const currentProjection =
-                typeof projection === "function"
-                    ? projection(s.currentProjection)
-                    : projection;
+                typeof projection === "function" ? projection(s.currentProjection) : projection;
             const maxIndex = _maxIndex(currentProjection);
             return {
                 currentIndex: _setIndex(index, s.currentIndex, maxIndex),

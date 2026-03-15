@@ -1,8 +1,4 @@
-import {
-    FrameContainer,
-    FrameDescription,
-    FrameHeader,
-} from "@/components/SettingsFrame";
+import { FrameContainer, FrameDescription, FrameHeader } from "@/components/SettingsFrame";
 import {
     Empty,
     EmptyContent,
@@ -27,11 +23,7 @@ import { openWeb } from "@/lib/utils";
 import { useRemoteStore } from "@/stores/remote.store";
 import { useSocketStore } from "@/stores/socket.store";
 import type { TunnelStatus } from "@/types/tunnel";
-import {
-    Alert02Icon,
-    HotspotOfflineIcon,
-    Idea01Icon,
-} from "@hugeicons-pro/core-stroke-rounded";
+import { Alert02Icon, HotspotOfflineIcon, Idea01Icon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
 import QRCode from "react-qr-code";
 import { memo, useCallback, useEffect, useState } from "react";
@@ -53,20 +45,14 @@ export const RemoteSetting = memo(function RemoteSetting() {
         <FrameContainer>
             <FrameHeader>
                 <FrameDescription>
-                    Manage the projection remote control. With this remote
-                    control, you can control the live projection from anywhere,
-                    as long as you are connected to the network.
+                    Manage the projection remote control. With this remote control, you can control
+                    the live projection from anywhere, as long as you are connected to the network.
                 </FrameDescription>
                 <Alert>
                     <HugeiconsIcon icon={Idea01Icon} strokeWidth={1.75} />
                     <AlertDescription>
-                        <span>
-                            Any changes made to these settings will be saved
-                            automatically.
-                        </span>
-                        <span>
-                            The Cancel button will not cancel these settings.
-                        </span>
+                        <span>Any changes made to these settings will be saved automatically.</span>
+                        <span>The Cancel button will not cancel these settings.</span>
                     </AlertDescription>
                 </Alert>
             </FrameHeader>
@@ -75,26 +61,21 @@ export const RemoteSetting = memo(function RemoteSetting() {
                 <Item variant={"outline"}>
                     <ItemContent>
                         <ItemTitle>Remote Control</ItemTitle>
-                        <ItemDescription>
-                            Enable or disable remote control.
-                        </ItemDescription>
+                        <ItemDescription>Enable or disable remote control.</ItemDescription>
                     </ItemContent>
                     <RemoteAction />
                 </Item>
                 <Alert>
                     <HugeiconsIcon icon={Idea01Icon} strokeWidth={1.75} />
                     <AlertDescription>
-                        Once you enable the remote control, the system will
-                        generate a temporary remote control link. It will expire
-                        when the remote control is disabled, and a new temporary
-                        link will be generated when it is re-enabled.
+                        Once you enable the remote control, the system will generate a temporary
+                        remote control link. It will expire when the remote control is disabled, and
+                        a new temporary link will be generated when it is re-enabled.
                     </AlertDescription>
                 </Alert>
                 <Alert>
                     <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.75} />
-                    <AlertDescription>
-                        Only share the link with trusted users.
-                    </AlertDescription>
+                    <AlertDescription>Only share the link with trusted users.</AlertDescription>
                 </Alert>
             </ItemGroup>
 
@@ -144,11 +125,7 @@ const RemoteAction = memo(function RemoteAction() {
             <span className="text-muted-foreground">
                 {loading ? "Loading..." : isActive ? "Enabled" : "Disabled"}
             </span>
-            <Switch
-                checked={isActive}
-                onCheckedChange={changeCurrent}
-                disabled={loading}
-            />
+            <Switch checked={isActive} onCheckedChange={changeCurrent} disabled={loading} />
         </ItemActions>
     );
 });
@@ -170,12 +147,7 @@ const OpenRemoteLink = memo(function RemoteLinkAction() {
     }, []);
 
     return (
-        <Button
-            variant={"outline"}
-            size={"sm"}
-            aria-label="Open Generated Link"
-            onClick={open}
-        >
+        <Button variant={"outline"} size={"sm"} aria-label="Open Generated Link" onClick={open}>
             Open
         </Button>
     );
@@ -224,9 +196,7 @@ const RemoteLinkCard = memo(function RemoteLinkCard({ url }: { url: string }) {
             <EmptyHeader className="w-full max-w-3xl">
                 <EmptyDescription>Remote Control Link</EmptyDescription>
                 <div className="relative flex h-7 w-full flex-col justify-center">
-                    <EmptyTitle className="absolute w-full truncate">
-                        {url ?? ""}
-                    </EmptyTitle>
+                    <EmptyTitle className="absolute w-full truncate">{url ?? ""}</EmptyTitle>
                 </div>
                 <div className="flex w-full flex-row items-center justify-center gap-2 py-2">
                     <OpenRemoteLink />

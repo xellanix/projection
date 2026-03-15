@@ -47,17 +47,15 @@ export const EcoModeButton = memo(function EcoModeButton() {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Enabling Eco Mode will prevent you from viewing all
-                        video content through this controller page. Enabling
-                        this mode will not affect the output display.
+                        Enabling Eco Mode will prevent you from viewing all video content through
+                        this controller page. Enabling this mode will not affect the output display.
                     </AlertDialogDescription>
                     <Alert className="mt-4">
                         <HugeiconsIcon icon={Idea01Icon} strokeWidth={1.75} />
                         <AlertTitle>Tip</AlertTitle>
                         <AlertDescription>
-                            It is highly recommended to enable this mode on less
-                            capable devices so that available resources can be
-                            focused on the output display.
+                            It is highly recommended to enable this mode on less capable devices so
+                            that available resources can be focused on the output display.
                         </AlertDescription>
                     </Alert>
                 </AlertDialogHeader>
@@ -65,11 +63,9 @@ export const EcoModeButton = memo(function EcoModeButton() {
                     <AlertDialogCancel onClick={() => setOpenAlert(false)}>
                         Cancel
                     </AlertDialogCancel>
-                    <AlertDialogAction onClick={continueEco}>
-                        Continue
-                    </AlertDialogAction>
+                    <AlertDialogAction onClick={continueEco}>Continue</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
     );
-})
+});

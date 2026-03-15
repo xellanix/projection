@@ -1,8 +1,4 @@
-import {
-    FrameContainer,
-    FrameDescription,
-    FrameHeader,
-} from "@/components/SettingsFrame";
+import { FrameContainer, FrameDescription, FrameHeader } from "@/components/SettingsFrame";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import {
@@ -22,8 +18,8 @@ export const CoverSetting = memo(function CoverSetting() {
         <FrameContainer>
             <FrameHeader>
                 <FrameDescription>
-                    Configure the projection cover screen regarding the content
-                    to be displayed and the behavior to be applied.
+                    Configure the projection cover screen regarding the content to be displayed and
+                    the behavior to be applied.
                 </FrameDescription>
             </FrameHeader>
 
@@ -35,9 +31,7 @@ export const CoverSetting = memo(function CoverSetting() {
                 <Item variant={"outline"}>
                     <ItemContent>
                         <ItemTitle>Cover Image</ItemTitle>
-                        <ItemDescription>
-                            The image to be used as the cover screen.
-                        </ItemDescription>
+                        <ItemDescription>The image to be used as the cover screen.</ItemDescription>
                     </ItemContent>
                     <ItemActions>
                         <CoverUpload />
@@ -47,8 +41,7 @@ export const CoverSetting = memo(function CoverSetting() {
                     <ItemContent>
                         <ItemTitle>Scaling Strategy</ItemTitle>
                         <ItemDescription>
-                            The scaling strategy for the cover screen onto the
-                            projection.
+                            The scaling strategy for the cover screen onto the projection.
                         </ItemDescription>
                     </ItemContent>
                     <ScaleAction />
@@ -64,9 +57,7 @@ const Preview = memo(function Preview() {
             s.temp.cover.type,
             s.temp.cover.content,
             "size-full " +
-                (s.temp.cover.scaleStrategy === "fit"
-                    ? "object-contain"
-                    : "object-cover"),
+                (s.temp.cover.scaleStrategy === "fit" ? "object-contain" : "object-cover"),
         ]),
     );
 
@@ -75,14 +66,7 @@ const Preview = memo(function Preview() {
             {type === "image" ? (
                 <img src={content} alt="Cover Screen" className={cn} />
             ) : type === "video" ? (
-                <video
-                    src={content}
-                    muted
-                    loop
-                    autoPlay
-                    preload="auto"
-                    className={cn}
-                />
+                <video src={content} muted loop autoPlay preload="auto" className={cn} />
             ) : null}
         </ItemContent>
     );

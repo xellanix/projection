@@ -1,14 +1,7 @@
 import { Button } from "@/components/ui/button";
-import {
-    ResizableHandle,
-    ResizablePanel,
-    ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { useBreakpoint, addBreakpointHandler } from "@/hooks/use-breakpoint";
-import {
-    ArrowLeft01Icon,
-    ArrowRight01Icon,
-} from "@hugeicons-pro/core-stroke-rounded";
+import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
 import React, { memo, useEffect, useRef, useState } from "react";
 import { type ImperativePanelHandle } from "react-resizable-panels";
@@ -29,36 +22,30 @@ export const SidebarPanel = memo(function SidebarPanel({
     };
 
     useEffect(() => {
-        const breakpoint1 = addBreakpointHandler(
-            `screen and (width <= 640px)`,
-            (trigger) => {
-                if (!sidePanel.current) return;
+        const breakpoint1 = addBreakpointHandler(`screen and (width <= 640px)`, (trigger) => {
+            if (!sidePanel.current) return;
 
-                if (trigger) {
-                    if (window.innerWidth <= 480) return;
-                    sidePanel.current.resize(40);
-                } else {
-                    sidePanel.current.resize(20);
-                    sidePanel.current.expand();
-                }
-            },
-        );
+            if (trigger) {
+                if (window.innerWidth <= 480) return;
+                sidePanel.current.resize(40);
+            } else {
+                sidePanel.current.resize(20);
+                sidePanel.current.expand();
+            }
+        });
 
-        const breakpoint2 = addBreakpointHandler(
-            `screen and (width <= 480px)`,
-            (trigger) => {
-                if (!sidePanel.current) return;
+        const breakpoint2 = addBreakpointHandler(`screen and (width <= 480px)`, (trigger) => {
+            if (!sidePanel.current) return;
 
-                if (trigger) {
-                    sidePanel.current.resize(100);
-                    sidePanel.current.collapse();
-                } else {
-                    if (window.innerWidth > 640) return;
-                    sidePanel.current.resize(40);
-                    sidePanel.current.expand();
-                }
-            },
-        );
+            if (trigger) {
+                sidePanel.current.resize(100);
+                sidePanel.current.collapse();
+            } else {
+                if (window.innerWidth > 640) return;
+                sidePanel.current.resize(40);
+                sidePanel.current.expand();
+            }
+        });
 
         return () => {
             breakpoint1();
@@ -105,10 +92,7 @@ interface ControlPanelProps {
     preview: React.ReactNode;
     onScreen: React.ReactNode;
 }
-export const ControlPanel = memo(function ControlPanel({
-    preview,
-    onScreen,
-}: ControlPanelProps) {
+export const ControlPanel = memo(function ControlPanel({ preview, onScreen }: ControlPanelProps) {
     const isMobile = useBreakpoint(640);
     const onScreenPanel = useRef<ImperativePanelHandle>(null);
 
@@ -126,11 +110,7 @@ export const ControlPanel = memo(function ControlPanel({
                 {preview}
             </ResizablePanel>
             <ResizableHandle />
-            <ResizablePanel
-                ref={onScreenPanel}
-                defaultSize={40}
-                className="@container/screen"
-            >
+            <ResizablePanel ref={onScreenPanel} defaultSize={40} className="@container/screen">
                 {onScreen}
             </ResizablePanel>
         </ResizablePanelGroup>
