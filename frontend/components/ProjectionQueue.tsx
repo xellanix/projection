@@ -34,7 +34,7 @@ import { useGroupStore } from "@/stores/group.store";
 import { processImportedFiles } from "@/lib/import";
 
 const createItemName = (c: ProjectionItem) => {
-    return c.name || (c.type !== "Component" && c.content) || "Untitled";
+    return c.name?.trim() || (c.type !== "Component" && c.content.trim()) || "Untitled";
 };
 
 export const PreviewQueueReorder = memo(function PreviewQueueReorder() {
@@ -264,10 +264,12 @@ const QueueItem = memo(function QueueItem({
     i: number;
     handleClick: (i: number, j: number) => () => void;
 }) {
+    const title = p.title.trim() || "Untitled Master";
+
     return (
         <SortableItem value={p.id} asChild>
             <Collapsible className="group/collapsible flex flex-col">
-                <QueueCollapsibleItem i={i} title={p.title} handleClick={handleClick} />
+                <QueueCollapsibleItem i={i} title={title} handleClick={handleClick} />
                 <CollapsibleContent className="flex flex-col">
                     {p.contents.map((c, j) => (
                         <Button
@@ -361,7 +363,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
         const globalIndices: number[] = [];
         for (const item of contents) {
             const { group, ...rest } = item;
-            const key = group ?? "Contents";
+            const key = group?.trim() || "Contents";
 
             if (!groups[key]) {
                 groups[key] = [];
