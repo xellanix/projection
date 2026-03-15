@@ -41,7 +41,7 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
             // Read JSON entries, convert, and push to store/socket
             for (const [path, uint8Array] of Object.entries(unzipped)) {
                 if (path.endsWith(".json") && !path.startsWith("assets/")) {
-                    if (f.name.endsWith("settings.json")) continue;
+                    if (path.endsWith("settings.json")) continue;
 
                     const text = strFromU8(uint8Array);
                     const data = JSON.parse(text);
