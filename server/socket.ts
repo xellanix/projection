@@ -15,7 +15,7 @@ const isProd = process.env.NODE_ENV === "production";
 
 let currentIndex = 0;
 let currentProjection = 0;
-let projections: (number | string)[] = [];
+let projections: unknown[] = [];
 const specialScreen: SettingsLocalScreenState = {
     black: false,
     clear: false,
@@ -259,7 +259,7 @@ io.on("connection", (socket) => {
         socket.broadcast.emit("server:queue:reorder", from, to);
     });
     // "client:queue:add"
-    socket.on("client:queue:add", (data: string) => {
+    socket.on("client:queue:add", (data: unknown) => {
         projections.push(data);
         socket.broadcast.emit("server:queue:add", data);
     });

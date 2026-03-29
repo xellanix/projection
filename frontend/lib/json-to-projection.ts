@@ -7,8 +7,8 @@ const replaceUrl = (url: string) => {
     return url;
 };
 
-export const jsonToProjection = (json: string, rewriteAssets: boolean = false) => {
-    const p: unknown = JSON.parse(json);
+export const jsonToProjection = (json: unknown, rewriteAssets: boolean = false) => {
+    const p: unknown = typeof json === "string" ? JSON.parse(json) : json;
     const result = ProjectionMasterSchema.safeParse(p);
 
     if (!result.success) {

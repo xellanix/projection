@@ -1,17 +1,21 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { generateId } from "@/lib/utils";
+import { addSchema, BaseComponentSchema, type BaseComponent } from "@/schemas/converter";
 import type * as CT from "@/types/converter";
+import type { ZodType } from "zod";
 
 const spanConverter = ({ key, props: { children, ...props } = {} }: CT.SpanComponent) => {
     const processedChildren: React.ReactNode[] = [];
 
     if (children) {
-        let i = 0;
+        if (!Array.isArray(children)) {
+            children = [children];
+        }
+
         for (const child of children) {
             if (typeof child !== "string") {
-                child.key = i++;
+                if (typeof child.key === "string") child.key = child.key.trim() || undefined;
+                child.key ??= generateId();
             }
             const converted = converter(child);
             processedChildren.push(converted);
@@ -30,20 +34,24 @@ const brConverter = ({ key, props = {} }: CT.BrComponent) => {
 };
 
 const converterMap: CT.ConverterMap = {
+    $null: () => null,
     span: spanConverter,
     br: brConverter,
     $string: (content: string) => content,
 };
 
 export const converter = (content: CT.AllowedComponents) => {
-    const key = typeof content === "string" ? "$string" : content.type;
+    let key = typeof content === "string" ? "$string" : content.type;
+    if (!converterMap[key]) key = "$null";
 
     return (converterMap[key] as (arg: CT.AllowedComponents) => CT.ConverterReturn)(content);
 };
 
-export const addConverter = <T extends string, P extends object = {}, O extends boolean = true>(
+export const addConverter = <T extends string, S extends ZodType>(
     type: T,
-    converter: (content: CT.BaseComponent<T, P, O>) => CT.ConverterReturn,
+    schema: S,
+    converter: (content: BaseComponent<T, S>) => CT.ConverterReturn,
 ) => {
+    addSchema(BaseComponentSchema(type, schema));
     converterMap[type] = converter as any;
 };
