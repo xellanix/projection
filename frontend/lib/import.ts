@@ -16,7 +16,7 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
                 const res = jsonToProjection(_p, true);
                 if (res === null) continue;
                 useProjectionStore.getState().addProjection(res);
-                socket.emit("client:queue:add", JSON.stringify(_p));
+                socket.emit("client:queue:add", _p);
             }
         } else if (f.name.endsWith(".zip")) {
             const arrayBuffer = await f.arrayBuffer();
@@ -58,7 +58,7 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
                             const res = jsonToProjection(_p, true);
                             if (res === null) continue;
                             useProjectionStore.getState().addProjection(res);
-                            socket.emit("client:queue:add", JSON.stringify(_p));
+                            socket.emit("client:queue:add", _p);
                         }
                     }
                 }

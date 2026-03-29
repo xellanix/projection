@@ -91,14 +91,14 @@ export const ProjectionMutator = memo(function ProjectionMutator() {
     useEffect(() => {
         if (!socket) return;
 
-        const init = (data: (string | number)[]) => {
+        const init = (data: unknown[]) => {
             const length = data.length;
             const result = new Array<ProjectionMasterWithId>(length);
 
             for (let i = 0; i < length; i++) {
-                const indice = data[i]!;
+                const indice = data[i];
 
-                if (typeof indice === "string") {
+                if (typeof indice !== "number") {
                     const res = jsonToProjection(indice, true);
                     if (res === null) continue;
                     result[i] = generateId(res);
@@ -111,7 +111,7 @@ export const ProjectionMutator = memo(function ProjectionMutator() {
             useProjectionStore.getState().setProjectionsWithIds(result);
         };
 
-        const add = (data: string) => {
+        const add = (data: unknown) => {
             const res = jsonToProjection(data, true);
             if (res === null) return;
             useProjectionStore.getState().addProjection(res);
