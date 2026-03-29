@@ -49,7 +49,7 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
 
                     for (const p of projectionsData) {
                         const pText = JSON.stringify(p);
-                        const res = jsonToProjection(pText, true);
+                        const res = jsonToProjection(p, true);
                         if (res === null) continue;
 
                         useProjectionStore.getState().addProjection(res);
