@@ -106,3 +106,14 @@ export function compareArrays<T>(prev: T[], next: T[], isValueEqual?: (a: T, b: 
 export function openWeb(url: string) {
     window.open(url, "_blank", "noopener,noreferrer");
 }
+
+/**
+ * Generates a random ID.
+ *
+ * @returns A random ID.
+ */
+export function generateId() {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+
+    return Date.now().toString() + Math.random().toString(36).substring(2);
+}

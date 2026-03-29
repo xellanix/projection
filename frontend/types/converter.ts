@@ -1,31 +1,24 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { ProjectionMaster } from "@/types";
-import type { JSX } from "react";
+import {
+    type BrComponentSchema,
+    type SpanComponentSchema,
+    type BaseComponent,
+} from "@/schemas/converter";
+import type { infer as zInfer } from "zod";
 
-type ComponentProps<P> = P & { className?: string };
-type BaseComponent<T extends string, P extends object = {}, O extends boolean = true> = {
-    type: T;
-    key?: React.Key | null | undefined;
-} & (O extends true ? { props?: ComponentProps<P> } : { props: ComponentProps<P> });
-
-type SpanComponent = BaseComponent<"span", { children?: AllowedComponents[] }>;
-type BrComponent = BaseComponent<"br">;
+type SpanComponent = zInfer<typeof SpanComponentSchema>;
+type BrComponent = zInfer<typeof BrComponentSchema>;
 
 type ConverterMap = {
-    span: (content: SpanComponent) => JSX.Element;
-    br: (content: BrComponent) => JSX.Element;
+    span: (content: SpanComponent) => ConverterReturn;
+    br: (content: BrComponent) => ConverterReturn;
     $string: (content: string) => string;
     [key: string]:
         | ((content: string) => ConverterReturn)
-        | ((content: BaseComponent<any>) => JSX.Element);
+        | ((content: BaseComponent<any, any>) => ConverterReturn);
 };
 type AllowedComponents = Parameters<ConverterMap[keyof ConverterMap]>[0];
 type ConverterReturn = React.ReactNode;
-
-type ProjectionMasterJSON = Omit<ProjectionMaster, "contents"> & {
-    contents: AllowedComponents[];
-};
 
 export type {
     BaseComponent,
@@ -34,5 +27,4 @@ export type {
     AllowedComponents,
     ConverterMap,
     ConverterReturn,
-    ProjectionMasterJSON,
 };

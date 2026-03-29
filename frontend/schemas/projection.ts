@@ -1,18 +1,7 @@
 import { converter } from "@/lib/component-converter";
+import { AllowedComponentSchemas } from "@/schemas/converter";
 import type { BackgroundUnion } from "@/types";
-import {
-    union,
-    string,
-    object,
-    record,
-    number,
-    bigint,
-    unknown,
-    type ZodType,
-    literal,
-    type infer as zInfer,
-    array,
-} from "zod";
+import { union, string, object, record, number, type ZodType, literal, array } from "zod";
 
 export const TransitionSchema = union([literal("fade"), literal("none")]);
 
@@ -39,18 +28,9 @@ const ProjectionItemTextSchema = ProjectionItemBaseSchema.extend({
     }).optional(),
 });
 
-const JsonComponentSchema = object({
-    type: string(),
-    key: union([string(), number(), bigint()]).nullish(),
-    props: record(string(), unknown()).optional(),
-});
-
 const ProjectionItemComponentSchema = ProjectionItemBaseSchema.extend({
     type: literal("Component"),
-    content: union([JsonComponentSchema, string()]).transform(converter) as ZodType<
-        React.ReactNode,
-        zInfer<typeof JsonComponentSchema> | string
-    >,
+    content: AllowedComponentSchemas().transform(converter) as ZodType<React.ReactNode>,
 });
 
 export const ProjectionItemSchema = union([
