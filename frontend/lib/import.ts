@@ -9,11 +9,15 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
             if (f.name.endsWith("settings.json")) continue;
 
             const text = await f.text();
-            const res = jsonToProjection(text, true);
-            if (res === null) continue;
+            const p: unknown = JSON.parse(text);
+            const ps: unknown[] = Array.isArray(p) ? p : [p];
 
-            useProjectionStore.getState().addProjection(res);
-            socket.emit("client:queue:add", text);
+            for (const _p of ps) {
+                const res = jsonToProjection(_p, true);
+                if (res === null) continue;
+                useProjectionStore.getState().addProjection(res);
+                socket.emit("client:queue:add", JSON.stringify(_p));
+            }
         } else if (f.name.endsWith(".zip")) {
             const arrayBuffer = await f.arrayBuffer();
             const unzipped = unzipSync(new Uint8Array(arrayBuffer));
@@ -48,12 +52,14 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
                     const projectionsData = Array.isArray(data) ? data : [data];
 
                     for (const p of projectionsData) {
-                        const pText = JSON.stringify(p);
-                        const res = jsonToProjection(p, true);
-                        if (res === null) continue;
+                        const ps: unknown[] = Array.isArray(p) ? p : [p];
 
-                        useProjectionStore.getState().addProjection(res);
-                        socket.emit("client:queue:add", pText);
+                        for (const _p of ps) {
+                            const res = jsonToProjection(_p, true);
+                            if (res === null) continue;
+                            useProjectionStore.getState().addProjection(res);
+                            socket.emit("client:queue:add", JSON.stringify(_p));
+                        }
                     }
                 }
             }
