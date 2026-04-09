@@ -2,6 +2,7 @@ import { unzipSync, strFromU8 } from "fflate";
 import { jsonToProjection } from "@/lib/json-to-projection";
 import { useProjectionStore } from "@/stores/projection.store";
 import type { Socket } from "socket.io-client";
+import { toast } from "sonner";
 
 export async function processImportedFiles(files: File[], socket: Socket, onSuccess?: () => void) {
     for (const f of files) {
@@ -35,10 +36,30 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
 
                     const fileBlob = new Blob([uint8Array as unknown as BlobPart], { type: mime });
 
-                    await fetch(`/api/assets/${encodeURIComponent(safeName)}`, {
-                        method: "POST",
-                        body: fileBlob,
-                    });
+                    try {
+                        const response = await fetch(
+                            `/api/assets/${encodeURIComponent(safeName)}`,
+                            {
+                                method: "POST",
+                                body: fileBlob,
+                            },
+                        );
+
+                        if (!response.ok) {
+                            const errorMsg = `Failed to upload ${safeName}: ${response.statusText}`;
+                            toast.error(errorMsg);
+                            console.error(errorMsg);
+                        }
+                    } catch (error) {
+                        let err: string;
+                        if (error instanceof Error) err = error.message;
+                        else if (typeof error === "string") err = error;
+                        else err = JSON.stringify(error);
+
+                        const errorMsg = `Network error while uploading ${safeName}: ${err}`;
+                        toast.error(errorMsg);
+                        console.error(errorMsg);
+                    }
                 }
             }
 
