@@ -9,7 +9,7 @@ const TEMP_ASSETS_DIR = join(
 
 // Allowed file extensions for projections
 const ALLOWED_EXTENSIONS = [".mp4", ".webm", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB limit
+export const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB limit
 
 export async function importRequest(req: Request, path: string) {
     if (req.method === "POST" || req.method === "PUT") {

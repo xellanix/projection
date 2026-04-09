@@ -2,7 +2,7 @@ import { serve, file } from "bun";
 import { dirname, join } from "path";
 import open from "open";
 import { engine, SERVER_PORT, FRONTEND_PORT } from "$/socket";
-import { cleanupAssets, importRequest } from "$/import";
+import { cleanupAssets, importRequest, MAX_FILE_SIZE } from "$/import";
 
 const isProd = process.env.NODE_ENV === "production";
 const FRONTEND_DIST = join(dirname(process.execPath), "frontend");
@@ -21,8 +21,14 @@ console.log("│ Xellanix Projection            │");
 console.log("├────────────────────────────────┤");
 
 serve({
-    port: SERVER_PORT,
+    ...socketEngineHandler,
 
+    // Set it at the end of the server configuration options
+    // so that all custom settings are fully applied
+    // and not overridden by the configuration
+    // from the libraries being used.
+    port: SERVER_PORT,
+    maxRequestBodySize: MAX_FILE_SIZE,
     async fetch(req, server) {
         const url = new URL(req.url);
         const path = url.pathname;
@@ -65,8 +71,6 @@ serve({
 
         return new Response(requestedFile);
     },
-
-    ...socketEngineHandler,
 });
 
 console.log(`│ Server: http://localhost:${SERVER_PORT} │`);
