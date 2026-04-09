@@ -1,4 +1,4 @@
-import { cp } from "node:fs/promises";
+import { cp, rm } from "node:fs/promises";
 import { readdirSync, statSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { zipSync } from "fflate";
@@ -55,13 +55,14 @@ const result = await Bun.build({
 if (result.success) {
     console.log("✅ Build successful: ", result.outputs[0].path);
 
-    const sourceDir = "./dist/frontend";
-    const destDir = "./dist/server/frontend";
-    const serverDir = "./dist/server";
+    const sourceDir = "./dist/frontend" as const;
+    const serverDir = "./dist/server" as const;
+    const destDir = `${serverDir}/frontend` as const;
 
     const zipDest = `./dist/projection-v${version.version}.zip`;
 
     try {
+        await rm(destDir, { recursive: true, force: true });
         await cp(sourceDir, destDir, { recursive: true, force: true });
         console.log("✅ Successfully copied frontend folder.");
 
