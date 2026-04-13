@@ -21,7 +21,9 @@ export async function importRequest(req: Request, path: string) {
         // Extension Validation: Prevent executable/script uploads
         const ext = extname(filename).toLowerCase();
         if (!ALLOWED_EXTENSIONS.includes(ext)) {
-            return new Response("Forbidden: File type not allowed", { status: 403 });
+            return new Response(`Unsupported Image Format: File type (${ext}) not allowed`, {
+                status: 415,
+            });
         }
 
         // Memory/DoS Protection: Reject massive payloads early
