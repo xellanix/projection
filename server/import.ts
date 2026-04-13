@@ -8,7 +8,7 @@ const TEMP_ASSETS_DIR = join(
 );
 
 // Allowed file extensions for projections
-const ALLOWED_EXTENSIONS = [".mp4", ".webm", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
+const ALLOWED_EXTENSIONS = [".mp4", ".webm", ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
 export const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB limit
 
 export async function importRequest(req: Request, path: string) {
@@ -21,7 +21,9 @@ export async function importRequest(req: Request, path: string) {
         // Extension Validation: Prevent executable/script uploads
         const ext = extname(filename).toLowerCase();
         if (!ALLOWED_EXTENSIONS.includes(ext)) {
-            return new Response("Forbidden: File type not allowed", { status: 403 });
+            return new Response(`Unsupported Image Format: File type (${ext}) not allowed`, {
+                status: 415,
+            });
         }
 
         // Memory/DoS Protection: Reject massive payloads early
