@@ -5,6 +5,8 @@ import type { Socket } from "socket.io-client";
 import { toast } from "sonner";
 
 export async function processImportedFiles(files: File[], socket: Socket, onSuccess?: () => void) {
+    let total = 0,
+        processed = 0;
     for (const f of files) {
         if (f.name.endsWith(".json")) {
             if (f.name.endsWith("settings.json")) continue;
@@ -26,6 +28,7 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
             // Upload Assets via raw buffer body
             for (const [path, uint8Array] of Object.entries(unzipped)) {
                 if (path.startsWith("assets/") && uint8Array.length > 0) {
+                    total++;
                     const safeName = path.replace("assets/", "");
                     let mime = "application/octet-stream";
 
@@ -50,7 +53,14 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
                             const errorMsg = `Failed to upload ${safeName}: ${response.statusText}`;
                             toast.error(errorMsg);
                             console.error(errorMsg);
+                            continue;
+                        } else if (response.ok && response.headers.has("x-sanitized")) {
+                            const msg = `Uploaded successfully with sanitized content. It might not work as expected. Filename: ${safeName}`;
+                            toast.warning(msg);
+                            console.warn(msg);
                         }
+
+                        processed++;
                     } catch (error) {
                         let err: string;
                         if (error instanceof Error) err = error.message;
@@ -83,6 +93,18 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
                             socket.emit("client:queue:add", _p);
                         }
                     }
+                }
+            }
+
+            if (total < 1) {
+                toast.info("No assets found in the projection file.");
+            } else if (total > 0) {
+                if (processed === total) {
+                    toast.success(`Uploaded all assets successfully. Total: ${total} assets.`);
+                } else if (processed > 0) {
+                    toast.success(`Uploaded ${processed}/${total} assets successfully.`);
+                } else {
+                    toast.error(`Failed to upload any assets. Total: ${total} assets.`);
                 }
             }
         }
