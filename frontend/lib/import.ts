@@ -50,6 +50,10 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
                             const errorMsg = `Failed to upload ${safeName}: ${response.statusText}`;
                             toast.error(errorMsg);
                             console.error(errorMsg);
+                        } else if (response.ok && response.headers.has("x-sanitized")) {
+                            const msg = `Uploaded successfully with sanitized content. It might not work as expected. Filename: ${safeName}`;
+                            toast.warning(msg);
+                            console.warn(msg);
                         }
                     } catch (error) {
                         let err: string;
