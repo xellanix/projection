@@ -34,9 +34,9 @@ jobs:
 
       - name: Extract Version Bump from PR
         id: extract_bump
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          PR_BODY="${{ github.event.pull_request.body }}"
-          
           # Find '## Version Bump', skip empty lines, grab the first non-empty line containing the version
           BUMP=$(echo "$PR_BODY" | awk '/## Version Bump/{getline; while($0 ~ /^[[:space:]]*$/) getline; print; exit}' | tr -d '\r' | xargs)
           
