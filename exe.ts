@@ -27,6 +27,35 @@ function getFilesForFflate(dir: string, baseDir = "") {
     return filesObj;
 }
 
+async function copyFrontend(serverDir: string) {
+    const sourceDir = "./dist/frontend" as const;
+    const destDir = `${serverDir}/frontend`;
+
+    try {
+        await rm(destDir, { recursive: true, force: true });
+        await cp(sourceDir, destDir, { recursive: true, force: true });
+        console.log("✅ Successfully copied frontend folder.");
+    } catch (err) {
+        console.error("❌ Failed to copy frontend folder: ", err);
+    }
+}
+
+function packOutputs(serverDir: string) {
+    const zipDest = `./dist/projection-v${version.version}.zip`;
+
+    try {
+        console.log("📦 Zipping the release package with fflate...");
+        const archiveFiles = getFilesForFflate(serverDir);
+
+        // zipSync creates the zip archive in memory (level 9 is max compression)
+        const zippedData = zipSync(archiveFiles, { level: 9 });
+        writeFileSync(zipDest, zippedData);
+        console.log(`✅ Successfully created release archive at: ${join(process.cwd(), zipDest)}`);
+    } catch (err) {
+        console.error("❌ Failed to zip the release package: ", err);
+    }
+}
+
 const jsdomPatchPlugin: Bun.BunPlugin = {
     name: "jsdom-patch",
     setup: (build) => {
@@ -162,27 +191,10 @@ const result = await Bun.build({
 if (result.success) {
     console.log("✅ Build successful: ", result.outputs[0].path);
 
-    const sourceDir = "./dist/frontend" as const;
     const serverDir = "./dist/server" as const;
-    const destDir = `${serverDir}/frontend` as const;
 
-    const zipDest = `./dist/projection-v${version.version}.zip`;
-
-    try {
-        await rm(destDir, { recursive: true, force: true });
-        await cp(sourceDir, destDir, { recursive: true, force: true });
-        console.log("✅ Successfully copied frontend folder.");
-
-        console.log("📦 Zipping the release package with fflate...");
-        const archiveFiles = getFilesForFflate(serverDir);
-
-        // zipSync creates the zip archive in memory (level 9 is max compression)
-        const zippedData = zipSync(archiveFiles, { level: 9 });
-        writeFileSync(zipDest, zippedData);
-        console.log(`✅ Successfully created release archive at: ${join(process.cwd(), zipDest)}`);
-    } catch (err) {
-        console.error("❌ Failed to copy frontend folder: ", err);
-    }
+    await copyFrontend(serverDir);
+    packOutputs(serverDir);
 } else {
     console.error("❌ Build failed: ", result.logs);
 }
