@@ -32,11 +32,13 @@ async function copyFrontend(serverDir: string) {
     const destDir = `${serverDir}/frontend`;
 
     try {
+        console.log("─".repeat(Math.min(130, process.stdout.columns)));
+        console.log("⌛ Copying frontend folder...");
         await rm(destDir, { recursive: true, force: true });
         await cp(sourceDir, destDir, { recursive: true, force: true });
         console.log("✅ Successfully copied frontend folder.");
     } catch (err) {
-        console.error("❌ Failed to copy frontend folder: ", err);
+        console.error("❌ Failed to copy frontend folder:", err);
     }
 }
 
@@ -44,15 +46,16 @@ function packOutputs(serverDir: string) {
     const zipDest = `./dist/projection-v${version.version}.zip`;
 
     try {
+        console.log("─".repeat(Math.min(130, process.stdout.columns)));
         console.log("📦 Zipping the release package with fflate...");
         const archiveFiles = getFilesForFflate(serverDir);
 
         // zipSync creates the zip archive in memory (level 9 is max compression)
         const zippedData = zipSync(archiveFiles, { level: 9 });
         writeFileSync(zipDest, zippedData);
-        console.log(`✅ Successfully created release archive at: ${join(process.cwd(), zipDest)}`);
+        console.log("✅ Successfully created release archive:", join(process.cwd(), zipDest));
     } catch (err) {
-        console.error("❌ Failed to zip the release package: ", err);
+        console.error("❌ Failed to zip the release package:", err);
     }
 }
 
@@ -147,7 +150,7 @@ const cssoTreeVersionPatchPlugin: Bun.BunPlugin = {
 
         build.onLoad({ filter }, async (args) => {
             const packageName = args.path.match(filter)?.[1];
-            console.log(`Patching ${packageName} version file:`, args.path);
+            console.log(`Patching ${packageName} file:`, args.path);
 
             const packageJsonPath = join(dirname(args.path), "../package.json");
             const packageJson = JSON.parse(await readFile(packageJsonPath, "utf8"));
@@ -159,6 +162,9 @@ const cssoTreeVersionPatchPlugin: Bun.BunPlugin = {
         });
     },
 };
+
+console.log("⌛ Patching and building server...");
+console.log("");
 
 const result = await Bun.build({
     entrypoints: ["./server/index.ts"],
@@ -189,14 +195,15 @@ const result = await Bun.build({
 });
 
 if (result.success) {
-    console.log("✅ Build successful: ", result.outputs[0].path);
+    console.log("");
+    console.log("✅ Successfully built server:", result.outputs[0].path);
 
     const serverDir = "./dist/server" as const;
 
     await copyFrontend(serverDir);
     packOutputs(serverDir);
 } else {
-    console.error("❌ Build failed: ", result.logs);
+    console.error("❌ Failed to build server:", result.logs);
 }
 
 export {};
