@@ -6,7 +6,7 @@ import version from "./frontend/data/version.json";
 import { readFile } from "node:fs/promises";
 import packageJson from "./package.json";
 
-// 1. Helper to recursively read files into fflate's expected Uint8Array format
+// Helper to recursively read files into fflate's expected Uint8Array format
 function getFilesForFflate(dir: string, baseDir = "") {
     const filesObj: Record<string, Uint8Array> = {};
     const files = readdirSync(dir);
@@ -47,15 +47,17 @@ function packOutputs(serverDir: string) {
 
     try {
         console.log("─".repeat(Math.min(130, process.stdout.columns)));
-        console.log("📦 Zipping the release package with fflate...");
+        console.log("⌛ Preparing the release package...");
         const archiveFiles = getFilesForFflate(serverDir);
+        console.log("✅ Preparing finished.");
 
+        console.log("📦 Creating the release package...");
         // zipSync creates the zip archive in memory (level 9 is max compression)
         const zippedData = zipSync(archiveFiles, { level: 9 });
         writeFileSync(zipDest, zippedData);
-        console.log("✅ Successfully created release archive:", join(process.cwd(), zipDest));
+        console.log("✅ Successfully created the release package:", join(process.cwd(), zipDest));
     } catch (err) {
-        console.error("❌ Failed to zip the release package:", err);
+        console.error("❌ Failed to create the release package:", err);
     }
 }
 
