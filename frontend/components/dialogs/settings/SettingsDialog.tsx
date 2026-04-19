@@ -3,7 +3,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { memo } from "react";
-import { SettingsSync } from "@/components/stores/SettingsSync";
 import {
     DialogFooter2,
     DialogSidebar,
@@ -14,7 +13,6 @@ import {
 export const SettingsDialog = memo(function SettingsDialog() {
     return (
         <DialogContent className="overflow-hidden p-0 max-md:size-full max-md:!max-w-full md:h-[80dvh] md:max-h-[80dvh] md:max-w-[80dvw] lg:max-w-[90dvw]">
-            <SettingsSync />
             <div className="flex flex-col overflow-hidden">
                 <DialogTitle className="absolute opacity-0 select-none">Settings</DialogTitle>
                 <SidebarProvider className="size-full min-h-0">

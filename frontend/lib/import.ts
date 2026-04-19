@@ -3,18 +3,33 @@ import { jsonToProjection } from "@/lib/json-to-projection";
 import { useProjectionStore } from "@/stores/projection.store";
 import type { Socket } from "socket.io-client";
 import { toast } from "sonner";
+import { useImportSettingsStore } from "@/stores/import.settings.store";
+
+export function replaceUrl(url: string) {
+    if (url.startsWith("asset://")) {
+        return `/api/assets/${encodeURIComponent(url.replace("asset://", ""))}`;
+    }
+    return url;
+}
+
+function importSettings(data: unknown) {
+    useImportSettingsStore.getState().tryToImport(data);
+}
 
 export async function processImportedFiles(files: File[], socket: Socket, onSuccess?: () => void) {
     let total = 0,
         processed = 0;
     for (const f of files) {
         if (f.name.endsWith(".json")) {
-            if (f.name.endsWith("settings.json")) continue;
-
             const text = await f.text();
             const p: unknown = JSON.parse(text);
-            const ps: unknown[] = Array.isArray(p) ? p : [p];
 
+            if (f.name.endsWith("settings.json")) {
+                importSettings(p);
+                continue;
+            }
+
+            const ps: unknown[] = Array.isArray(p) ? p : [p];
             for (const _p of ps) {
                 const res = jsonToProjection(_p, true);
                 if (res === null) continue;
@@ -77,12 +92,15 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
             // Read JSON entries, convert, and push to store/socket
             for (const [path, uint8Array] of Object.entries(unzipped)) {
                 if (path.endsWith(".json") && !path.startsWith("assets/")) {
-                    if (path.endsWith("settings.json")) continue;
-
                     const text = strFromU8(uint8Array);
                     const data = JSON.parse(text);
-                    const projectionsData = Array.isArray(data) ? data : [data];
 
+                    if (path.endsWith("settings.json")) {
+                        importSettings(data);
+                        continue;
+                    }
+
+                    const projectionsData = Array.isArray(data) ? data : [data];
                     for (const p of projectionsData) {
                         const ps: unknown[] = Array.isArray(p) ? p : [p];
 

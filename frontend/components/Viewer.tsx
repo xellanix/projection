@@ -23,6 +23,7 @@ import { LiveMessage } from "@/components/live-message/LiveMessage";
 import { useSettingsStore } from "@/stores/settings.store";
 import { SPECIAL_INDEX } from "@/data/special-index";
 import { VideoPlayer } from "@/components/core/VideoPlayer";
+import { replaceUrl } from "@/lib/import";
 
 function BlackScreen() {
     const contentResolution = useSettingsStore((s) => s.global.remap.contentResolution);
@@ -62,7 +63,7 @@ function CoverScreen() {
     const [type, content, scaleStrategy] = useSettingsStore(
         useShallow((s) => [
             s.global.cover.type,
-            s.global.cover.content,
+            replaceUrl(s.global.cover.content),
             s.global.cover.scaleStrategy === "fit" ? "object-contain" : "object-cover",
         ]),
     );

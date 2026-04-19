@@ -4,7 +4,6 @@ import type {
     SettingsLocalMessageState,
     SettingsLocalScreenState,
 } from "@/types/settings";
-import type { WritableDraft } from "immer";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
@@ -23,10 +22,6 @@ interface SettingsState {
 }
 
 interface SettingsActions {
-    set: <T = SettingsStore, P = T | Partial<T>>(
-        partial: P | ((state: WritableDraft<T>) => void),
-    ) => void;
-
     setScreen: (partial: Partial<SettingsLocalScreenState>) => void;
 
     setMessage: (message: string, isOpen: boolean) => void;
@@ -58,8 +53,6 @@ export const useSettingsStore = create<SettingsStore>()(
             ...defaultSettings,
             activePage: "1",
         },
-
-        set,
 
         setScreen: (partial) => {
             set((s) => {

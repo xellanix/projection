@@ -12,11 +12,13 @@ import { OnScreenViewer } from "@/components/Viewer";
 import { ControlProvider, MaxProjectionSync, SidebarControlSync } from "@/context/ControlContext";
 import { PreviewProvider } from "@/context/PreviewContext";
 import { GlobalKeyboardListener } from "@/hooks/use-shortcuts";
+import { SettingsSync } from "@/components/stores/SettingsSync";
 
 export default function HomePage() {
     return (
         <main className="flex h-dvh min-h-192 w-dvw flex-row">
             <ControllerRegister />
+            <SettingsSync />
             <ProjectionMutator />
             <GlobalKeyboardListener />
 

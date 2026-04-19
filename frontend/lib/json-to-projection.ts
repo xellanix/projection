@@ -1,11 +1,5 @@
 import { ProjectionMasterSchema } from "@/schemas/projection";
-
-const replaceUrl = (url: string) => {
-    if (url.startsWith("asset://")) {
-        return `/api/assets/${encodeURIComponent(url.replace("asset://", ""))}`;
-    }
-    return url;
-};
+import { replaceUrl } from "@/lib/import";
 
 export const jsonToProjection = (json: unknown, rewriteAssets: boolean = false) => {
     const p: unknown = typeof json === "string" ? JSON.parse(json) : json;

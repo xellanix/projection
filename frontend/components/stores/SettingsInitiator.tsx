@@ -4,14 +4,13 @@ import type { AppSettings } from "@/types/settings";
 import { memo, useEffect } from "react";
 
 function SettingsInitiatorR() {
-    const set = useSettingsStore((s) => s.set);
     const socket = useSocketStore(({ socket }) => socket);
 
     useEffect(() => {
         if (!socket) return;
 
         const update = (_settings: AppSettings) => {
-            set((s) => {
+            useSettingsStore.setState((s) => {
                 s.global = _settings;
                 s.globalActivator = "server";
                 Object.assign(s.temp, s.global);
@@ -24,7 +23,7 @@ function SettingsInitiatorR() {
         return () => {
             socket.off("server:settings:init", update);
         };
-    }, [set, socket]);
+    }, [socket]);
 
     return null;
 }
