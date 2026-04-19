@@ -344,7 +344,7 @@ const EmptySignal = memo(function EmptySignal({ variant = "no-source" }: EmptySi
                             </EmptyContent>
                         )}
                         <div className="flex w-full flex-1 flex-col items-center justify-center">
-                            <BrandHorizontal className="aspect-[131/28] h-auto w-full max-w-32" />
+                            <BrandHorizontal className="aspect-131/28 h-auto w-full max-w-32" />
                         </div>
                     </Empty>
                 </div>

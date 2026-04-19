@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { type IconSvgElement } from "@hugeicons/react";
 import {
     Image02Icon,

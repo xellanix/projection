@@ -15,7 +15,7 @@ export const Sidebar = memo(function Sidebar() {
             </div>
 
             <div className="mx-3 mt-2 flex flex-col items-center px-2 lg:px-4">
-                <BrandHorizontal className="aspect-[131/28] h-auto w-full max-w-33" />
+                <BrandHorizontal className="aspect-131/28 h-auto w-full max-w-33" />
             </div>
         </div>
     );

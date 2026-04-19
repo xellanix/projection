@@ -347,7 +347,7 @@ export const PreviewSlideController = memo(function PreviewSlideController() {
                 <Viewer currentProjection={currentProjection} currentIndex={currentIndex} />
             </ViewerContainer>
 
-            <div className="flex w-full flex-row justify-between gap-2 *:last:@container/slide-manip lg:gap-4 @max-[14rem]:flex-col *:@max-[14rem]:w-full *:@max-[14rem]:!justify-center *:last:@[14rem]:flex-1 *:last:@[14rem]:basis-18 *:last:@[14rem]:justify-end">
+            <div className="flex w-full flex-row justify-between gap-2 *:last:@container/slide-manip lg:gap-4 @max-[14rem]:flex-col *:@max-[14rem]:w-full *:@max-[14rem]:justify-center! *:last:@[14rem]:flex-1 *:last:@[14rem]:basis-18 *:last:@[14rem]:justify-end">
                 <SlideController />
 
                 <PreviewManipulator

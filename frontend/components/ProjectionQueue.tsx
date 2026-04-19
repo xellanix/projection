@@ -243,7 +243,7 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
 
             <div className="flex-1 overflow-hidden">
                 <Sortable value={projections} onMove={onMoved} getItemValue={(i) => i.id}>
-                    <ScrollArea className="h-full w-full px-2 lg:px-4 [&>div>div]:!flex [&>div>div]:!flex-col">
+                    <ScrollArea className="h-full w-full px-2 lg:px-4 [&>div>div]:flex! [&>div>div]:flex-col!">
                         <SortableContent>
                             {projections.map((p, i) => (
                                 <QueueItem key={p.id} p={p} i={i} handleClick={handleClick} />
@@ -475,7 +475,7 @@ const ContentQueueItem = memo(function ContentQueueItem({
             ref={element}
             className={cn(
                 "relative justify-start overflow-hidden rounded-md text-left text-ellipsis",
-                "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-[1] before:w-0.75 before:rounded-full before:transition-all before:duration-133 before:ease-out",
+                "before:bg-brand before:absolute before:top-full before:bottom-full before:left-0 before:z-1 before:w-0.75 before:rounded-full before:transition-all before:duration-133 before:ease-out",
                 {
                     "bg-accent/80 text-accent-foreground before:top-2.5 before:bottom-2.5":
                         isActive && isPreview,
