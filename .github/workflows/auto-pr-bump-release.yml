@@ -20,10 +20,13 @@ env:
   VERSION_FILE_PATH: "frontend/data/version.json"
 
 jobs:
-  bump_and_release:
+  version_bump:
     # Only run if the PR was actually merged (not just closed without merging)
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.apply_bump.outputs.version }}
+      skip: ${{ steps.extract_bump.outputs.skip }}
 
     steps:
       - name: Checkout latest main
@@ -138,9 +141,55 @@ jobs:
           # Rebase right before pushing to resolve extreme race conditions
           git pull --rebase origin main
           git push origin main
+  
+  build_app:
+    needs: version_bump
+    if: needs.version_bump.outputs.skip == 'false'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.12
+
+      - name: Install Dependencies
+        shell: bash
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        run: bun install
+
+      - name: Build App
+        shell: bash
+        run: |
+          bun run build
+
+          # Rename the package for the specific platform
+          VERSION="${{ needs.version_bump.outputs.new_version }}"
+          mv "./dist/projection-v${VERSION}.zip" "./dist/projection-v${VERSION}-windows-x64.zip"
+      
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-binary
+          path: ./dist/*.zip
+
+  create_release:
+    needs: [version_bump, build_app]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-binary
+          path: ./dist
+      
       - name: Fetch PR Commits for Changelog
-        if: steps.extract_bump.outputs.skip == 'false'
         id: pr_changelog
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -158,14 +207,14 @@ jobs:
           echo "$EOF" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        if: steps.extract_bump.outputs.skip == 'false'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ steps.apply_bump.outputs.version }}
+          VERSION: ${{ needs.version_bump.outputs.new_version }}
         run: |
           echo "Creating release v$VERSION..."
-          
+
           gh release create "v$VERSION" \
             --title "v$VERSION" \
             --notes "${{ steps.pr_changelog.outputs.logs }}" \
-            --target main
+            --target main \
+            ./dist/*.zip
