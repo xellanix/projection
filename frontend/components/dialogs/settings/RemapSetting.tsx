@@ -191,7 +191,7 @@ const baseHandleResize = (ev: InputChangeEvent) => {
     const k1 = name.startsWith("screen-") ? "screenResolution" : "contentResolution";
     const k2: keyof Size = name.endsWith("width") ? "width" : "height";
 
-    useSettingsStore.getState().set(({ temp }) => {
+    useSettingsStore.setState(({ temp }) => {
         temp.remap[k1][k2] = value;
     });
 };
@@ -423,7 +423,7 @@ const ResolutionOptionsItem = memo(function ResolutionOptionsItem(
     const selected = useCallback(() => {
         const k1 = props.type === "screen" ? "screenResolution" : "contentResolution";
 
-        useSettingsStore.getState().set(({ temp }) => {
+        useSettingsStore.setState(({ temp }) => {
             temp.remap[k1].width = props.width;
             temp.remap[k1].height = props.height;
         });
@@ -454,17 +454,13 @@ const RatioText = memo(function RatioText(props: Size) {
 });
 
 const ScaleAction = memo(function ScaleAction() {
-    const [strategy, set] = useSettingsStore(
-        useShallow((s) => [s.temp.remap.scaleStrategy, s.set]),
-    );
+    const strategy = useSettingsStore((s) => s.temp.remap.scaleStrategy);
 
-    const onChange = useCallback(
-        (v: string) =>
-            set((s) => {
-                s.temp.remap.scaleStrategy = v as typeof strategy;
-            }),
-        [set],
-    );
+    const onChange = useCallback((v: string) => {
+        useSettingsStore.setState((s) => {
+            s.temp.remap.scaleStrategy = v as typeof strategy;
+        });
+    }, []);
 
     return (
         <ItemActions>

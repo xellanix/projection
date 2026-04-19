@@ -34,22 +34,20 @@ import {
 import { useSocketStore } from "@/stores/socket.store";
 
 const DialogFooter2 = memo(function DialogFooter2() {
-    const set = useSettingsStore((s) => s.set);
-
     const cancel = useCallback(() => {
-        set((s) => {
+        useSettingsStore.setState((s) => {
             Object.assign(s.temp, s.global);
         });
-    }, [set]);
+    }, []);
 
     const save = useCallback(() => {
-        set((s) => {
+        useSettingsStore.setState((s) => {
             updateObjectFromSource(s.global, s.temp);
             s.globalActivator = "client";
             s.global.__internal.id = uuidv4();
         });
         toast.success("Settings saved.");
-    }, [set]);
+    }, []);
 
     return (
         <DialogFooter className="flex-row justify-end p-6">

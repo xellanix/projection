@@ -78,17 +78,13 @@ const CoverUpload = memo(function CoverUpload() {
 });
 
 const ScaleAction = memo(function ScaleAction() {
-    const [strategy, set] = useSettingsStore(
-        useShallow((s) => [s.temp.cover.scaleStrategy, s.set]),
-    );
+    const strategy = useSettingsStore((s) => s.temp.cover.scaleStrategy);
 
-    const onChange = useCallback(
-        (v: string) =>
-            set((s) => {
-                s.temp.cover.scaleStrategy = v as typeof strategy;
-            }),
-        [set],
-    );
+    const onChange = useCallback((v: string) => {
+        useSettingsStore.setState((s) => {
+            s.temp.cover.scaleStrategy = v as typeof strategy;
+        });
+    }, []);
 
     return (
         <ItemActions>

@@ -5,7 +5,6 @@ import type { AppSettings } from "@/types/settings";
 import { memo, useEffect } from "react";
 
 export const SettingsSync = memo(function SettingsSync() {
-    const set = useSettingsStore((s) => s.set);
     const socket = useSocketStore(({ socket }) => socket);
     const viewOnly = useViewOnly();
 
@@ -13,7 +12,7 @@ export const SettingsSync = memo(function SettingsSync() {
         if (!socket) return;
 
         const update = (_settings: AppSettings) => {
-            set((s) => {
+            useSettingsStore.setState((s) => {
                 s.global = _settings;
                 s.globalActivator = "server";
                 Object.assign(s.temp, s.global);
@@ -25,7 +24,7 @@ export const SettingsSync = memo(function SettingsSync() {
         return () => {
             socket.off("server:settings:update", update);
         };
-    }, [set, socket]);
+    }, [socket]);
 
     if (!viewOnly.isViewOnly) {
         return <SettingSender />;

@@ -20,7 +20,6 @@ import {
 import { useSettingsStore } from "@/stores/settings.store";
 import Color from "color";
 import { memo, useCallback, useDeferredValue } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 export const BackdropSetting = memo(function BackdropSetting() {
     return (
@@ -47,17 +46,14 @@ export const BackdropSetting = memo(function BackdropSetting() {
 });
 
 const ColorSelector = memo(function ColorSelector() {
-    const [color, set] = useSettingsStore(useShallow((s) => [s.temp.backdrop.color, s.set]));
+    const color = useSettingsStore((s) => s.temp.backdrop.color);
     const deferredColor = useDeferredValue(color);
 
-    const onChange = useCallback(
-        (value: Parameters<typeof Color.rgb>[0]) => {
-            set((s) => {
-                s.temp.backdrop.color = Color(value).hexa();
-            });
-        },
-        [set],
-    );
+    const onChange = useCallback((value: Parameters<typeof Color.rgb>[0]) => {
+        useSettingsStore.setState((s) => {
+            s.temp.backdrop.color = Color(value).hexa();
+        });
+    }, []);
 
     return (
         <ItemActions>

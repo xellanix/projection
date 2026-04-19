@@ -27,7 +27,7 @@ export const SettingsDialog = memo(function SettingsDialog() {
     const importSettings = useCallback(() => {
         const data = useImportSettingsStore.getState().data;
         if (data) {
-            useSettingsStore.getState().set((s) => {
+            useSettingsStore.setState((s) => {
                 s.global = data;
                 s.globalActivator = "client";
                 Object.assign(s.temp, s.global);
