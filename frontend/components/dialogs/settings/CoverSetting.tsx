@@ -9,6 +9,7 @@ import {
     ItemGroup,
     ItemTitle,
 } from "@/components/ui/item";
+import { replaceUrl } from "@/lib/import";
 import { useSettingsStore } from "@/stores/settings.store";
 import { memo, useCallback } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -55,7 +56,7 @@ const Preview = memo(function Preview() {
     const [type, content, cn] = useSettingsStore(
         useShallow((s) => [
             s.temp.cover.type,
-            s.temp.cover.content,
+            replaceUrl(s.temp.cover.content),
             "size-full " +
                 (s.temp.cover.scaleStrategy === "fit" ? "object-contain" : "object-cover"),
         ]),

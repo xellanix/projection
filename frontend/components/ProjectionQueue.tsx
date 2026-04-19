@@ -32,6 +32,7 @@ import { useFilePicker } from "use-file-picker";
 import { jsonToProjection } from "@/lib/json-to-projection";
 import { useGroupStore } from "@/stores/group.store";
 import { processImportedFiles } from "@/lib/import";
+import { SettingsDialog } from "@/components/dialogs/import/SettingsDialog";
 
 const createItemName = (c: ProjectionItem) => {
     return c.name?.trim() || (c.type !== "Component" && c.content.trim()) || "Untitled";
@@ -237,6 +238,7 @@ export const ProjectionQueue = memo(function ProjectionQueue() {
             <div className="flex flex-row items-center justify-between gap-2 px-4 max-lg:pr-2">
                 <span className="text-lg font-semibold">Queue</span>
                 <AddButton />
+                <SettingsDialog />
             </div>
 
             <div className="flex-1 overflow-hidden">
