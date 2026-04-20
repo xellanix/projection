@@ -171,7 +171,7 @@ const Preview = memo(function Preview() {
                 Output
             </div>
             <div
-                className="absolute rounded-sm border-2 border-amber-500 bg-[repeating-linear-gradient(45deg,_color-mix(in_oklab,var(--color-amber-200)_80%,transparent)_0,_color-mix(in_oklab,var(--color-amber-200)_80%,transparent)_2px,_transparent_2px,_transparent_22px)] px-1 font-medium text-amber-500/80 transition-all duration-133 ease-out"
+                className="absolute rounded-sm border-2 border-amber-500 bg-[repeating-linear-gradient(45deg,color-mix(in_oklab,var(--color-amber-200)_80%,transparent)_0,color-mix(in_oklab,var(--color-amber-200)_80%,transparent)_2px,transparent_2px,transparent_22px)] px-1 font-medium text-amber-500/80 transition-all duration-133 ease-out"
                 style={{
                     width: `${screenSize.width}px`,
                     height: `${screenSize.height}px`,
@@ -375,7 +375,7 @@ const ResolutionDropdown = memo(function ResolutionDropdown({
                     <Button
                         variant={"outline"}
                         size={"icon"}
-                        className="!px-2 py-0"
+                        className="px-2! py-0"
                         aria-label="More Options"
                     >
                         <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2.5} />

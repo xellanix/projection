@@ -26,6 +26,7 @@ import {
 } from "@hugeicons-pro/core-stroke-rounded";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useCallback, useState } from "react";
+import { dependencies, devDependencies } from "#/package.json";
 
 type Dependency = {
     name: string;
@@ -36,66 +37,96 @@ type Dependency = {
 
 const deps: Dependency[] = [
     {
+        name: "Bun",
+        version: devDependencies["@types/bun"],
+        license: "MIT",
+        website: "https://bun.com/",
+    },
+    {
+        name: "Cloudflare Tunnel client",
+        license: "Apache-2.0",
+        website: "https://github.com/cloudflare/cloudflared/",
+    },
+    {
+        name: "DOMPurify",
+        version: dependencies["dompurify"],
+        license: "MPL-2.0 OR Apache-2.0",
+        website: "https://github.com/cure53/DOMPurify/",
+    },
+    {
+        name: "fflate",
+        version: dependencies["fflate"],
+        license: "MIT",
+        website: "https://101arrowz.github.io/fflate/",
+    },
+    {
         name: "Hugeicons",
         license: "Hugeicons Pro",
         website: "https://hugeicons.com/",
     },
     {
-        name: "Radix UI",
+        name: "jsdom",
+        version: dependencies["jsdom"],
         license: "MIT",
-        website: "https://www.radix-ui.com/",
+        website: "https://github.com/jsdom/jsdom/",
     },
     {
         name: "Motion",
-        version: "12.34.0-alpha.0",
+        version: dependencies["motion"],
         license: "MIT",
         website: "https://motion.dev/",
     },
     {
-        name: "Next.js",
-        version: "16.1.6",
+        name: "Radix UI",
+        version: dependencies["radix-ui"],
         license: "MIT",
-        website: "https://nextjs.org/",
-    },
-    {
-        name: "PostCSS",
-        version: "^8.5.3",
-        license: "MIT",
-        website: "https://postcss.org/",
+        website: "https://www.radix-ui.com/",
     },
     {
         name: "React",
-        version: "19.2.4",
+        version: dependencies["react"],
         license: "MIT",
         website: "https://react.dev/",
     },
     {
+        name: "react-qr-code",
+        version: dependencies["react-qr-code"],
+        license: "MIT",
+        website: "https://github.com/rosskhanas/react-qr-code",
+    },
+    {
         name: "Socket.IO",
-        version: "^4.8.1",
+        version: dependencies["socket.io"],
         license: "MIT",
         website: "https://socket.io/",
     },
     {
         name: "Tailwind CSS",
-        version: "^4.0.15",
+        version: devDependencies["tailwindcss"],
         license: "MIT",
         website: "https://tailwindcss.com/",
     },
     {
         name: "TypeScript",
-        version: "^5.8.2",
+        version: devDependencies["typescript"],
         license: "Apache-2.0",
         website: "https://www.typescriptlang.org/",
     },
     {
+        name: "Vite",
+        version: devDependencies["vite"],
+        license: "MIT",
+        website: "https://vite.dev/",
+    },
+    {
         name: "Zod",
-        version: "4.2.1",
+        version: dependencies["zod"],
         license: "MIT",
         website: "https://zod.dev/",
     },
     {
         name: "Zustand",
-        version: "^5.0.8",
+        version: dependencies["zustand"],
         license: "MIT",
         website: "https://zustand.docs.pmnd.rs/",
     },
@@ -107,7 +138,7 @@ export const AboutSetting = memo(function AboutSetting() {
             <ItemGroup className="*:not-first:rounded-t-none *:not-first:border-t-0 *:not-last:rounded-b-none">
                 <Item variant={"outline"}>
                     <ItemHeader>
-                        <BrandHorizontal className="aspect-[131/28] h-auto w-full max-w-48" />
+                        <BrandHorizontal className="aspect-131/28 h-auto w-full max-w-48" />
                     </ItemHeader>
                     <ItemContent>
                         <ItemTitle>Xellanix Projection</ItemTitle>
@@ -119,7 +150,7 @@ export const AboutSetting = memo(function AboutSetting() {
                                 href={`https://github.com/xellanix/projection/commit/${version.commit}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-0.5 !no-underline"
+                                className="inline-flex items-center gap-0.5 no-underline!"
                             >
                                 {version.commit.slice(0, 7)}
                                 <HugeiconsIcon

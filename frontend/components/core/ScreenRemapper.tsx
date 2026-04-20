@@ -13,7 +13,7 @@ function RawRemapperContainerR({
     return (
         <div
             ref={ref}
-            className="relative flex h-[1080px] w-[1920px] items-center justify-center overflow-hidden"
+            className="relative flex h-270 w-480 items-center justify-center overflow-hidden"
             data-slot="screen-remapper"
         >
             {children}

@@ -46,7 +46,7 @@ export const IconButton = memo(function IconButton({
                 <Button
                     variant={"outline"}
                     size={text ? "default" : "icon"}
-                    className="!px-2 py-0"
+                    className="px-2! py-0"
                     aria-label={label}
                     onClick={onClick}
                 >

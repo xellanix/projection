@@ -168,6 +168,18 @@ const cssoTreeVersionPatchPlugin: Bun.BunPlugin = {
 console.log("⌛ Patching and building server...");
 console.log("");
 
+import { parseArgs } from "util";
+const { values } = parseArgs({
+    args: Bun.argv,
+    options: {
+        "no-release": {
+            type: "boolean",
+        },
+    },
+    strict: true,
+    allowPositionals: true,
+});
+
 const result = await Bun.build({
     entrypoints: ["./server/index.ts"],
     compile: {
@@ -203,7 +215,7 @@ if (result.success) {
     const serverDir = "./dist/server" as const;
 
     await copyFrontend(serverDir);
-    packOutputs(serverDir);
+    if (!values["no-release"]) packOutputs(serverDir);
 } else {
     console.error("❌ Failed to build server:", result.logs);
 }

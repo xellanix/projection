@@ -12,7 +12,7 @@ import {
 
 export const SettingsDialog = memo(function SettingsDialog() {
     return (
-        <DialogContent className="overflow-hidden p-0 max-md:size-full max-md:!max-w-full md:h-[80dvh] md:max-h-[80dvh] md:max-w-[80dvw] lg:max-w-[90dvw]">
+        <DialogContent className="overflow-hidden p-0 max-md:size-full max-md:max-w-full! md:h-[80dvh] md:max-h-[80dvh] md:max-w-[80dvw] lg:max-w-[90dvw]">
             <div className="flex flex-col overflow-hidden">
                 <DialogTitle className="absolute opacity-0 select-none">Settings</DialogTitle>
                 <SidebarProvider className="size-full min-h-0">

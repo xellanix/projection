@@ -72,7 +72,7 @@ export const SidebarPanel = memo(function SidebarPanel({
                     variant={"outline"}
                     size={"icon-sm"}
                     tabIndex={-1}
-                    className="bg-sidebar hover:bg-sidebar-accent active:bg-sidebar-accent hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground absolute top-2 left-full z-10 rounded-l-none border-l-0 !px-2 py-0 lg:top-4"
+                    className="bg-sidebar hover:bg-sidebar-accent active:bg-sidebar-accent hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground absolute top-2 left-full z-10 rounded-l-none border-l-0 px-2! py-0 lg:top-4"
                     aria-label="Collapse"
                     onClick={onToggle}
                 >

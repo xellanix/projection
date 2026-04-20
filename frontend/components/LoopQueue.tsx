@@ -102,7 +102,7 @@ function LoopQueueR() {
                 <ButtonGroup
                     ref={parentRef}
                     aria-label="Slide Loop Queue"
-                    className="@container/slide-loop flex w-full flex-row !rounded-md"
+                    className="@container/slide-loop flex w-full flex-row rounded-md!"
                 >
                     {queue.map((item, i) => (
                         <LoopQueueItem key={i} queueIndex={i} {...item} />
