@@ -3,11 +3,9 @@ import { existsSync, mkdirSync, rmSync } from "fs";
 import { basename, dirname, extname, join } from "path";
 import { JSDOM } from "jsdom";
 import DOMPurify from "dompurify";
+import { publicDir } from "$/persistence";
 
-const TEMP_ASSETS_DIR = join(
-    process.env.NODE_ENV === "production" ? dirname(process.execPath) : process.cwd(),
-    "public/__temp/assets",
-);
+const TEMP_ASSETS_DIR = publicDir("assets");
 
 // Allowed file extensions for projections
 const ALLOWED_EXTENSIONS = [".mp4", ".webm", ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
@@ -40,12 +38,17 @@ function validateSVG(svgString: string): { isSafe: boolean; sanitized: string } 
 }
 
 export async function importRequest(req: Request, path: string) {
-    if (req.method === "POST" || req.method === "PUT") {
-        // Path Traversal Protection: Extract ONLY the file name, discarding any folder paths
-        const rawPath = decodeURIComponent(path);
-        const filename = basename(rawPath);
-        if (!filename) return new Response("Bad Request: Invalid filename", { status: 400 });
+    // Path Traversal Protection: Extract ONLY the file name, discarding any folder paths
+    const filename = basename(path);
+    if (!filename) return new Response("Bad Request: Invalid filename", { status: 400 });
 
+    const filePath = join(TEMP_ASSETS_DIR, filename);
+    if (!filePath.startsWith(TEMP_ASSETS_DIR)) {
+        // Path Traversal Protection: Prevent path traversal attacks
+        return new Response("Not Found: Invalid filename", { status: 404 });
+    }
+
+    if (req.method === "POST" || req.method === "PUT") {
         // Extension Validation: Prevent executable/script uploads
         const ext = extname(filename).toLowerCase();
         if (!ALLOWED_EXTENSIONS.includes(ext)) {
@@ -67,7 +70,6 @@ export async function importRequest(req: Request, path: string) {
                 return new Response("Payload Too Large", { status: 413 });
             }
 
-            const filePath = join(TEMP_ASSETS_DIR, filename);
             const dirPath = dirname(filePath);
             if (!existsSync(dirPath)) mkdirSync(dirPath, { recursive: true });
 
@@ -98,13 +100,6 @@ export async function importRequest(req: Request, path: string) {
             return new Response("Internal Server Error", { status: 500 });
         }
     } else if (req.method === "GET") {
-        // Apply basename check on GET requests too so users can't read internal server files!
-        const rawPath = decodeURIComponent(path);
-        const filename = basename(rawPath);
-
-        if (!filename) return new Response("Bad Request", { status: 400 });
-
-        const filePath = join(TEMP_ASSETS_DIR, filename);
         const reqFile = file(filePath);
 
         if (await reqFile.exists()) return new Response(reqFile);
