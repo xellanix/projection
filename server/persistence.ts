@@ -1,11 +1,27 @@
 import fs from "fs";
-import path from "path";
+import path, { dirname, join } from "path";
+
+let EXEC_DIR = "";
+let PUBLIC_BASE = "";
+const isProd = process.env.NODE_ENV === "production";
+
+export function execDir(...segments: string[]) {
+    EXEC_DIR ||= isProd ? dirname(process.execPath) : process.cwd();
+    return join(EXEC_DIR, ...segments);
+}
+
+export function publicDir(...segments: string[]) {
+    if (!PUBLIC_BASE) {
+        const publicPath = isProd ? ["public"] : ["public", "__temp"];
+        PUBLIC_BASE = execDir(...publicPath);
+    }
+    return join(PUBLIC_BASE, ...segments);
+}
 
 export const readJsonFile = <T>(filePath: string, defaultValue: T): T => {
-    const fp = path.join(process.cwd(), filePath);
     try {
-        if (fs.existsSync(fp)) {
-            const fileContent = fs.readFileSync(fp, "utf-8");
+        if (fs.existsSync(filePath)) {
+            const fileContent = fs.readFileSync(filePath, "utf-8");
             return JSON.parse(fileContent) as T;
         }
     } catch (error) {
@@ -15,16 +31,15 @@ export const readJsonFile = <T>(filePath: string, defaultValue: T): T => {
 };
 
 export const writeJsonFile = <T>(filePath: string, value: T) => {
-    const fp = path.join(process.cwd(), filePath);
-    const dirPath = path.dirname(fp);
+    const dirPath = path.dirname(filePath);
     try {
         if (!fs.existsSync(dirPath)) {
             fs.mkdirSync(dirPath, { recursive: true });
         }
-        fs.writeFileSync(fp, JSON.stringify(value, null, 2));
+        fs.writeFileSync(filePath, JSON.stringify(value, null, 2));
     } catch (error) {
         console.error("Error writing to settings file:", error);
     }
 };
 
-export const settingsFP = "public/__temp/settings.json";
+export const settingsFP = publicDir("settings.json");

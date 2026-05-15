@@ -3,6 +3,7 @@ import open from "open";
 import { engine, SERVER_PORT, FRONTEND_PORT } from "$/socket";
 import { cleanupAssets, importRequest, MAX_FILE_SIZE } from "$/import";
 import index from "../dist/frontend/index.html";
+import { execDir } from "$/persistence";
 
 const isProd = process.env.NODE_ENV === "production";
 const { fetch, ...socketEngineHandler } = engine.handler();
@@ -38,6 +39,12 @@ serve({
         const path = decodeURIComponent(url.pathname)
             .replace(/^(\.\.(\/|\\|$))+/g, "")
             .replace(/\\/g, "/");
+
+        const filePath = execDir(path);
+        if (!filePath.startsWith(execDir())) {
+            // Path Traversal Protection: Prevent path traversal attacks
+            return new Response("Not Found: Invalid filename", { status: 404 });
+        }
 
         if (path.startsWith(engine.opts.path)) {
             return engine.handleRequest(req, server);
