@@ -1,4 +1,3 @@
-import { cp, rm } from "node:fs/promises";
 import { readdirSync, statSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { zipSync } from "fflate";
@@ -25,21 +24,6 @@ function getFilesForFflate(dir: string, baseDir = "") {
         }
     }
     return filesObj;
-}
-
-async function copyFrontend(serverDir: string) {
-    const sourceDir = "./dist/frontend" as const;
-    const destDir = `${serverDir}/frontend`;
-
-    try {
-        console.log("─".repeat(Math.min(130, process.stdout.columns)));
-        console.log("⌛ Copying frontend folder...");
-        await rm(destDir, { recursive: true, force: true });
-        await cp(sourceDir, destDir, { recursive: true, force: true });
-        console.log("✅ Successfully copied frontend folder.");
-    } catch (err) {
-        console.error("❌ Failed to copy frontend folder:", err);
-    }
 }
 
 function packOutputs(serverDir: string) {
@@ -214,7 +198,6 @@ if (result.success) {
 
     const serverDir = "./dist/server" as const;
 
-    await copyFrontend(serverDir);
     if (!values["no-release"]) packOutputs(serverDir);
 } else {
     console.error("❌ Failed to build server:", result.logs);

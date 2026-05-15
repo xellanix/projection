@@ -1,11 +1,10 @@
-import { serve, file } from "bun";
-import { dirname, join } from "path";
+import { serve } from "bun";
 import open from "open";
 import { engine, SERVER_PORT, FRONTEND_PORT } from "$/socket";
 import { cleanupAssets, importRequest, MAX_FILE_SIZE } from "$/import";
+import index from "../dist/frontend/index.html";
 
 const isProd = process.env.NODE_ENV === "production";
-const FRONTEND_DIST = join(dirname(process.execPath), "frontend");
 const { fetch, ...socketEngineHandler } = engine.handler();
 
 declare const VERSION: string;
@@ -29,9 +28,16 @@ serve({
     // from the libraries being used.
     port: SERVER_PORT,
     maxRequestBodySize: MAX_FILE_SIZE,
+    routes: {
+        "/": prod(index),
+        "/index.html": prod(index),
+        "/view": prod(index),
+    },
     async fetch(req, server) {
         const url = new URL(req.url);
-        const path = url.pathname;
+        const path = decodeURIComponent(url.pathname)
+            .replace(/^(\.\.(\/|\\|$))+/g, "")
+            .replace(/\\/g, "/");
 
         if (path.startsWith(engine.opts.path)) {
             return engine.handleRequest(req, server);
@@ -41,37 +47,19 @@ serve({
             return await importRequest(req, path.replace("/api/assets/", ""));
         }
 
-        if (!isProd) {
-            return new Response(
-                "Bun Backend: Running in DEV mode. Please use the Vite dev server to view the frontend.",
-                { headers: { "Content-Type": "text/plain" } },
-            );
-        }
-
-        let reqPath = decodeURIComponent(path);
-        if (reqPath === "/") reqPath = "/index.html";
-
-        const targetPath = join(FRONTEND_DIST, reqPath);
-        if (!targetPath.startsWith(FRONTEND_DIST)) {
-            return new Response("Forbidden: Invalid Path", { status: 403 });
-        }
-
-        let requestedFile = file(targetPath);
-        if (!(await requestedFile.exists())) {
-            requestedFile = file(join(FRONTEND_DIST, "index.html"));
-
-            // Safety check: if index.html is completely missing, return a clean 404
-            if (!(await requestedFile.exists())) {
-                return new Response(
-                    "Frontend files not found. Ensure the 'frontend' folder is located in the same directory as this executable.",
-                    { status: 404, headers: { "Content-Type": "text/plain" } },
-                );
-            }
-        }
-
-        return new Response(requestedFile);
+        return new Response("Not Found: Invalid Path", { status: 404 });
     },
 });
+
+function prod<T>(val: T) {
+    if (!isProd) {
+        return new Response(
+            "Bun Backend: Running in DEV mode. Please use the Vite dev server to view the frontend.",
+        );
+    }
+
+    return val;
+}
 
 console.log(`│ Server: http://localhost:${SERVER_PORT} │`);
 console.log(`│ Mode  : ${isProd ? "production " : "development"}            │`);
