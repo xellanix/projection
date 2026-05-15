@@ -98,8 +98,6 @@ const ScreenContent = memo(
             case SPECIAL_INDEX.TRANSPARENT:
             case SPECIAL_INDEX.CLEAR:
                 return <ClearScreen />;
-            case SPECIAL_INDEX.COVER:
-                return <CoverScreen />;
             case SPECIAL_INDEX.BLACK:
                 return <BlackScreen />;
             default:
@@ -174,8 +172,30 @@ const bgIndex = (index: number, raw?: number) => {
             return index;
     }
 };
+let prevFgIndex = 0;
+const fgIndex = (index: number, raw?: number) => {
+    if (raw === undefined) return index;
+
+    switch (index) {
+        case SPECIAL_INDEX.COVER:
+            return prevFgIndex;
+        default:
+            prevFgIndex = index;
+            return index;
+    }
+};
 const buildFKey = (projection: number, index: number) => {
-    return index < 0 ? index : `${projection}-${index}`;
+    if (index < 0) {
+        switch (index) {
+            case SPECIAL_INDEX.TRANSPARENT:
+            case SPECIAL_INDEX.CLEAR:
+                return SPECIAL_INDEX.CLEAR;
+            default:
+                return index;
+        }
+    }
+
+    return `${projection}-${index}`;
 };
 interface ViewerProps {
     currentProjection: number;
@@ -187,7 +207,8 @@ export const Viewer = memo(function Viewer({
     currentIndex = 0,
     rawIndex,
 }: ViewerProps) {
-    const motionKey = buildFKey(currentProjection, currentIndex);
+    const _fgIndex = fgIndex(currentIndex, rawIndex);
+    const motionKey = buildFKey(currentProjection, _fgIndex);
     const transition = useMemo(() => {
         return useTransitionStore.getState().getTransition(currentProjection, currentIndex);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -201,8 +222,17 @@ export const Viewer = memo(function Viewer({
             />
 
             <ForegroundAnimator motionKey={motionKey} transition={transition}>
-                <ScreenContent currentProjection={currentProjection} currentIndex={currentIndex} />
+                <ScreenContent currentProjection={currentProjection} currentIndex={_fgIndex} />
             </ForegroundAnimator>
+
+            <div
+                className={
+                    "absolute size-full transition-opacity duration-300 " +
+                    (currentIndex === SPECIAL_INDEX.COVER ? "opacity-100" : "opacity-0")
+                }
+            >
+                <CoverScreen />
+            </div>
         </>
     );
 });
