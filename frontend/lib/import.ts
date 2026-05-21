@@ -16,26 +16,37 @@ function importSettings(data: unknown) {
     useImportSettingsStore.getState().tryToImport(data);
 }
 
+function tryAddProjectionFromJson(text: string, path: string, socket: Socket) {
+    const data = JSON.parse(text);
+
+    if (path.endsWith("settings.json")) {
+        importSettings(data);
+        return false;
+    }
+
+    // Contains multiple projection masters
+    const projectionsData = Array.isArray(data) ? data : [data];
+    for (const p of projectionsData) {
+        // Process each projection master
+        const ps: unknown[] = Array.isArray(p) ? p : [p];
+        for (const _p of ps) {
+            const res = jsonToProjection(_p, true);
+            if (res === null) continue;
+            useProjectionStore.getState().addProjection(res);
+            socket.emit("client:queue:add", _p);
+        }
+    }
+
+    return true;
+}
+
 export async function processImportedFiles(files: File[], socket: Socket, onSuccess?: () => void) {
     let total = 0,
         processed = 0;
     for (const f of files) {
         if (f.name.endsWith(".json")) {
             const text = await f.text();
-            const p: unknown = JSON.parse(text);
-
-            if (f.name.endsWith("settings.json")) {
-                importSettings(p);
-                continue;
-            }
-
-            const ps: unknown[] = Array.isArray(p) ? p : [p];
-            for (const _p of ps) {
-                const res = jsonToProjection(_p, true);
-                if (res === null) continue;
-                useProjectionStore.getState().addProjection(res);
-                socket.emit("client:queue:add", _p);
-            }
+            if (!tryAddProjectionFromJson(text, f.name, socket)) continue;
         } else if (f.name.endsWith(".zip")) {
             const arrayBuffer = await f.arrayBuffer();
             const unzipped = unzipSync(new Uint8Array(arrayBuffer));
@@ -93,24 +104,7 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
             for (const [path, uint8Array] of Object.entries(unzipped)) {
                 if (path.endsWith(".json") && !path.startsWith("assets/")) {
                     const text = strFromU8(uint8Array);
-                    const data = JSON.parse(text);
-
-                    if (path.endsWith("settings.json")) {
-                        importSettings(data);
-                        continue;
-                    }
-
-                    const projectionsData = Array.isArray(data) ? data : [data];
-                    for (const p of projectionsData) {
-                        const ps: unknown[] = Array.isArray(p) ? p : [p];
-
-                        for (const _p of ps) {
-                            const res = jsonToProjection(_p, true);
-                            if (res === null) continue;
-                            useProjectionStore.getState().addProjection(res);
-                            socket.emit("client:queue:add", _p);
-                        }
-                    }
+                    if (!tryAddProjectionFromJson(text, path, socket)) continue;
                 }
             }
 
