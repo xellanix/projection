@@ -1,4 +1,4 @@
-import { unzipSync, strFromU8 } from "fflate";
+import { strFromU8, unzip, type Unzipped } from "fflate";
 import { jsonToProjection } from "@/lib/json-to-projection";
 import { useProjectionStore } from "@/stores/projection.store";
 import type { Socket } from "socket.io-client";
@@ -65,13 +65,18 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
             if (!tryAddProjectionFromJson(text, f.name, socket)) continue;
         } else if (f.name.endsWith(".zip")) {
             const arrayBuffer = await f.arrayBuffer();
-            const unzipped = unzipSync(new Uint8Array(arrayBuffer));
+            const unzipped = await new Promise<Unzipped>((resolve, reject) => {
+                unzip(new Uint8Array(arrayBuffer), (err, data) => {
+                    if (err) reject(err);
+                    else resolve(data);
+                });
+            });
 
-            const entries = Object.entries(unzipped);
+            for (const [path, uint8Array] of Object.entries(unzipped)) {
+                if (uint8Array.length === 0) continue;
 
-            // Upload Assets via raw buffer body
-            for (const [path, uint8Array] of entries) {
-                if (path.startsWith("assets/") && uint8Array.length > 0) {
+                if (path.startsWith("assets/")) {
+                    // Upload Assets via raw buffer body
                     total++;
                     const safeName = path.replace("assets/", "");
                     const fileBlob = new Blob([uint8Array as unknown as BlobPart], {
@@ -105,12 +110,8 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
 
                         showToastError(`Network error while uploading ${safeName}: ${err}`);
                     }
-                }
-            }
-
-            // Read JSON entries, convert, and push to store/socket
-            for (const [path, uint8Array] of entries) {
-                if (path.endsWith(".json") && !path.startsWith("assets/")) {
+                } else if (path.endsWith(".json")) {
+                    // Read JSON entries, convert, and push to store/socket
                     const text = strFromU8(uint8Array);
                     if (!tryAddProjectionFromJson(text, path, socket)) continue;
                 }
