@@ -76,9 +76,7 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
                         );
 
                         if (!response.ok) {
-                            const errorMsg = `Failed to upload ${safeName}: ${response.statusText}`;
-                            toast.error(errorMsg);
-                            console.error(errorMsg);
+                            showToastError(`Failed to upload ${safeName}: ${response.statusText}`);
                             continue;
                         } else if (response.ok && response.headers.has("x-sanitized")) {
                             const msg = `Uploaded successfully with sanitized content. It might not work as expected. Filename: ${safeName}`;
@@ -93,9 +91,7 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
                         else if (typeof error === "string") err = error;
                         else err = JSON.stringify(error);
 
-                        const errorMsg = `Network error while uploading ${safeName}: ${err}`;
-                        toast.error(errorMsg);
-                        console.error(errorMsg);
+                        showToastError(`Network error while uploading ${safeName}: ${err}`);
                     }
                 }
             }
@@ -123,4 +119,9 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
     }
 
     onSuccess?.();
+}
+
+function showToastError(message: string) {
+    toast.error(message);
+    console.error(message);
 }
