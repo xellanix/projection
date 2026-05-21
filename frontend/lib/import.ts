@@ -40,6 +40,22 @@ function tryAddProjectionFromJson(text: string, path: string, socket: Socket) {
     return true;
 }
 
+const MIME_MAP: Record<string, string> = {
+    mp4: "video/mp4",
+    webm: "video/webm",
+    svg: "image/svg+xml",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    gif: "image/gif",
+    webp: "image/webp",
+};
+
+function getMime(name: string): string {
+    const ext = name.split(".").pop()?.toLowerCase() ?? "";
+    return MIME_MAP[ext] ?? "application/octet-stream";
+}
+
 export async function processImportedFiles(files: File[], socket: Socket, onSuccess?: () => void) {
     let total = 0,
         processed = 0;
@@ -51,20 +67,16 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
             const arrayBuffer = await f.arrayBuffer();
             const unzipped = unzipSync(new Uint8Array(arrayBuffer));
 
+            const entries = Object.entries(unzipped);
+
             // Upload Assets via raw buffer body
-            for (const [path, uint8Array] of Object.entries(unzipped)) {
+            for (const [path, uint8Array] of entries) {
                 if (path.startsWith("assets/") && uint8Array.length > 0) {
                     total++;
                     const safeName = path.replace("assets/", "");
-                    let mime = "application/octet-stream";
-
-                    if (safeName.endsWith(".mp4")) mime = "video/mp4";
-                    else if (safeName.endsWith(".webm")) mime = "video/webm";
-                    else if (safeName.endsWith(".svg")) mime = "image/svg+xml";
-                    else if (/\.(jpg|jpeg|png|gif|webp)$/i.exec(safeName))
-                        mime = `image/${safeName.split(".").pop()}`;
-
-                    const fileBlob = new Blob([uint8Array as unknown as BlobPart], { type: mime });
+                    const fileBlob = new Blob([uint8Array as unknown as BlobPart], {
+                        type: getMime(safeName),
+                    });
 
                     try {
                         const response = await fetch(
@@ -78,7 +90,7 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
                         if (!response.ok) {
                             showToastError(`Failed to upload ${safeName}: ${response.statusText}`);
                             continue;
-                        } else if (response.ok && response.headers.has("x-sanitized")) {
+                        } else if (response.headers.has("x-sanitized")) {
                             const msg = `Uploaded successfully with sanitized content. It might not work as expected. Filename: ${safeName}`;
                             toast.warning(msg);
                             console.warn(msg);
@@ -86,10 +98,10 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
 
                         processed++;
                     } catch (error) {
-                        let err: string;
-                        if (error instanceof Error) err = error.message;
-                        else if (typeof error === "string") err = error;
-                        else err = JSON.stringify(error);
+                        const err =
+                            error instanceof Error ? error.message
+                            : typeof error === "string" ? error
+                            : JSON.stringify(error);
 
                         showToastError(`Network error while uploading ${safeName}: ${err}`);
                     }
@@ -97,7 +109,7 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
             }
 
             // Read JSON entries, convert, and push to store/socket
-            for (const [path, uint8Array] of Object.entries(unzipped)) {
+            for (const [path, uint8Array] of entries) {
                 if (path.endsWith(".json") && !path.startsWith("assets/")) {
                     const text = strFromU8(uint8Array);
                     if (!tryAddProjectionFromJson(text, path, socket)) continue;
