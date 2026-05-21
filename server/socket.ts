@@ -29,7 +29,7 @@ const message = {
 };
 let loopQueueIndex = -1;
 const controllerIds: string[] = [];
-let settings = ps.readJsonFile(ps.settingsFP, defaultSettings);
+let settings = await ps.readJsonFile(ps.settingsFP, defaultSettings);
 
 // --- Utility Functions ---
 // Returns the index to be sent to the client
@@ -292,14 +292,14 @@ io.on("connection", (socket) => {
     socket.on("client:video:fg:init:response", initResponse("fg"));
 
     // "client:settings:init"
-    socket.on("client:settings:init", () => {
-        settings = ps.readJsonFile(ps.settingsFP, defaultSettings);
+    socket.on("client:settings:init", async () => {
+        settings = await ps.readJsonFile(ps.settingsFP, defaultSettings);
         socket.emit("server:settings:init", settings);
     });
     // "client:settings:update"
-    socket.on("client:settings:update", (s: AppSettings) => {
+    socket.on("client:settings:update", async (s: AppSettings) => {
         settings = s;
-        ps.writeJsonFile(ps.settingsFP, settings);
+        await ps.writeJsonFile(ps.settingsFP, settings);
         socket.broadcast.emit("server:settings:update", settings);
     });
 
