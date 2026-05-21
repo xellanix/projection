@@ -1,5 +1,5 @@
-import fs from "fs";
-import path, { dirname, join } from "path";
+import { rename } from "fs/promises";
+import { dirname, join } from "path";
 
 let EXEC_DIR = "";
 let PUBLIC_BASE = "";
@@ -18,11 +18,11 @@ export function publicDir(...segments: string[]) {
     return join(PUBLIC_BASE, ...segments);
 }
 
-export const readJsonFile = <T>(filePath: string, defaultValue: T): T => {
+export const readJsonFile = async <T>(filePath: string, defaultValue: T): Promise<T> => {
     try {
-        if (fs.existsSync(filePath)) {
-            const fileContent = fs.readFileSync(filePath, "utf-8");
-            return JSON.parse(fileContent) as T;
+        const file = Bun.file(filePath);
+        if (await file.exists()) {
+            return (await file.json()) as T;
         }
     } catch (error) {
         console.error("Error reading settings file:", error);
@@ -30,13 +30,13 @@ export const readJsonFile = <T>(filePath: string, defaultValue: T): T => {
     return defaultValue;
 };
 
-export const writeJsonFile = <T>(filePath: string, value: T) => {
-    const dirPath = path.dirname(filePath);
+export const writeJsonFile = async <T>(filePath: string, value: T) => {
     try {
-        if (!fs.existsSync(dirPath)) {
-            fs.mkdirSync(dirPath, { recursive: true });
-        }
-        fs.writeFileSync(filePath, JSON.stringify(value, null, 2));
+        const tempPath = `${filePath}.tmp`;
+        await Bun.write(tempPath, JSON.stringify(value, null, 2));
+        // Atomically replace the old file with the new one
+        // Tt either succeeds entirely or fails entirely
+        await rename(tempPath, filePath);
     } catch (error) {
         console.error("Error writing to settings file:", error);
     }

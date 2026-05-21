@@ -187,6 +187,7 @@ const result = await Bun.build({
     minify: true,
     sourcemap: "none",
     bytecode: true,
+    format: "esm",
     define: {
         "process.env.NODE_ENV": JSON.stringify("production"),
         VERSION: JSON.stringify(version.version),

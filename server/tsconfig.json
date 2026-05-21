@@ -3,13 +3,15 @@
   "compilerOptions": {
     "noEmit": false,
     "module": "ESNext",
+    "target": "esnext",
     "moduleResolution": "bundler",
+    "types": ["bun"],
     "paths": {
       "@/*": ["../frontend/*"],
       "$/*": ["./*"]
     },
     "plugins": [],
-    "lib": ["ES2022"]
+    "lib": ["ESNext"]
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules"]

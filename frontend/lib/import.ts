@@ -1,9 +1,11 @@
-import { unzipSync, strFromU8 } from "fflate";
+import { strFromU8, unzip, type Unzipped } from "fflate";
 import { jsonToProjection } from "@/lib/json-to-projection";
 import { useProjectionStore } from "@/stores/projection.store";
 import type { Socket } from "socket.io-client";
 import { toast } from "sonner";
 import { useImportSettingsStore } from "@/stores/import.settings.store";
+import type { ProjectionItem } from "@/types";
+import { groupName } from "@/lib/projection";
 
 export function replaceUrl(url: string) {
     if (url.startsWith("asset://")) {
@@ -16,44 +18,100 @@ function importSettings(data: unknown) {
     useImportSettingsStore.getState().tryToImport(data);
 }
 
+function sortMasterContents(contents: ProjectionItem[]): ProjectionItem[] {
+    const firstSeen = new Map<string, number>();
+    for (let i = 0; i < contents.length; i++) {
+        const item = contents[i]!;
+        const group = groupName(item.group);
+        if (!firstSeen.has(group)) {
+            firstSeen.set(group, i);
+        }
+    }
+
+    // Mutate the original array
+    // It's safe to do this because we're not modifying the React state
+    const groupedItems = contents.sort((a, b) => {
+        const indexA = firstSeen.get(groupName(a.group))!;
+        const indexB = firstSeen.get(groupName(b.group))!;
+        return indexA - indexB;
+    });
+
+    return groupedItems;
+}
+
+function tryAddProjectionFromJson(text: string, path: string, socket: Socket) {
+    const data = JSON.parse(text);
+
+    if (path.endsWith("settings.json")) {
+        importSettings(data);
+        return false;
+    }
+
+    // Contains multiple projection masters
+    const projectionsData = Array.isArray(data) ? data : [data];
+    for (const p of projectionsData) {
+        // Process each projection master
+        const ps: unknown[] = Array.isArray(p) ? p : [p];
+        for (const _p of ps) {
+            const res = jsonToProjection(_p, true);
+            if (res === null) continue;
+
+            // Group the master's content by sorting
+            res.contents = sortMasterContents(res.contents);
+
+            useProjectionStore.getState().addProjection(res);
+            socket.emit("client:queue:add", _p);
+        }
+    }
+
+    return true;
+}
+
+const MIME_MAP: Record<string, string> = {
+    mp4: "video/mp4",
+    webm: "video/webm",
+    svg: "image/svg+xml",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    gif: "image/gif",
+    webp: "image/webp",
+};
+
+function getMime(name: string): string {
+    const ext = name.split(".").pop()?.toLowerCase() ?? "";
+    return MIME_MAP[ext] ?? "application/octet-stream";
+}
+
 export async function processImportedFiles(files: File[], socket: Socket, onSuccess?: () => void) {
     let total = 0,
         processed = 0;
+
+    const toastId = toast.loading("Processing imported files...");
+
     for (const f of files) {
         if (f.name.endsWith(".json")) {
             const text = await f.text();
-            const p: unknown = JSON.parse(text);
-
-            if (f.name.endsWith("settings.json")) {
-                importSettings(p);
-                continue;
-            }
-
-            const ps: unknown[] = Array.isArray(p) ? p : [p];
-            for (const _p of ps) {
-                const res = jsonToProjection(_p, true);
-                if (res === null) continue;
-                useProjectionStore.getState().addProjection(res);
-                socket.emit("client:queue:add", _p);
-            }
+            if (!tryAddProjectionFromJson(text, f.name, socket)) continue;
         } else if (f.name.endsWith(".zip")) {
             const arrayBuffer = await f.arrayBuffer();
-            const unzipped = unzipSync(new Uint8Array(arrayBuffer));
+            const unzipped = await new Promise<Unzipped>((resolve, reject) => {
+                unzip(new Uint8Array(arrayBuffer), (err, data) => {
+                    if (err) reject(err);
+                    else resolve(data);
+                });
+            });
 
-            // Upload Assets via raw buffer body
             for (const [path, uint8Array] of Object.entries(unzipped)) {
-                if (path.startsWith("assets/") && uint8Array.length > 0) {
+                if (uint8Array.length === 0) continue;
+
+                if (path.startsWith("assets/")) {
+                    // Upload Assets via raw buffer body
                     total++;
                     const safeName = path.replace("assets/", "");
-                    let mime = "application/octet-stream";
-
-                    if (safeName.endsWith(".mp4")) mime = "video/mp4";
-                    else if (safeName.endsWith(".webm")) mime = "video/webm";
-                    else if (safeName.endsWith(".svg")) mime = "image/svg+xml";
-                    else if (/\.(jpg|jpeg|png|gif|webp)$/i.exec(safeName))
-                        mime = `image/${safeName.split(".").pop()}`;
-
-                    const fileBlob = new Blob([uint8Array as unknown as BlobPart], { type: mime });
+                    const fileBlob = new Blob([uint8Array as unknown as BlobPart], {
+                        type: getMime(safeName),
+                    });
 
                     try {
                         const response = await fetch(
@@ -65,11 +123,9 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
                         );
 
                         if (!response.ok) {
-                            const errorMsg = `Failed to upload ${safeName}: ${response.statusText}`;
-                            toast.error(errorMsg);
-                            console.error(errorMsg);
+                            showToastError(`Failed to upload ${safeName}: ${response.statusText}`);
                             continue;
-                        } else if (response.ok && response.headers.has("x-sanitized")) {
+                        } else if (response.headers.has("x-sanitized")) {
                             const msg = `Uploaded successfully with sanitized content. It might not work as expected. Filename: ${safeName}`;
                             toast.warning(msg);
                             console.warn(msg);
@@ -77,40 +133,19 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
 
                         processed++;
                     } catch (error) {
-                        let err: string;
-                        if (error instanceof Error) err = error.message;
-                        else if (typeof error === "string") err = error;
-                        else err = JSON.stringify(error);
+                        const err =
+                            error instanceof Error
+                                ? error.message
+                                : typeof error === "string"
+                                  ? error
+                                  : JSON.stringify(error);
 
-                        const errorMsg = `Network error while uploading ${safeName}: ${err}`;
-                        toast.error(errorMsg);
-                        console.error(errorMsg);
+                        showToastError(`Network error while uploading ${safeName}: ${err}`);
                     }
-                }
-            }
-
-            // Read JSON entries, convert, and push to store/socket
-            for (const [path, uint8Array] of Object.entries(unzipped)) {
-                if (path.endsWith(".json") && !path.startsWith("assets/")) {
+                } else if (path.endsWith(".json")) {
+                    // Read JSON entries, convert, and push to store/socket
                     const text = strFromU8(uint8Array);
-                    const data = JSON.parse(text);
-
-                    if (path.endsWith("settings.json")) {
-                        importSettings(data);
-                        continue;
-                    }
-
-                    const projectionsData = Array.isArray(data) ? data : [data];
-                    for (const p of projectionsData) {
-                        const ps: unknown[] = Array.isArray(p) ? p : [p];
-
-                        for (const _p of ps) {
-                            const res = jsonToProjection(_p, true);
-                            if (res === null) continue;
-                            useProjectionStore.getState().addProjection(res);
-                            socket.emit("client:queue:add", _p);
-                        }
-                    }
+                    if (!tryAddProjectionFromJson(text, path, socket)) continue;
                 }
             }
 
@@ -128,5 +163,12 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
         }
     }
 
+    toast.dismiss(toastId);
+
     onSuccess?.();
+}
+
+function showToastError(message: string) {
+    toast.error(message);
+    console.error(message);
 }

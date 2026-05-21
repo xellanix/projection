@@ -33,6 +33,7 @@ import { jsonToProjection } from "@/lib/json-to-projection";
 import { useGroupStore } from "@/stores/group.store";
 import { processImportedFiles } from "@/lib/import";
 import { SettingsDialog } from "@/components/dialogs/import/SettingsDialog";
+import { groupName } from "@/lib/projection";
 
 const createItemName = (c: ProjectionItem) => {
     return c.name?.trim() || (c.type !== "Component" && c.content.trim()) || "Untitled";
@@ -365,7 +366,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
         const globalIndices: number[] = [];
         for (const item of contents) {
             const { group, ...rest } = item;
-            const key = group?.trim() || "Contents";
+            const key = groupName(group);
 
             if (!groups[key]) {
                 groups[key] = [];
