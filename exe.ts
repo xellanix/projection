@@ -183,7 +183,7 @@ const result = await Bun.build({
         },
     },
     minify: true,
-    sourcemap: "linked",
+    sourcemap: "none",
     bytecode: true,
     define: {
         "process.env.NODE_ENV": JSON.stringify("production"),
