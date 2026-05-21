@@ -48,6 +48,9 @@ jobs:
         id: pr_context
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_PR_BODY: ${{ github.event.pull_request.body }}
+          EVENT_PR_NUM:  ${{ github.event.pull_request.number }}
+          EVENT_PR_SHA:  ${{ github.event.pull_request.merge_commit_sha }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PR_NUM="${{ inputs.pr_number }}"
@@ -67,9 +70,9 @@ jobs:
             PR_SHA=$(echo "$PR_DATA" | jq -r '.sha')
           else
             # Fallback to standard PR event details
-            PR_NUM="${{ github.event.pull_request.number }}"
-            PR_BODY="${{ github.event.pull_request.body }}"
-            PR_SHA="${{ github.event.pull_request.merge_commit_sha }}"
+            PR_NUM="$EVENT_PR_NUM"
+            PR_BODY="$EVENT_PR_BODY"
+            PR_SHA="$EVENT_PR_SHA"
           fi
 
           # Save to job outputs and multiline-safe environment variables
