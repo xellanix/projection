@@ -1,6 +1,5 @@
-import { readdirSync, statSync, readFileSync, writeFileSync } from "node:fs";
+import { readdirSync, statSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { zipSync } from "fflate";
 import version from "./frontend/data/version.json";
 import { readFile } from "node:fs/promises";
 import packageJson from "./package.json";
@@ -26,22 +25,25 @@ function getFilesForFflate(dir: string, baseDir = "") {
     return filesObj;
 }
 
-function packOutputs(serverDir: string) {
-    const zipDest = `./dist/projection-v${version.version}.zip`;
+async function packOutputs(serverDir: string) {
+    const releaseDest = `./dist/releases/v${version.version}`;
+
+    const files = [{ src: "projection.exe", dest: "projection-windows-x64.exe" }];
 
     try {
         console.log("─".repeat(Math.min(130, process.stdout.columns)));
-        console.log("⌛ Preparing the release package...");
-        const archiveFiles = getFilesForFflate(serverDir);
-        console.log("✅ Preparing finished.");
+        console.log("⌛ Copying the release files...");
 
-        console.log("📦 Creating the release package...");
-        // zipSync creates the zip archive in memory (level 9 is max compression)
-        const zippedData = zipSync(archiveFiles, { level: 9 });
-        writeFileSync(zipDest, zippedData);
-        console.log("✅ Successfully created the release package:", join(process.cwd(), zipDest));
+        for (let i = 0; i < files.length; i++) {
+            const { src, dest } = files[i];
+            const source = Bun.file(join(serverDir, src));
+            await Bun.write(join(releaseDest, dest), source);
+            console.log(`Copied ${i + 1}/${files.length}: ${dest}`);
+        }
+
+        console.log("✅ Successfully copied the release files:", join(process.cwd(), releaseDest));
     } catch (err) {
-        console.error("❌ Failed to create the release package:", err);
+        console.error("❌ Failed to create the release files:", err);
     }
 }
 
@@ -183,7 +185,7 @@ const result = await Bun.build({
         },
     },
     minify: true,
-    sourcemap: "linked",
+    sourcemap: "none",
     bytecode: true,
     define: {
         "process.env.NODE_ENV": JSON.stringify("production"),
@@ -198,7 +200,7 @@ if (result.success) {
 
     const serverDir = "./dist/server" as const;
 
-    if (!values["no-release"]) packOutputs(serverDir);
+    if (!values["no-release"]) await packOutputs(serverDir);
 } else {
     console.error("❌ Failed to build server:", result.logs);
 }
