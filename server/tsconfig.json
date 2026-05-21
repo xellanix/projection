@@ -4,10 +4,9 @@
     "noEmit": false,
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": "..",
     "paths": {
-      "@/*": ["frontend/*"],
-      "$/*": ["server/*"]
+      "@/*": ["../frontend/*"],
+      "$/*": ["./*"]
     },
     "plugins": [],
     "lib": ["ES2022"]
