@@ -4,6 +4,8 @@ import { useProjectionStore } from "@/stores/projection.store";
 import type { Socket } from "socket.io-client";
 import { toast } from "sonner";
 import { useImportSettingsStore } from "@/stores/import.settings.store";
+import type { ProjectionItem } from "@/types";
+import { groupName } from "@/lib/projection";
 
 export function replaceUrl(url: string) {
     if (url.startsWith("asset://")) {
@@ -14,6 +16,27 @@ export function replaceUrl(url: string) {
 
 function importSettings(data: unknown) {
     useImportSettingsStore.getState().tryToImport(data);
+}
+
+function sortMasterContents(contents: ProjectionItem[]): ProjectionItem[] {
+    const firstSeen = new Map<string, number>();
+    for (let i = 0; i < contents.length; i++) {
+        const item = contents[i]!;
+        const group = groupName(item.group);
+        if (!firstSeen.has(group)) {
+            firstSeen.set(group, i);
+        }
+    }
+
+    // Mutate the original array
+    // It's safe to do this because we're not modifying the React state
+    const groupedItems = contents.sort((a, b) => {
+        const indexA = firstSeen.get(groupName(a.group))!;
+        const indexB = firstSeen.get(groupName(b.group))!;
+        return indexA - indexB;
+    });
+
+    return groupedItems;
 }
 
 function tryAddProjectionFromJson(text: string, path: string, socket: Socket) {
@@ -32,6 +55,10 @@ function tryAddProjectionFromJson(text: string, path: string, socket: Socket) {
         for (const _p of ps) {
             const res = jsonToProjection(_p, true);
             if (res === null) continue;
+
+            // Group the master's content by sorting
+            res.contents = sortMasterContents(res.contents);
+
             useProjectionStore.getState().addProjection(res);
             socket.emit("client:queue:add", _p);
         }
@@ -104,9 +131,11 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
                         processed++;
                     } catch (error) {
                         const err =
-                            error instanceof Error ? error.message
-                            : typeof error === "string" ? error
-                            : JSON.stringify(error);
+                            error instanceof Error
+                                ? error.message
+                                : typeof error === "string"
+                                  ? error
+                                  : JSON.stringify(error);
 
                         showToastError(`Network error while uploading ${safeName}: ${err}`);
                     }
