@@ -1,6 +1,6 @@
 import { file } from "bun";
-import { existsSync, mkdirSync, rmSync } from "fs";
-import { basename, dirname, extname, join } from "path";
+import { existsSync, rmSync } from "fs";
+import { basename, extname, join } from "path";
 import { JSDOM } from "jsdom";
 import DOMPurify from "dompurify";
 import { publicDir } from "$/persistence";
@@ -69,9 +69,6 @@ export async function importRequest(req: Request, path: string) {
             if (bytes.byteLength > MAX_FILE_SIZE) {
                 return new Response("Payload Too Large", { status: 413 });
             }
-
-            const dirPath = dirname(filePath);
-            if (!existsSync(dirPath)) mkdirSync(dirPath, { recursive: true });
 
             if (ext === ".svg") {
                 const rawContent = new TextDecoder().decode(bytes);
