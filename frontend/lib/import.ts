@@ -86,6 +86,9 @@ function getMime(name: string): string {
 export async function processImportedFiles(files: File[], socket: Socket, onSuccess?: () => void) {
     let total = 0,
         processed = 0;
+
+    const toastId = toast.loading("Processing imported files...");
+
     for (const f of files) {
         if (f.name.endsWith(".json")) {
             const text = await f.text();
@@ -159,6 +162,8 @@ export async function processImportedFiles(files: File[], socket: Socket, onSucc
             }
         }
     }
+
+    toast.dismiss(toastId);
 
     onSuccess?.();
 }
