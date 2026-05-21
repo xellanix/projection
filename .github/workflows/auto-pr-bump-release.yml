@@ -5,6 +5,12 @@ on:
     types: [closed]
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "The Pull Request number to manually release (e.g., 42)"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -21,12 +27,15 @@ env:
 
 jobs:
   version_bump:
-    # Only run if the PR was actually merged (not just closed without merging)
-    if: github.event.pull_request.merged == true
+    # Run if it's a manual trigger OR if the PR was actually merged
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.apply_bump.outputs.version }}
       skip: ${{ steps.extract_bump.outputs.skip }}
+      # Share fetched PR data with subsequent steps/jobs smoothly
+      pr_number: ${{ steps.pr_context.outputs.pr_number }}
+      merge_commit_sha: ${{ steps.pr_context.outputs.merge_commit_sha }}
 
     steps:
       - name: Checkout latest main
@@ -35,13 +44,48 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Fetch PR Context for Manual Trigger
+        id: pr_context
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PR_NUM="${{ inputs.pr_number }}"
+            echo "Fetching details for manually targeted PR #$PR_NUM..."
+            
+            # Fetch the PR details using GitHub CLI
+            PR_DATA=$(gh pr view "$PR_NUM" --json body,mergeCommit,state --jq '{body: .body, sha: .mergeCommit.oid, state: .state}')
+            
+            # Sanity check to make sure it was actually a merged PR
+            PR_STATE=$(echo "$PR_DATA" | jq -r '.state')
+            if [ "$PR_STATE" != "MERGED" ]; then
+              echo "::error::PR #$PR_NUM is not merged (Status: $PR_STATE). Exiting."
+              exit 1
+            fi
+            
+            PR_BODY=$(echo "$PR_DATA" | jq -r '.body')
+            PR_SHA=$(echo "$PR_DATA" | jq -r '.sha')
+          else
+            # Fallback to standard PR event details
+            PR_NUM="${{ github.event.pull_request.number }}"
+            PR_BODY="${{ github.event.pull_request.body }}"
+            PR_SHA="${{ github.event.pull_request.merge_commit_sha }}"
+          fi
+
+          # Save to job outputs and multiline-safe environment variables
+          echo "pr_number=$PR_NUM" >> $GITHUB_OUTPUT
+          echo "merge_commit_sha=$PR_SHA" >> $GITHUB_OUTPUT
+          
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "pr_body<<$EOF" >> $GITHUB_ENV
+          echo "$PR_BODY" >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
+
       - name: Extract Version Bump from PR
         id: extract_bump
-        env:
-          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           # Find '## Version Bump', skip empty lines, grab the first non-empty line containing the version
-          BUMP=$(echo "$PR_BODY" | awk '/## Version Bump/{getline; while($0 ~ /^[[:space:]]*$/) getline; print; exit}' | tr -d '\r' | xargs)
+          BUMP=$(echo "$pr_body" | awk '/## Version Bump/{getline; while($0 ~ /^[[:space:]]*$/) getline; print; exit}' | tr -d '\r' | xargs)
           
           if [[ ! "$BUMP" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "No valid version bump format (X.Y.Z) found under '## Version Bump'. Exiting."
@@ -114,7 +158,7 @@ jobs:
 
           $newVersionString = "$newMajor.$newMinor.$newPatch"
           $jsonContent.version = $newVersionString
-          $jsonContent.commit = "${{ github.event.pull_request.merge_commit_sha }}"
+          $jsonContent.commit = "${{ steps.pr_context.outputs.merge_commit_sha }}"
           
           # Force English formatting for consistent ISO 8601 parsing across different runner regions
           $jsonContent.date = (Get-Date).ToUniversalTime().ToString("o")
@@ -190,7 +234,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_NUMBER="${{ needs.version_bump.outputs.pr_number }}"
           echo "Fetching commits exclusively for PR #$PR_NUMBER..."
           
           # Formats isolated PR commits exactly like the auto-release.yml logic
