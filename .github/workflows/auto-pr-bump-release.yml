@@ -169,13 +169,12 @@ jobs:
 
           # Rename the package for the specific platform
           VERSION="${{ needs.version_bump.outputs.new_version }}"
-          mv "./dist/server/projection.exe" "./dist/projection-v${VERSION}-windows-x64.exe"
       
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-binary
-          path: ./dist/*.exe
+          name: release-binaries
+          path: "./dist/releases/v${VERSION}/"
 
   create_release:
     needs: [version_bump, build_app]
@@ -186,8 +185,8 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: windows-binary
-          path: ./dist
+          name: release-binaries
+          path: "./dist/releases/v${{ needs.version_bump.outputs.new_version }}/"
       
       - name: Fetch PR Commits for Changelog
         id: pr_changelog
@@ -217,4 +216,4 @@ jobs:
             --title "v$VERSION" \
             --notes "${{ steps.pr_changelog.outputs.logs }}" \
             --target main \
-            ./dist/*.exe
+            "./dist/releases/v$VERSION/"*
