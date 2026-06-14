@@ -71,6 +71,8 @@ export const SlideController = memo(function SlideController() {
     const setCurrentIndex = useControl((s) => s.setCurrentIndex);
 
     useEffect(() => {
+        if (isPreview) return;
+
         const register = useShortcutsStore.getState().registerShortcut;
         for (let i = 0; i < 10; i++) {
             const keyString = String(mod(i + 1, 10));
@@ -83,7 +85,7 @@ export const SlideController = memo(function SlideController() {
                 unregister({ key: String(i) });
             }
         };
-    }, [setCurrentIndex]);
+    }, [setCurrentIndex, isPreview]);
 
     return (
         <ButtonGroup aria-label="Slide Navigation">
