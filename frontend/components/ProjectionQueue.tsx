@@ -395,6 +395,8 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
     );
 
     useEffect(() => {
+        if (isPreview) return;
+
         const register = useShortcutsStore.getState().registerShortcut;
         for (let i = 0; i < 10; i++) {
             const keyString = String(mod(i + 1, 10));
@@ -407,7 +409,7 @@ export const ProjectionContentQueue = memo(function ProjectionContentQueue() {
                 unregister({ key: String(i), shift: true });
             }
         };
-    }, [goToGroup]);
+    }, [goToGroup, isPreview]);
 
     return (
         <div className="flex h-full w-full flex-col overflow-hidden">
